@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Firebreak
+Comment=Operation Wolf-style gallery shooter
+Exec=firebreak
+Icon=${SNAP}/meta/gui/firebreak.png
+Terminal=false
+Categories=Game;ActionGame;
+StartupWMClass=Firebreak

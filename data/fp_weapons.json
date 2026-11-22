@@ -1,0 +1,135 @@
+{
+ "version": "0.3.1",
+ "note": "First-person weapon views (assets/sprites/fp/<id>.png, 640x640). Points are fractions of the picture: muzzle = where the flash, sparks or launch puff appear; rear = launcher back-blast. The picture is drawn with its bottom-centre at the bottom-centre of the screen.",
+ "size": 640,
+ "views": {
+  "viper_9": {
+   "muzzle": [
+    0.5049,
+    0.1953
+   ]
+  },
+  "talon_50": {
+   "muzzle": [
+    0.418,
+    0.207
+   ]
+  },
+  "warden_1911": {
+   "muzzle": [
+    0.4541,
+    0.1807
+   ]
+  },
+  "kestrel_p9": {
+   "muzzle": [
+    0.499,
+    0.1855
+   ]
+  },
+  "rook_revolver": {
+   "muzzle": [
+    0.4229,
+    0.0859
+   ]
+  },
+  "hornet_9": {
+   "muzzle": [
+    0.3223,
+    0.2617
+   ]
+  },
+  "buzzsaw": {
+   "muzzle": [
+    0.3828,
+    0.1953
+   ]
+  },
+  "stinger_v": {
+   "muzzle": [
+    0.3691,
+    0.2461
+   ]
+  },
+  "mamba_90": {
+   "muzzle": [
+    0.4766,
+    0.1816
+   ]
+  },
+  "ratchet_mac": {
+   "muzzle": [
+    0.499,
+    0.2559
+   ]
+  },
+  "kalash_47": {
+   "muzzle": [
+    0.3174,
+    0.2754
+   ]
+  },
+  "sentinel_m4": {
+   "muzzle": [
+    0.3369,
+    0.252
+   ]
+  },
+  "granite_g3": {
+   "muzzle": [
+    0.2979,
+    0.1836
+   ]
+  },
+  "longshot_700": {
+   "muzzle": [
+    0.2617,
+    0.2266
+   ]
+  },
+  "thunder_m60": {
+   "muzzle": [
+    0.5586,
+    0.1191
+   ]
+  },
+  "frag_grenades": {
+   "muzzle": [
+    0.5518,
+    0.4102
+   ]
+  },
+  "hammer_rpg": {
+   "muzzle": [
+    0.0859,
+    0.1172
+   ],
+   "rear": [
+    0.8594,
+    0.6523
+   ]
+  },
+  "tankbuster": {
+   "muzzle": [
+    0.2441,
+    0.2656
+   ],
+   "rear": [
+    0.8105,
+    0.6348
+   ]
+  },
+  "thumper_gl": {
+   "muzzle": [
+    0.4053,
+    0.125
+   ]
+  },
+  "air_strike": {
+   "muzzle": [
+    0.3242,
+    0.127
+   ]
+  }
+ }
+}

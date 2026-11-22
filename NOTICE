@@ -1,0 +1,47 @@
+Firebreak, Copyright 2026 QuietByte
+Contact: hello@quietbytehq.uk
+
+Original source code and data files: Apache-2.0 (see LICENSE).
+
+ARTWORK
+The stage 1 background (assets/backgrounds/river_village.jpg), the character,
+pickup and effect sprites (assets/sprites/units/), the helicopter, jet, bomb and
+explosion sprites (assets/sprites/vehicles/), the title art and Rayan portraits
+(assets/ui/title_bg.jpg, rayan_portrait.png, rayan_bust.png), the weapon icons
+(assets/ui/weapons/, added in 0.3.0), the first-person weapon views held in Rayan's
+arms (assets/sprites/fp/, added in 0.3.1) and the app icon were
+created for this project with AI image generation and then cut out and edited for
+the game. They are included for use within Firebreak. The truck is still drawn in
+code. All soldiers and vehicles are generic, with no flags or insignia. Weapon names
+(for example "Viper 9" or "Hammer RPG") and weapon icons are original to Firebreak, carry
+no maker's names, logos or markings, and are not endorsed by any manufacturer. No existing
+game's characters or art are used. "Operation Wolf" is mentioned only to describe the
+genre; Firebreak is not affiliated with or endorsed by its owners.
+
+MUSIC (assets/audio/music_*.ogg, including the 0.3.1 pause-menu track music_pause.ogg)
+Music was generated with ElevenLabs Music (eleven_music_v2_5) and is used under the
+ElevenLabs Music Terms (https://elevenlabs.io/music-terms). Commercial use follows
+the plan in effect when the tracks were generated. On paid self-serve plans this
+includes use in an Indie Game as defined in those terms (game revenue under
+USD 500,000 since release, and publisher game revenue under USD 1,000,000 in the last
+financial year). It does not include film, TV, radio, or Studio Game use unless the
+account is on Enterprise Music. If the account is on the Free plan, credit
+ElevenLabs Music (for example: "Created in collaboration with ElevenLabs"). These
+tracks must not be offered as a standalone music library.
+
+SOUND EFFECTS AND VOICE (all other files in assets/audio/)
+Sound effects were generated with ElevenLabs Sound Effects (eleven_text_to_sound_v2),
+including the 0.3.0 weapon, reload, dry-fire, cash and store sounds (prompts and credits
+are listed in AUDIO_BRIEF.md).
+Rayan's voice lines were generated with ElevenLabs text to speech (eleven_v4) using
+the ElevenLabs Voice Library voice "Flint - Commanding Presence". All lines are
+original and are not impressions of real actors. Use follows the ElevenLabs Terms of
+Service and the plan in effect on the generating account when the files were made.
+If that account is on the Free plan, attribution is required, for example:
+"Created with ElevenLabs". [PLAN NOT YET CONFIRMED: keep or remove this attribution
+once the owner confirms the ElevenLabs plan.]
+
+Text uses the Godot engine's built-in default font.
+
+Godot Engine: MIT; bundled engine components have their respective licences.
+See LICENSES/GODOT-LICENSE.txt and LICENSES/GODOT-THIRD-PARTY.txt.

@@ -1,0 +1,408 @@
+{
+  "id": "river_village",
+  "number": 1,
+  "name": "River Village",
+  "subtitle": "Golden hour on the river, 1968",
+  "background": "res://assets/backgrounds/river_village.jpg",
+  "world_width": 3840,
+  "duration": 180.0,
+  "enemy_quota": 80,
+  "music": "music_bg_01",
+  "scroll": [
+    [
+      0,
+      0
+    ],
+    [
+      14,
+      0
+    ],
+    [
+      38,
+      380
+    ],
+    [
+      50,
+      380
+    ],
+    [
+      78,
+      820
+    ],
+    [
+      92,
+      820
+    ],
+    [
+      118,
+      1300
+    ],
+    [
+      130,
+      1300
+    ],
+    [
+      158,
+      1920
+    ],
+    [
+      180,
+      1920
+    ]
+  ],
+  "bands": {
+    "far": {
+      "scale": 0.26,
+      "damage": 3.0,
+      "hit_chance": 0.55,
+      "score_mult": 1.5,
+      "zones": [
+        [
+          60,
+          1480,
+          615
+        ],
+        [
+          2330,
+          3300,
+          585
+        ]
+      ]
+    },
+    "mid": {
+      "scale": 0.44,
+      "damage": 5.0,
+      "hit_chance": 0.75,
+      "score_mult": 1.2,
+      "zones": [
+        [
+          40,
+          1350,
+          752
+        ],
+        [
+          2400,
+          3460,
+          742
+        ]
+      ]
+    },
+    "near": {
+      "scale": 1.08,
+      "damage": 8.0,
+      "hit_chance": 0.9,
+      "score_mult": 1.0,
+      "zones": [
+        [
+          0,
+          3840,
+          1165
+        ]
+      ]
+    }
+  },
+  "ambient": [
+    {
+      "type": "rifleman",
+      "every": [
+        1.25,
+        2.1
+      ],
+      "from": 3.0,
+      "until": 172.0,
+      "max_alive": 9,
+      "bands": {
+        "far": 0.36,
+        "mid": 0.4,
+        "near": 0.24
+      }
+    },
+    {
+      "type": "villager",
+      "every": [
+        8.0,
+        12.0
+      ],
+      "from": 6.0,
+      "until": 168.0,
+      "max_alive": 2,
+      "bands": {
+        "far": 0.45,
+        "mid": 0.55
+      }
+    },
+    {
+      "type": "food",
+      "every": [
+        15.0,
+        21.0
+      ],
+      "from": 24.0,
+      "until": 170.0,
+      "max_alive": 1,
+      "kinds": {
+        "rice": 0.35,
+        "fruit": 0.3,
+        "canteen": 0.2,
+        "ration": 0.15
+      }
+    },
+    {
+      "type": "powerup",
+      "every": [
+        15.0,
+        22.0
+      ],
+      "from": 26.0,
+      "until": 170.0,
+      "max_alive": 1,
+      "kinds": {
+        "ammo": 0.32,
+        "grenade": 0.16,
+        "rapid": 0.12,
+        "spread": 0.12,
+        "power": 0.08,
+        "airstrike": 0.04,
+        "cash_small": 0.11,
+        "cash_large": 0.05
+      }
+    }
+  ],
+  "waves": [
+    {
+      "t": 2.0,
+      "type": "rifleman",
+      "band": "far",
+      "count": 2,
+      "interval": 0.9
+    },
+    {
+      "t": 4.0,
+      "type": "villager",
+      "band": "mid"
+    },
+    {
+      "t": 6.5,
+      "type": "rifleman",
+      "band": "mid",
+      "count": 3,
+      "interval": 0.8
+    },
+    {
+      "t": 10.0,
+      "type": "food",
+      "kind": "rice"
+    },
+    {
+      "t": 12.0,
+      "type": "rifleman",
+      "band": "near",
+      "count": 2,
+      "interval": 1.4
+    },
+    {
+      "t": 16.0,
+      "type": "powerup",
+      "kind": "ammo"
+    },
+    {
+      "t": 20.0,
+      "type": "mg",
+      "world_x": 1150,
+      "world_y": 748,
+      "scale": 0.46
+    },
+    {
+      "t": 30.0,
+      "type": "paratrooper",
+      "band": "mid",
+      "count": 3,
+      "interval": 1.2
+    },
+    {
+      "t": 36.0,
+      "type": "powerup",
+      "kind": "grenade"
+    },
+    {
+      "t": 40.0,
+      "type": "powerup",
+      "kind": "cash_small"
+    },
+    {
+      "t": 45.0,
+      "type": "rifleman",
+      "band": "near",
+      "count": 2,
+      "interval": 1.5
+    },
+    {
+      "t": 52.0,
+      "type": "villager",
+      "band": "far",
+      "count": 2,
+      "interval": 2.0
+    },
+    {
+      "t": 56.0,
+      "type": "powerup",
+      "kind": "rapid"
+    },
+    {
+      "t": 62.0,
+      "type": "paratrooper",
+      "band": "far",
+      "count": 4,
+      "interval": 0.9
+    },
+    {
+      "t": 70.0,
+      "type": "food",
+      "kind": "fruit"
+    },
+    {
+      "t": 74.0,
+      "type": "heli",
+      "band": "sky",
+      "from": "right"
+    },
+    {
+      "t": 80.0,
+      "type": "rifleman",
+      "band": "mid",
+      "count": 3,
+      "interval": 0.7
+    },
+    {
+      "t": 81.0,
+      "type": "rifleman",
+      "band": "far",
+      "count": 2,
+      "interval": 0.9
+    },
+    {
+      "t": 88.0,
+      "type": "powerup",
+      "kind": "spread"
+    },
+    {
+      "t": 95.0,
+      "type": "mg",
+      "world_x": 2290,
+      "world_y": 772,
+      "scale": 0.46
+    },
+    {
+      "t": 98.0,
+      "type": "powerup",
+      "kind": "cash_large"
+    },
+    {
+      "t": 105.0,
+      "type": "paratrooper",
+      "band": "mid",
+      "count": 4,
+      "interval": 1.0
+    },
+    {
+      "t": 112.0,
+      "type": "food",
+      "kind": "canteen"
+    },
+    {
+      "t": 118.0,
+      "type": "powerup",
+      "kind": "power"
+    },
+    {
+      "t": 120.0,
+      "type": "truck",
+      "band": "mid"
+    },
+    {
+      "t": 135.0,
+      "type": "rifleman",
+      "band": "near",
+      "count": 3,
+      "interval": 1.2
+    },
+    {
+      "t": 138.0,
+      "type": "heli",
+      "band": "sky",
+      "from": "left"
+    },
+    {
+      "t": 140.0,
+      "type": "powerup",
+      "kind": "ammo"
+    },
+    {
+      "t": 146.0,
+      "type": "powerup",
+      "kind": "cash_small"
+    },
+    {
+      "t": 148.0,
+      "type": "mg",
+      "world_x": 3520,
+      "world_y": 905,
+      "scale": 0.7
+    },
+    {
+      "t": 150.0,
+      "type": "paratrooper",
+      "band": "mid",
+      "count": 5,
+      "interval": 0.8
+    },
+    {
+      "t": 156.0,
+      "type": "food",
+      "kind": "ration"
+    },
+    {
+      "t": 165.0,
+      "type": "rifleman",
+      "band": "mid",
+      "count": 3,
+      "interval": 0.6
+    },
+    {
+      "t": 166.0,
+      "type": "rifleman",
+      "band": "near",
+      "count": 2,
+      "interval": 1.0
+    },
+    {
+      "t": 168.0,
+      "type": "paratrooper",
+      "band": "far",
+      "count": 3,
+      "interval": 0.7
+    }
+  ],
+  "light": {
+    "tint": [
+      0.92,
+      0.8,
+      0.68
+    ],
+    "haze": [
+      0.8,
+      0.56,
+      0.4
+    ],
+    "haze_far": 0.42,
+    "haze_mid": 0.18,
+    "haze_near": 0.0
+  },
+  "ambience": "ambience_river",
+  "truck_avoid": [
+    [
+      2550,
+      2810
+    ]
+  ]
+}

@@ -1,0 +1,842 @@
+{
+ "food_canteen": {
+  "pad": 7,
+  "width_px": 4.61,
+  "near_scale": 0.759,
+  "meta": [
+   270,
+   270,
+   135,
+   135,
+   79,
+   58,
+   204,
+   195
+  ]
+ },
+ "food_crate": {
+  "pad": 7,
+  "width_px": 4.61,
+  "near_scale": 0.759,
+  "meta": [
+   270,
+   270,
+   135,
+   135,
+   71,
+   61,
+   197,
+   198
+  ]
+ },
+ "food_medkit": {
+  "pad": 8,
+  "width_px": 5.28,
+  "near_scale": 0.662,
+  "meta": [
+   272,
+   272,
+   136,
+   136,
+   61,
+   63,
+   218,
+   206
+  ]
+ },
+ "food_rice": {
+  "pad": 7,
+  "width_px": 4.75,
+  "near_scale": 0.738,
+  "meta": [
+   270,
+   270,
+   135,
+   135,
+   64,
+   80,
+   205,
+   198
+  ]
+ },
+ "mg_front": {
+  "pad": 7,
+  "width_px": 4.62,
+  "near_scale": 0.758,
+  "meta": [
+   442,
+   374,
+   221,
+   359,
+   27,
+   17,
+   434,
+   359
+  ]
+ },
+ "mg_front_flash": {
+  "pad": 7,
+  "width_px": 4.62,
+  "near_scale": 0.758,
+  "meta": [
+   442,
+   374,
+   221,
+   359,
+   36,
+   22,
+   419,
+   359
+  ]
+ },
+ "mg_nest": {
+  "pad": 7,
+  "width_px": 4.62,
+  "near_scale": 0.758,
+  "meta": [
+   272,
+   274,
+   136,
+   259,
+   29,
+   37,
+   258,
+   258
+  ]
+ },
+ "mg_nest_flash": {
+  "pad": 7,
+  "width_px": 4.62,
+  "near_scale": 0.758,
+  "meta": [
+   272,
+   274,
+   136,
+   259,
+   23,
+   37,
+   257,
+   258
+  ]
+ },
+ "paratrooper_body": {
+  "pad": 4,
+  "width_px": 2.0,
+  "near_scale": 2.148,
+  "meta": [
+   128,
+   202,
+   64,
+   190,
+   29,
+   14,
+   124,
+   189
+  ]
+ },
+ "paratrooper_death": {
+  "pad": 4,
+  "width_px": 2.0,
+  "near_scale": 2.148,
+  "meta": [
+   826,
+   754,
+   413,
+   377,
+   54,
+   15,
+   811,
+   717
+  ]
+ },
+ "paratrooper_descend": {
+  "pad": 4,
+  "width_px": 2.0,
+  "near_scale": 2.148,
+  "meta": [
+   222,
+   382,
+   111,
+   370,
+   8,
+   14,
+   201,
+   369
+  ]
+ },
+ "paratrooper_front": {
+  "pad": 7,
+  "width_px": 4.06,
+  "near_scale": 0.863,
+  "meta": [
+   390,
+   936,
+   195,
+   921,
+   17,
+   30,
+   370,
+   921
+  ]
+ },
+ "paratrooper_front_flash": {
+  "pad": 7,
+  "width_px": 4.06,
+  "near_scale": 0.863,
+  "meta": [
+   390,
+   936,
+   195,
+   921,
+   7,
+   15,
+   364,
+   921
+  ]
+ },
+ "power_ammo": {
+  "pad": 7,
+  "width_px": 4.57,
+  "near_scale": 0.766,
+  "meta": [
+   270,
+   270,
+   135,
+   135,
+   59,
+   68,
+   213,
+   207
+  ]
+ },
+ "power_cash": {
+  "pad": 8,
+  "width_px": 5.84,
+  "near_scale": 0.599,
+  "meta": [
+   272,
+   272,
+   136,
+   136,
+   38,
+   38,
+   234,
+   235
+  ]
+ },
+ "power_grenade": {
+  "pad": 8,
+  "width_px": 5.31,
+  "near_scale": 0.659,
+  "meta": [
+   272,
+   272,
+   136,
+   136,
+   49,
+   54,
+   228,
+   214
+  ]
+ },
+ "power_weapon": {
+  "pad": 9,
+  "width_px": 6.02,
+  "near_scale": 0.581,
+  "meta": [
+   274,
+   274,
+   137,
+   137,
+   37,
+   38,
+   240,
+   226
+  ]
+ },
+ "rifleman_advance": {
+  "pad": 5,
+  "width_px": 2.53,
+  "near_scale": 1.384,
+  "meta": [
+   286,
+   358,
+   143,
+   345,
+   67,
+   62,
+   257,
+   345
+  ]
+ },
+ "rifleman_aim": {
+  "pad": 5,
+  "width_px": 2.53,
+  "near_scale": 1.384,
+  "meta": [
+   286,
+   358,
+   143,
+   345,
+   80,
+   64,
+   274,
+   345
+  ]
+ },
+ "rifleman_aim_b": {
+  "pad": 5,
+  "width_px": 2.53,
+  "near_scale": 1.384,
+  "meta": [
+   286,
+   358,
+   143,
+   345,
+   66,
+   28,
+   281,
+   345
+  ]
+ },
+ "rifleman_aim_c": {
+  "pad": 5,
+  "width_px": 2.53,
+  "near_scale": 1.384,
+  "meta": [
+   286,
+   358,
+   143,
+   345,
+   66,
+   41,
+   281,
+   345
+  ]
+ },
+ "rifleman_duck": {
+  "pad": 5,
+  "width_px": 2.53,
+  "near_scale": 1.384,
+  "meta": [
+   286,
+   358,
+   143,
+   345,
+   85,
+   107,
+   264,
+   344
+  ]
+ },
+ "rifleman_fall": {
+  "pad": 5,
+  "width_px": 2.53,
+  "near_scale": 1.384,
+  "meta": [
+   164,
+   216,
+   82,
+   203,
+   11,
+   15,
+   143,
+   203
+  ]
+ },
+ "rifleman_fire": {
+  "pad": 5,
+  "width_px": 2.53,
+  "near_scale": 1.384,
+  "meta": [
+   286,
+   358,
+   143,
+   345,
+   61,
+   33,
+   281,
+   345
+  ]
+ },
+ "rifleman_fire_flash": {
+  "pad": 5,
+  "width_px": 2.53,
+  "near_scale": 1.384,
+  "meta": [
+   286,
+   358,
+   143,
+   345,
+   61,
+   33,
+   281,
+   345
+  ]
+ },
+ "rifleman_front_aim": {
+  "pad": 6,
+  "width_px": 3.75,
+  "near_scale": 0.932,
+  "meta": [
+   184,
+   450,
+   92,
+   436,
+   6,
+   19,
+   149,
+   436
+  ]
+ },
+ "rifleman_front_fire": {
+  "pad": 6,
+  "width_px": 3.75,
+  "near_scale": 0.932,
+  "meta": [
+   184,
+   450,
+   92,
+   436,
+   6,
+   16,
+   135,
+   436
+  ]
+ },
+ "rifleman_hit": {
+  "pad": 5,
+  "width_px": 2.53,
+  "near_scale": 1.384,
+  "meta": [
+   286,
+   358,
+   143,
+   345,
+   43,
+   91,
+   198,
+   345
+  ]
+ },
+ "rifleman_kneel": {
+  "pad": 5,
+  "width_px": 2.74,
+  "near_scale": 1.28,
+  "meta": [
+   286,
+   240,
+   143,
+   227,
+   74,
+   16,
+   281,
+   227
+  ]
+ },
+ "rifleman_kneel_flash": {
+  "pad": 5,
+  "width_px": 2.74,
+  "near_scale": 1.28,
+  "meta": [
+   286,
+   240,
+   143,
+   227,
+   74,
+   16,
+   281,
+   227
+  ]
+ },
+ "rifleman_kneel_front": {
+  "pad": 7,
+  "width_px": 4.26,
+  "near_scale": 0.821,
+  "meta": [
+   196,
+   368,
+   98,
+   353,
+   7,
+   24,
+   139,
+   353
+  ]
+ },
+ "rifleman_kneel_front_flash": {
+  "pad": 7,
+  "width_px": 4.26,
+  "near_scale": 0.821,
+  "meta": [
+   196,
+   368,
+   98,
+   353,
+   7,
+   18,
+   135,
+   353
+  ]
+ },
+ "rifleman_peek": {
+  "pad": 5,
+  "width_px": 2.53,
+  "near_scale": 1.384,
+  "meta": [
+   164,
+   290,
+   82,
+   277,
+   32,
+   16,
+   159,
+   277
+  ]
+ },
+ "rifleman_ready": {
+  "pad": 5,
+  "width_px": 2.53,
+  "near_scale": 1.384,
+  "meta": [
+   286,
+   358,
+   143,
+   345,
+   67,
+   16,
+   237,
+   345
+  ]
+ },
+ "rifleman_run": {
+  "pad": 5,
+  "width_px": 2.53,
+  "near_scale": 1.384,
+  "meta": [
+   228,
+   270,
+   114,
+   257,
+   5,
+   16,
+   175,
+   256
+  ]
+ },
+ "rifleman_tq_aim": {
+  "pad": 6,
+  "width_px": 3.75,
+  "near_scale": 0.932,
+  "meta": [
+   184,
+   450,
+   92,
+   436,
+   6,
+   16,
+   124,
+   436
+  ]
+ },
+ "rifleman_tq_fire": {
+  "pad": 6,
+  "width_px": 3.75,
+  "near_scale": 0.932,
+  "meta": [
+   184,
+   450,
+   92,
+   436,
+   6,
+   19,
+   132,
+   436
+  ]
+ },
+ "villager_elder_hit": {
+  "pad": 5,
+  "width_px": 2.53,
+  "near_scale": 1.386,
+  "meta": [
+   308,
+   390,
+   154,
+   377,
+   26,
+   15,
+   297,
+   375
+  ]
+ },
+ "villager_elder_walk_01": {
+  "pad": 5,
+  "width_px": 2.53,
+  "near_scale": 1.386,
+  "meta": [
+   184,
+   318,
+   92,
+   305,
+   25,
+   40,
+   167,
+   304
+  ]
+ },
+ "villager_elder_walk_02": {
+  "pad": 5,
+  "width_px": 2.53,
+  "near_scale": 1.386,
+  "meta": [
+   184,
+   318,
+   92,
+   305,
+   32,
+   40,
+   168,
+   304
+  ]
+ },
+ "villager_elder_walk_03": {
+  "pad": 5,
+  "width_px": 2.53,
+  "near_scale": 1.386,
+  "meta": [
+   184,
+   318,
+   92,
+   305,
+   22,
+   16,
+   171,
+   304
+  ]
+ },
+ "villager_elder_walk_04": {
+  "pad": 5,
+  "width_px": 2.53,
+  "near_scale": 1.386,
+  "meta": [
+   184,
+   318,
+   92,
+   305,
+   29,
+   16,
+   172,
+   305
+  ]
+ },
+ "villager_farmer_hit": {
+  "pad": 5,
+  "width_px": 2.62,
+  "near_scale": 1.335,
+  "meta": [
+   364,
+   422,
+   182,
+   409,
+   22,
+   16,
+   354,
+   406
+  ]
+ },
+ "villager_farmer_walk_01": {
+  "pad": 5,
+  "width_px": 2.62,
+  "near_scale": 1.335,
+  "meta": [
+   216,
+   330,
+   108,
+   317,
+   21,
+   42,
+   207,
+   317
+  ]
+ },
+ "villager_farmer_walk_02": {
+  "pad": 5,
+  "width_px": 2.62,
+  "near_scale": 1.335,
+  "meta": [
+   216,
+   330,
+   108,
+   317,
+   30,
+   43,
+   207,
+   316
+  ]
+ },
+ "villager_farmer_walk_03": {
+  "pad": 5,
+  "width_px": 2.62,
+  "near_scale": 1.335,
+  "meta": [
+   216,
+   330,
+   108,
+   317,
+   19,
+   16,
+   206,
+   317
+  ]
+ },
+ "villager_farmer_walk_04": {
+  "pad": 5,
+  "width_px": 2.62,
+  "near_scale": 1.335,
+  "meta": [
+   216,
+   330,
+   108,
+   317,
+   25,
+   18,
+   211,
+   316
+  ]
+ },
+ "villager_woman_hit": {
+  "pad": 5,
+  "width_px": 2.52,
+  "near_scale": 1.391,
+  "meta": [
+   316,
+   402,
+   158,
+   389,
+   32,
+   15,
+   311,
+   388
+  ]
+ },
+ "villager_woman_walk_01": {
+  "pad": 5,
+  "width_px": 2.52,
+  "near_scale": 1.391,
+  "meta": [
+   166,
+   318,
+   83,
+   305,
+   28,
+   41,
+   150,
+   304
+  ]
+ },
+ "villager_woman_walk_02": {
+  "pad": 5,
+  "width_px": 2.52,
+  "near_scale": 1.391,
+  "meta": [
+   166,
+   318,
+   83,
+   305,
+   28,
+   39,
+   152,
+   304
+  ]
+ },
+ "villager_woman_walk_03": {
+  "pad": 5,
+  "width_px": 2.52,
+  "near_scale": 1.391,
+  "meta": [
+   166,
+   318,
+   83,
+   305,
+   25,
+   15,
+   154,
+   304
+  ]
+ },
+ "villager_woman_walk_04": {
+  "pad": 5,
+  "width_px": 2.52,
+  "near_scale": 1.391,
+  "meta": [
+   166,
+   318,
+   83,
+   305,
+   25,
+   15,
+   156,
+   305
+  ]
+ },
+ "heli_crash": {
+  "pad": 6,
+  "width_px": 3.73,
+  "near_scale": 0.938,
+  "meta": [
+   424,
+   316,
+   212,
+   158,
+   13,
+   9,
+   411,
+   307
+  ]
+ },
+ "heli_damaged": {
+  "pad": 7,
+  "width_px": 4.67,
+  "near_scale": 0.75,
+  "meta": [
+   589,
+   282,
+   294,
+   141,
+   10,
+   10,
+   580,
+   271
+  ]
+ },
+ "heli_gunner": {
+  "pad": 7,
+  "width_px": 4.67,
+  "near_scale": 0.75,
+  "meta": [
+   664,
+   270,
+   332,
+   135,
+   14,
+   10,
+   655,
+   257
+  ]
+ },
+ "heli_idle": {
+  "pad": 7,
+  "width_px": 4.67,
+  "near_scale": 0.75,
+  "meta": [
+   664,
+   270,
+   332,
+   135,
+   14,
+   10,
+   655,
+   257
+  ]
+ }
+}
