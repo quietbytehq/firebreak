@@ -167,3 +167,25 @@ whistle) wait. No gameplay sound can start while paused; menu sounds (`ui_*`, `s
 pool and still play. Resume stops the pause track and continues everything from where it froze; a track
 change or Music OFF/ON made in the pause menu applies on resume. Restart or Quit to title from the pause menu
 drops the frozen sounds.
+
+
+## New voice lines (0.3.4)
+
+Generated 22 November 2026 with ElevenLabs text-to-speech, voice library
+"Flint - Commanding Presence" (`qAZH0aMXY8tw1QufPN0D`), model eleven_v4.
+Original lines, no impressions. Two-pass loudnorm to −16 LUFS / −1.5 dBTP
+(linear), OGG Vorbis q6, 48 kHz mono. 183 characters billed (183 credits).
+
+| File | Line | Unlock |
+|---|---|---|
+| rayan_keep_your_head_down | Keep your head down. | From the start, health below 30% |
+| rayan_nests_down | Nest's down. | From the start, MG nest destroyed |
+| rayan_chopper_inbound | Chopper inbound. | From the start, helicopter appears |
+| rayan_still_standing | Still standing. | After stage 3, survives a heavy hit |
+| rayan_clean_shot | Clean shot. | After stage 3, killing headshot |
+| rayan_theyre_breaking | They're breaking. | After stage 3, streak of 5 |
+| rayan_not_today | Not today. | After stage 3, recovers from critical health |
+| rayan_this_is_the_firebreak | This is the firebreak. | After stage 7, stage start (stages 8–11) |
+| rayan_one_more_push | One more push. | After stage 7, late in a late-campaign stage |
+| rayan_almost_over | Almost over. | After stage 7, stage 12 start |
+| rayan_ill_wear_it | I'll wear it. Then we finish this. | Award interlude after stage 10 (not yet in play) |

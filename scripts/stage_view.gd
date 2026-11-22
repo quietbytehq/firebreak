@@ -33,6 +33,12 @@ var layer_nodes := {}
 var fx_node: Node2D
 var soft: Texture2D
 var strike_t := -1.0
+var fp = null                  # optional first-person view, for tracer origin
+var title_card := 0.0          # seconds left on the stage name card
+var title_card_max := 2.6
+var streak := 0
+var streak_gap := 0.0          # time since last kill
+const STREAK_WINDOW := 1.8
 
 func _ready() -> void:
 	texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
@@ -54,6 +60,8 @@ func bind(s, background: Texture2D) -> void:
 	sim = s; bg = background
 	particles.clear(); popups.clear(); tracers.clear(); incoming.clear(); hit_marks.clear(); flashes.clear(); blasts.clear(); rings.clear(); bombs.clear()
 	shake = 0.0; hurt = 0.0; blood = 0.0; screen_flash = 0.0; strike_t = -1.0
+	streak = 0; streak_gap = 0.0
+	title_card = title_card_max
 	sim.event.connect(_on_event)
 	_apply_light()
 
@@ -68,11 +76,28 @@ func _apply_light() -> void:
 		var amt := float(light.get("haze_" + name, 0.0)) if name != "sky" else float(light.get("haze_mid", 0.0)) * 0.6
 		m.set_shader_parameter("haze", amt)
 
+func muzzle_origin() -> Vector2:
+	if fp != null and fp.has_method("muzzle_screen"):
+		var m: Vector2 = fp.muzzle_screen()
+		if m.y > 0.0:
+			return m
+	return Vector2(960, 980)
+
+func banner(text: String, pos: Vector2, col: Color, size: int = 48, life: float = 1.5) -> void:
+	popups.append({"pos": pos, "text": text, "life": life, "max": life, "col": col, "size": size, "pop": 1.0})
+
 func _on_event(name: String, d: Dictionary) -> void:
 	match name:
 		"shot":
+			var origin := muzzle_origin()
 			for p in d.points:
-				tracers.append({"to": p, "life": 0.06})
+				tracers.append({"from": origin, "to": p, "life": 0.16, "max": 0.16})
+				# A short wisp of smoke leaving the muzzle toward the aim point.
+				var dir: Vector2 = (p - origin)
+				var nrm := dir.normalized() if dir.length() > 1.0 else Vector2.UP
+				for i in 3:
+					var along := origin + nrm * (18.0 + i * 22.0)
+					_add({"p": along, "v": nrm * randf_range(80, 160) + Vector2(randf_range(-30, 30), randf_range(-40, -10)), "life": randf_range(0.22, 0.4), "max": 0.4, "size": randf_range(8, 14), "col": Color(0.55, 0.52, 0.48, 0.4), "grow": 28.0, "drag": 2.4, "grav": -20.0})
 		"miss":
 			dust(d.pos, 5, Color(0.55, 0.45, 0.3))
 		"hit":
@@ -96,14 +121,24 @@ func _on_event(name: String, d: Dictionary) -> void:
 			blood = minf(1.0, blood + 0.3 + float(d.amount) * 0.02)
 			shake = maxf(shake, minf(24.0, 9.0 + float(d.amount) * 0.9))
 		"villager_hit":
-			popups.append({"pos": d.pos + Vector2(0, -40), "text": "CIVILIAN!  -%d" % sim.VILLAGER_PENALTY_SCORE, "life": 1.6, "col": Color(1, 0.35, 0.3), "size": 40})
+			banner("CIVILIAN!  -%d" % sim.VILLAGER_PENALTY_SCORE, d.pos + Vector2(0, -40), Color(1, 0.35, 0.3), 42, 1.6)
 		"score":
-			popups.append({"pos": d.pos, "text": "+%d" % d.amount, "life": 1.0, "col": Color(1, 0.95, 0.6), "size": 30})
+			banner("+%d" % d.amount, d.pos + Vector2(0, -20), Color(1, 0.95, 0.55), 36, 1.05)
+		"headshot":
+			banner("CLEAN SHOT", d.pos + Vector2(0, -70), Color(1.0, 0.92, 0.45), 52, 1.3)
+		"kill":
+			_on_kill(d)
 		"gunner_down":
-			popups.append({"pos": d.pos + Vector2(0, -50), "text": "GUNNER DOWN!", "life": 1.4, "col": Color(1, 0.85, 0.35), "size": 36})
+			banner("GUNNER DOWN!", d.pos + Vector2(0, -50), Color(1, 0.85, 0.35), 40, 1.4)
 		"heli_down":
-			popups.append({"pos": d.pos + Vector2(0, -60), "text": "CHOPPER DOWN!", "life": 1.8, "col": Color(1, 0.7, 0.3), "size": 44})
+			banner("CHOPPER DOWN!", d.pos + Vector2(0, -60), Color(1, 0.7, 0.3), 48, 1.8)
 			shake = maxf(shake, 16.0)
+		"pickup":
+			if not str(d.get("kind", "")).begins_with("cash"):
+				banner("PACKAGE", d.pos + Vector2(0, -40), Color(0.7, 1.0, 0.55), 40, 1.2)
+		"grenade_throw":
+			if not sim.grenades_in_flight.is_empty():
+				sim.grenades_in_flight[-1]["from_screen"] = muzzle_origin()
 		"airstrike":
 			strike_t = 0.0
 			bombs.clear()
@@ -111,7 +146,7 @@ func _on_event(name: String, d: Dictionary) -> void:
 				var x1 := 120.0 + i * 240.0 + randf_range(-50, 50)
 				var t0 := 0.5 + i * 0.05
 				bombs.append({"x0": x1 - 520.0, "y0": 150.0 + (i % 2) * 90.0, "x1": x1, "y1": randf_range(640.0, 960.0), "t0": t0, "t1": sim.AIRSTRIKE_IMPACT})
-			popups.append({"pos": Vector2(960, 420), "text": "AIR STRIKE INBOUND!", "life": 1.6, "col": Color(1, 0.85, 0.3), "size": 56})
+			banner("AIR STRIKE INBOUND!", Vector2(960, 420), Color(1, 0.85, 0.3), 56, 1.6)
 		"airstrike_impact":
 			screen_flash = 1.0
 			shake = maxf(shake, 34.0)
@@ -120,6 +155,22 @@ func _on_event(name: String, d: Dictionary) -> void:
 				if particles.size() < MAX_PARTICLES - 20:
 					for i in 6:
 						particles.append({"p": p, "v": Vector2(randf_range(-160, 160), randf_range(-260, -60)), "life": randf_range(1.0, 1.8), "max": 1.8, "size": randf_range(30, 60), "col": Color(0.16, 0.14, 0.12, 0.8), "grow": 50.0, "drag": 1.0, "grav": -30.0})
+
+func _on_kill(d: Dictionary) -> void:
+	var e: Dictionary = d.entity
+	var pos: Vector2 = d.pos
+	if e.type == "mg":
+		banner("NEST SILENCED", pos + Vector2(0, -90), Color(1.0, 0.82, 0.35), 46, 1.5)
+	elif e.type == "truck":
+		banner("TRUCK WRECKED", pos + Vector2(0, -90), Color(1.0, 0.75, 0.3), 46, 1.5)
+	streak_gap = 0.0
+	streak += 1
+	if streak == 3:
+		banner("STREAK 3", Vector2(960, 280), Color(1.0, 0.9, 0.4), 64, 1.4)
+	elif streak == 5:
+		banner("ON A ROLL", Vector2(960, 280), Color(1.0, 0.82, 0.3), 70, 1.5)
+	elif streak == 8:
+		banner("UNSTOPPABLE", Vector2(960, 260), Color(1.0, 0.7, 0.25), 76, 1.7)
 
 func _add(p: Dictionary) -> void:
 	if particles.size() < MAX_PARTICLES:
@@ -169,10 +220,17 @@ func _process(delta: float) -> void:
 			list[j].life -= delta
 			if list[j].life <= 0.0: list.remove_at(j)
 			else: j += 1
-	for q in popups: q.pos.y -= 60.0 * delta
+	for q in popups: q.pos.y -= 70.0 * delta
+	if sim != null and sim.state == "playing" and not sim.paused:
+		streak_gap += delta
+		if streak_gap > STREAK_WINDOW:
+			streak = 0
+		if title_card > 0.0:
+			title_card = maxf(0.0, title_card - delta)
 	_update_incoming(delta)
 	if sim != null and sim.state == "playing" and not sim.paused:
 		_emit_vehicle_smoke(delta)
+		_emit_flight_smoke(delta)
 	if strike_t >= 0.0:
 		strike_t += delta
 		if strike_t > 3.0: strike_t = -1.0
@@ -219,6 +277,44 @@ func _emit_vehicle_smoke(delta: float) -> void:
 			var tail := pos + Vector2(-140.0 * e.scale * e.facing, -10.0)
 			_add({"p": tail, "v": Vector2(randf_range(-30, 30) - e.vx * 0.3, randf_range(-70, -20)), "life": 1.4, "max": 1.4, "size": randf_range(18, 30), "col": Color(0.17, 0.15, 0.14, 0.7), "grow": 34.0, "drag": 0.8, "grav": -25.0})
 
+func _emit_flight_smoke(delta: float) -> void:
+	for g in sim.grenades_in_flight:
+		var f: float = g.t / maxf(0.05, float(g.dur))
+		var start: Vector2 = g.get("from_screen", muzzle_origin())
+		var target: Vector2 = g.to - Vector2(sim.camera_x, 0)
+		var arc := 220.0 if str(g.get("kind", "thrown")) == "rocket" else 300.0
+		var p := start.lerp(target, f) + Vector2(0, -sin(f * PI) * arc)
+		var n := 2 if str(g.get("kind", "")) == "rocket" else 1
+		if randf() < delta * (18.0 if n > 1 else 10.0):
+			for i in n:
+				_add({"p": p + Vector2(randf_range(-6, 6), randf_range(-6, 6)), "v": Vector2(randf_range(-20, 20), randf_range(-30, 10)), "life": randf_range(0.4, 0.75), "max": 0.75, "size": randf_range(10, 20), "col": Color(0.5, 0.48, 0.44, 0.45), "grow": 36.0, "drag": 1.6, "grav": -18.0})
+
+func _draw_title_card(ci: Node2D, font: Font) -> void:
+	if title_card <= 0.0 or sim == null:
+		return
+	var mx := title_card_max
+	var u: float = 1.0 - title_card / mx
+	var a := 1.0
+	if u < 0.18:
+		a = u / 0.18
+	elif title_card < 0.55:
+		a = title_card / 0.55
+	var name := str(sim.stage.get("name", ""))
+	var sub := str(sim.stage.get("subtitle", ""))
+	if name == "":
+		return
+	var ns := 86
+	var nw := font.get_string_size(name, HORIZONTAL_ALIGNMENT_LEFT, -1, ns).x
+	var pos := Vector2(960 - nw * 0.5, 200)
+	ci.draw_string_outline(font, pos, name, HORIZONTAL_ALIGNMENT_LEFT, -1, ns, 12, Color(0, 0, 0, 0.85 * a))
+	ci.draw_string(font, pos, name, HORIZONTAL_ALIGNMENT_LEFT, -1, ns, Color(1, 0.93, 0.72, a))
+	if sub != "":
+		var ss := 32
+		var sw := font.get_string_size(sub, HORIZONTAL_ALIGNMENT_LEFT, -1, ss).x
+		var sp := Vector2(960 - sw * 0.5, 268)
+		ci.draw_string_outline(font, sp, sub, HORIZONTAL_ALIGNMENT_LEFT, -1, ss, 8, Color(0, 0, 0, 0.8 * a))
+		ci.draw_string(font, sp, sub, HORIZONTAL_ALIGNMENT_LEFT, -1, ss, Color(0.95, 0.85, 0.65, a))
+
 func _layer_of(e: Dictionary) -> String:
 	if e.type in ["food", "powerup"]: return "pickups"
 	if e.type == "heli": return "sky"
@@ -259,11 +355,22 @@ func _draw_fx() -> void:
 	var ci := fx_node
 	for g in sim.grenades_in_flight:
 		var f: float = g.t / g.dur
-		var start := Vector2(1500, 1100)
+		var start: Vector2 = g.get("from_screen", muzzle_origin())
 		var target: Vector2 = g.to - Vector2(sim.camera_x, 0)
-		var p := start.lerp(target, f) + Vector2(0, -sin(f * PI) * 300.0)
-		ci.draw_circle(p, lerpf(24.0, 11.0, f), Color(0.2, 0.24, 0.14))
-		ci.draw_circle(p + Vector2(-4, -4), lerpf(8.0, 4.0, f), Color(0.42, 0.47, 0.3))
+		var arc := 220.0 if str(g.get("kind", "thrown")) == "rocket" else 300.0
+		var p := start.lerp(target, f) + Vector2(0, -sin(f * PI) * arc)
+		var kind: String = str(g.get("kind", "thrown"))
+		if kind == "rocket":
+			# Slim rocket body pointing along the path.
+			var prev := start.lerp(target, maxf(0.0, f - 0.06)) + Vector2(0, -sin(maxf(0.0, f - 0.06) * PI) * arc)
+			var ang := (p - prev).angle()
+			ci.draw_set_transform(p, ang, Vector2.ONE)
+			ci.draw_rect(Rect2(-18, -5, 36, 10), Color(0.28, 0.32, 0.2))
+			ci.draw_rect(Rect2(10, -4, 12, 8), Color(0.45, 0.4, 0.28))
+			ci.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+		else:
+			ci.draw_circle(p, lerpf(22.0, 11.0, f), Color(0.2, 0.24, 0.14))
+			ci.draw_circle(p + Vector2(-4, -4), lerpf(8.0, 4.0, f), Color(0.42, 0.47, 0.3))
 		# Faint aim marker where it will land.
 		ci.draw_arc(target, 26.0 + 6.0 * sin(t * 18.0), 0, TAU, 24, Color(1, 0.6, 0.2, 0.6), 3.0)
 	_draw_strike(ci)
@@ -285,16 +392,30 @@ func _draw_fx() -> void:
 		var k: float = b.k * (0.45 + 0.55 * grow)
 		SpriteArt.draw(ci, "explosion_big", b.p, k, 1.0, Color(1, 1, 1, clampf(a * 1.6, 0.0, 1.0)), b.rot)
 	for q in tracers:
-		var a: float = q.life / 0.06
-		ci.draw_line(Vector2(1620, 1090), q.to, Color(1, 0.9, 0.55, 0.5 * a), 3.0)
+		var mx: float = float(q.get("max", 0.16))
+		var a: float = clampf(q.life / maxf(0.04, mx), 0.0, 1.0)
+		var origin: Vector2 = q.get("from", Vector2(960, 980))
+		# Fade the streak along its length: a bright core and a softer glow.
+		ci.draw_line(origin, q.to, Color(1, 0.75, 0.3, 0.28 * a), 6.0)
+		ci.draw_line(origin, q.to, Color(1, 0.95, 0.7, 0.75 * a), 2.0)
 		ci.draw_circle(q.to, 12.0 * a + 4.0, Color(1, 0.95, 0.7, 0.8 * a))
 	_draw_incoming(ci)
 	var font := ThemeDB.fallback_font
 	for q in popups:
-		var a: float = clampf(q.life / 0.4, 0.0, 1.0)
-		var w := font.get_string_size(q.text, HORIZONTAL_ALIGNMENT_LEFT, -1, q.size).x
-		ci.draw_string_outline(font, q.pos - Vector2(w * 0.5, 0), q.text, HORIZONTAL_ALIGNMENT_LEFT, -1, q.size, 8, Color(0, 0, 0, 0.8 * a))
-		ci.draw_string(font, q.pos - Vector2(w * 0.5, 0), q.text, HORIZONTAL_ALIGNMENT_LEFT, -1, q.size, Color(q.col, a))
+		var mx: float = float(q.get("max", 1.0))
+		var age: float = 1.0 - clampf(q.life / maxf(0.05, mx), 0.0, 1.0)
+		var a: float = clampf(q.life / 0.35, 0.0, 1.0)
+		# Pop: start small, overshoot, settle.
+		var pop: float = 1.0
+		if age < 0.18:
+			pop = lerpf(0.45, 1.22, age / 0.18)
+		elif age < 0.32:
+			pop = lerpf(1.22, 1.0, (age - 0.18) / 0.14)
+		var sz: int = maxi(12, int(round(float(q.size) * pop)))
+		var w := font.get_string_size(q.text, HORIZONTAL_ALIGNMENT_LEFT, -1, sz).x
+		ci.draw_string_outline(font, q.pos - Vector2(w * 0.5, 0), q.text, HORIZONTAL_ALIGNMENT_LEFT, -1, sz, 8, Color(0, 0, 0, 0.8 * a))
+		ci.draw_string(font, q.pos - Vector2(w * 0.5, 0), q.text, HORIZONTAL_ALIGNMENT_LEFT, -1, sz, Color(q.col, a))
+	_draw_title_card(ci, font)
 	if screen_flash > 0.0:
 		ci.draw_rect(Rect2(-80, -80, 2080, 1240), Color(1, 0.85, 0.6, 0.45 * screen_flash))
 

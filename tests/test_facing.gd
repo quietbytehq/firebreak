@@ -104,5 +104,16 @@ func run() -> void:
 		if d.to.y < 900.0: ok = false
 	check(ok, "door gunner rounds come out toward the player (%d)" % hs.size())
 
+	# Villager walk art faces left; flip it so they walk in the direction of vx.
+	check(SpriteArt.VILLAGER_NATIVE == -1.0, "villager frames are painted facing left")
+	sim = fresh()
+	var right_v: Dictionary = sim.spawn("villager", "mid")
+	right_v.vx = 50.0; right_v.facing = 1.0
+	var left_v: Dictionary = sim.spawn("villager", "mid")
+	left_v.vx = -50.0; left_v.facing = -1.0
+	check(SpriteArt.villager_flip(right_v) < 0.0, "a villager walking right is drawn flipped (faces right)")
+	check(SpriteArt.villager_flip(left_v) > 0.0, "a villager walking left is drawn unflipped (faces left)")
+	check(SpriteArt.villager_flip(right_v) == -right_v.facing, "villager flip is facing times VILLAGER_NATIVE")
+
 	print("Facing: %d checks, %d failures" % [checks, failures])
 	quit(1 if failures > 0 else 0)

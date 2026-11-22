@@ -1,7 +1,7 @@
 name: firebreak
 title: Firebreak
 base: core24
-version: '0.3.3'
+version: '0.3.4'
 summary: Operation Wolf-style gallery shooter in a jungle river village
 description: |
   Hold the line in an Operation Wolf-style gallery shooter. Aim with the
@@ -9,7 +9,7 @@ description: |
   village at dusk. Shoot riflemen, machine-gun nests and paratroopers,
   spare the villagers, and shoot falling food and supplies for health,
   ammunition, grenades and weapon upgrades. Call in air strikes and bring
-  down helicopters. Version 0.3.3 contains stage 1 of a planned twelve, with a global top 100.
+  down helicopters. Version 0.3.4 contains stage 1 of a planned twelve, with a global top 100.
   Mouse, keyboard and mapped gamepad controls. Offline, local top-ten
   scores. Linux x86-64, OpenGL 3.3 required.
   For gamepads, enable controller access with:

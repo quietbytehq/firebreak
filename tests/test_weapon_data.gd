@@ -69,5 +69,20 @@ func run() -> void:
 	var text := FileAccess.get_file_as_string("res://data/weapons.json").to_lower()
 	for b in BANNED:
 		check(not text.contains(b), "no real brand/model name in weapons.json: " + b)
+	# Within each category, a costlier gun is never weaker per shot than a
+	# cheaper one. The Longshot 700 is a marksman exception: it may out-hit
+	# the more expensive Thunder M60, which is a belt-fed support gun.
+	for cat in ["pistol", "smg", "rifle", "special"]:
+		var list: Array = all.filter(func(w): return str(w.category) == cat)
+		list.sort_custom(func(a, b): return int(a.price) < int(b.price))
+		for i in range(1, list.size()):
+			var cheaper: Dictionary = list[i - 1]
+			var dearer: Dictionary = list[i]
+			if cat == "rifle" and str(cheaper.id) == "longshot_700":
+				check(true, "Longshot 700 may out-hit the Thunder M60")
+				continue
+			check(float(dearer.damage) + 0.001 >= float(cheaper.damage),
+				"%s (%.2f) is not weaker per shot than cheaper %s (%.2f)" % [dearer.id, dearer.damage, cheaper.id, cheaper.damage])
+
 	print("Weapon data: ", checks, " checks, ", failures, " failures")
 	quit(1 if failures else 0)

@@ -68,6 +68,9 @@ var qa_shots_done := {}
 var qa_finished := false
 var qa_skip_frames := 0
 var qa_fire_capture: Array = []   # [path] captured on the next frame
+var kill_streak_times: Array = []  # sim.time of recent kills, for catchphrases
+var was_critical := false          # health dropped below 20% this stage
+var said_one_more := false
 
 func _ready() -> void:
 	# Steady 60 fps even on 120/144 Hz panels (vsync stays on in project settings).
@@ -151,6 +154,7 @@ func start_stage(number: int) -> void:
 	audio.clear_pause()
 	fp.bind(sim)
 	view.bind(sim, load(str(sim.stage.get("background", "res://assets/backgrounds/river_village.jpg"))))
+	view.fp = fp
 	view.visible = true; title_screen.visible = false
 	hud.sim = sim; hud.stage_name = str(sim.stage.get("name", "")); hud.run_base = run_score if not run_banked else 0; hud.visible = true
 	title_bg.visible = false
@@ -163,7 +167,10 @@ func start_stage(number: int) -> void:
 	audio.play("stage_start")
 	audio.play_ambience(str(sim.stage.get("ambience", "ambience_river")))
 	pending_sounds.clear()
-	_later(0.9, func(): audio.voice("rayan_lock_and_load", 30.0, true))
+	kill_streak_times.clear()
+	was_critical = false
+	said_one_more = false
+	_later(0.9, _opening_line)
 
 func play_game_music() -> void:
 	var track := clampi(int(settings.get("music_track", 1)), 1, MUSIC_TRACKS.size())
@@ -171,6 +178,24 @@ func play_game_music() -> void:
 
 func _later(seconds: float, cb: Callable) -> void:
 	pending_sounds.append([seconds, cb])
+
+func stages_cleared() -> int:
+	return int(profile.get("stages_cleared", 0))
+
+## Speak a catchphrase if the player has unlocked that tier.
+func _say(base: String, need: int, cooldown: float, force: bool = false) -> bool:
+	if stages_cleared() < need:
+		return false
+	return audio.voice(base, cooldown, force)
+
+func _opening_line() -> void:
+	# Stage 12 prefers the closer-to-the-end line; stages 8–11 use the firebreak call.
+	if stage_number >= 12 and stages_cleared() >= 7:
+		audio.voice("rayan_almost_over", 30.0, true)
+	elif stage_number >= 8 and stages_cleared() >= 7:
+		audio.voice("rayan_this_is_the_firebreak", 30.0, true)
+	else:
+		audio.voice("rayan_lock_and_load", 30.0, true)
 
 ## Gunshots get quieter with depth: near 0 dB, mid about -6 dB, far about -12 dB.
 static func depth_db(scale: float) -> float:
@@ -190,6 +215,13 @@ func _on_sim_event(name: String, d: Dictionary) -> void:
 			if d.entity.type in ["mg", "truck", "heli"] and not d.get("gunner", false): audio.play("hit_metal", -4.0)
 		"kill":
 			if d.entity.type != "heli": audio.play("enemy_down", -2.0, randf_range(0.92, 1.08))
+			if d.entity.type == "mg":
+				_say("rayan_nests_down", 0, 15.0)
+			var now_t: float = float(sim.time)
+			kill_streak_times.append(now_t)
+			kill_streak_times = kill_streak_times.filter(func(t): return now_t - float(t) <= 1.8)
+			if kill_streak_times.size() >= 5:
+				_say("rayan_theyre_breaking", 3, 20.0)
 		"enemy_fire":
 			var e: Dictionary = d.entity
 			var db := depth_db(float(e.scale))
@@ -207,6 +239,12 @@ func _on_sim_event(name: String, d: Dictionary) -> void:
 		"player_hit":
 			audio.play("player_hit", -3.0)
 			hud.hit_flash = 1.0
+			if sim.health < sim.max_health * 0.2:
+				was_critical = true
+			if sim.health < sim.max_health * 0.3:
+				_say("rayan_keep_your_head_down", 0, 18.0)
+			elif float(d.get("amount", 0.0)) >= 10.0:
+				_say("rayan_still_standing", 3, 20.0)
 			if d.get("source") is Dictionary and d.source.get("type", "") == "villager": pass
 			elif randf() < 0.45: audio.voice(GRUNTS[randi() % GRUNTS.size()], 3.0)
 		"villager_hit":
@@ -217,7 +255,11 @@ func _on_sim_event(name: String, d: Dictionary) -> void:
 			if str(d.get("kind", "")).begins_with("cash"): pass   # the "cash" event plays the coin sound
 			else:
 				audio.play("pickup_food" if d.entity.type == "food" else "pickup_power")
-				audio.voice("rayan_care_package", 25.0)
+				if was_critical:
+					_say("rayan_not_today", 3, 20.0)
+					was_critical = false
+				else:
+					audio.voice("rayan_care_package", 25.0)
 		"reload_start":
 			var w := Weapons.get_weapon(str(d.get("weapon", "")))
 			audio.play_first([str(w.get("reload_sound", "reload")), "reload"])
@@ -247,6 +289,8 @@ func _on_sim_event(name: String, d: Dictionary) -> void:
 		"airstrike_impact":
 			audio.play_first(["airstrike_explosion", "explosion"], 0.0)
 			audio.play("explosion", -6.0, 0.85)
+		"headshot":
+			_say("rayan_clean_shot", 3, 12.0)
 		"gunner_down": audio.voice("rayan_that_all_you_got", 20.0)
 		"heli_down":
 			audio.play_first(["helicopter_crash", "explosion"], 0.0)
@@ -254,8 +298,12 @@ func _on_sim_event(name: String, d: Dictionary) -> void:
 		"spawn":
 			if d.entity.type == "paratrooper": audio.play("parachute_open", -8.0)
 			elif d.entity.type == "truck": audio.play("truck_engine", -6.0)
+			elif d.entity.type == "heli":
+				_say("rayan_chopper_inbound", 0, 20.0, true)
 		"cleared":
 			audio.stop_music(); audio.stop_ambience(); audio.stop_loops(); audio.play("stage_clear")
+			if was_critical:
+				_later(0.5, func(): _say("rayan_not_today", 3, 20.0, true))
 			_later(1.2, func(): audio.voice("rayan_mission_complete", 30.0, true))
 		"failed": audio.stop_music(); audio.stop_ambience(); audio.stop_loops(); audio.play("game_over")
 
@@ -271,6 +319,12 @@ func _update_loops() -> void:
 		audio.loop_on("heartbeat", -2.0)
 	else:
 		audio.loop_off("heartbeat")
+	# Late-campaign nudge once the quota is almost met or time is short.
+	if (not said_one_more and sim.state == "playing" and stage_number >= 8
+			and stages_cleared() >= 7
+			and (sim.time_left() <= 30.0 or sim.kills >= int(sim.quota * 0.85))):
+		said_one_more = true
+		_say("rayan_one_more_push", 7, 30.0)
 
 func _process(delta: float) -> void:
 	title_t += delta
@@ -718,6 +772,8 @@ func _parse_qa_args() -> void:
 		elif arg == "--qa-no-fp": qa.no_fp = true
 		elif arg.begins_with("--qa-fire-shots="): qa.fire_shots = Array(arg.get_slice("=", 1).split(",")).map(func(x): return float(x))
 		elif arg.begins_with("--qa-slot-at="): qa.slot_at = Array(arg.get_slice("=", 1).split(",")).map(func(x): return float(x))
+		elif arg.begins_with("--qa-reload-at="): qa.reload_at = float(arg.get_slice("=", 1))
+		elif arg == "--qa-aim-head": qa.aim_head = true
 
 func _qa_autopilot(dt: float) -> void:
 	# Aims at the most urgent enemy (or a drop), avoids villagers, fires when on target.
@@ -734,6 +790,10 @@ func _qa_autopilot(dt: float) -> void:
 		if s > best_score: best_score = s; best = e
 	if not best.is_empty():
 		var goal: Vector2 = sim.hitbox(best).get_center() - Vector2(sim.camera_x, 0)
+		if qa.has("aim_head") and best.type in ["rifleman", "paratrooper", "mg"]:
+			var hb: Rect2 = sim.headbox(best)
+			if hb.size.x > 0.0:
+				goal = hb.get_center() - Vector2(sim.camera_x, 0)
 		var step := 2400.0 * dt
 		crosshair = crosshair.move_toward(goal, step)
 		var under: Dictionary = sim.entity_at(crosshair)
@@ -795,6 +855,12 @@ func _qa_tick(delta: float) -> void:
 	# enemies, an air strike, and a 12-point hit for the hit-feedback capture.
 	if qa.has("grenade_at") and qa_clock >= float(qa.grenade_at) and not qa_shots_done.has("grenade"):
 		qa_shots_done["grenade"] = true; sim.throw_grenade(_qa_cluster())
+	if qa.has("reload_at") and qa_clock >= float(qa.reload_at) and not qa_shots_done.has("reload"):
+		qa_shots_done["reload"] = true
+		# Empty the current mag so a reload is legal, then start it.
+		if not sim.loadout.is_empty():
+			sim.loadout[sim.slot].mag = 0
+			sim.reload()
 	if qa.has("airstrike_at") and qa_clock >= float(qa.airstrike_at) and not qa_shots_done.has("airstrike"):
 		qa_shots_done["airstrike"] = true; sim.call_airstrike()
 	if qa.has("slot_at"):

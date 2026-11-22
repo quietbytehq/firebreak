@@ -1,6 +1,6 @@
 {
- "version": "0.3.1",
- "note": "First-person weapon views (assets/sprites/fp/<id>.png, 640x640). Points are fractions of the picture: muzzle = where the flash, sparks or launch puff appear; rear = launcher back-blast. The picture is drawn with its bottom-centre at the bottom-centre of the screen.",
+ "version": "0.3.4",
+ "note": "First-person weapon views (assets/sprites/fp/<id>.png, 640x640). Magazine/bullet guns also have <id>_reload.png (side pose) used only while reloading. Thunder M60, Hammer RPG, Tankbuster and Thumper GL have no reload pose \u2014 they stay on the rear view and dip. Points are fractions of the picture: muzzle = flash/sparks/launch puff; rear = launcher back-blast.",
  "size": 640,
  "views": {
   "viper_9": {
@@ -35,8 +35,8 @@
   },
   "hornet_9": {
    "muzzle": [
-    0.3223,
-    0.2617
+    0.4875,
+    0.28
    ]
   },
   "buzzsaw": {
@@ -47,8 +47,8 @@
   },
   "stinger_v": {
    "muzzle": [
-    0.3691,
-    0.2461
+    0.45,
+    0.272
    ]
   },
   "mamba_90": {
@@ -65,26 +65,26 @@
   },
   "kalash_47": {
    "muzzle": [
-    0.3174,
-    0.2754
+    0.5094,
+    0.188
    ]
   },
   "sentinel_m4": {
    "muzzle": [
-    0.3369,
-    0.252
+    0.4875,
+    0.196
    ]
   },
   "granite_g3": {
    "muzzle": [
-    0.2979,
-    0.1836
+    0.4922,
+    0.183
    ]
   },
   "longshot_700": {
    "muzzle": [
-    0.2617,
-    0.2266
+    0.4891,
+    0.266
    ]
   },
   "thunder_m60": {
@@ -101,22 +101,22 @@
   },
   "hammer_rpg": {
    "muzzle": [
-    0.0859,
-    0.1172
+    0.4922,
+    0.2
    ],
    "rear": [
-    0.8594,
-    0.6523
+    0.508,
+    0.84
    ]
   },
   "tankbuster": {
    "muzzle": [
-    0.2441,
-    0.2656
+    0.4922,
+    0.203
    ],
    "rear": [
-    0.8105,
-    0.6348
+    0.505,
+    0.85
    ]
   },
   "thumper_gl": {
@@ -131,5 +131,21 @@
     0.127
    ]
   }
- }
+ },
+ "reload_poses": [
+  "viper_9",
+  "talon_50",
+  "warden_1911",
+  "kestrel_p9",
+  "rook_revolver",
+  "hornet_9",
+  "buzzsaw",
+  "stinger_v",
+  "mamba_90",
+  "ratchet_mac",
+  "kalash_47",
+  "sentinel_m4",
+  "granite_g3",
+  "longshot_700"
+ ]
 }

@@ -134,5 +134,40 @@ func run() -> void:
 	sim.event.connect(func(n, d): if n == "enemy_fire" and cnt.fire == 0: cnt.fire = 1; cnt.first = tel.age)
 	for i in 400: sim.step(1.0 / 60.0)
 	check(cnt.first >= 0.9, "rifleman aims at least 0.9 s before the first shot (%.2f)" % cnt.first)
+	# Headshots: a killing shot in the head zone adds a modest +50 and a CLEAN SHOT event.
+	# Body shots (the centre of the hitbox) are unchanged. Civilians never get the bonus.
+	sim = fresh()
+	var hs: Dictionary = sim.spawn("rifleman", "mid"); settle(sim, hs)
+	var head_events := []
+	sim.event.connect(func(n, d): if n == "headshot": head_events.append(d))
+	var head_pos: Vector2 = sim.headbox(hs).get_center() - Vector2(sim.camera_x, 0)
+	check(sim.is_headshot(hs, head_pos), "the top of a soldier is a headshot")
+	check(not sim.is_headshot(hs, center(sim, hs)), "the middle of a soldier is a body shot")
+	check(sim.fire(head_pos), "headshot fires")
+	check(hs.state == "dying" and sim.kills == 1, "a headshot downs a rifleman")
+	check(sim.score == 120 + sim.HEADSHOT_BONUS, "mid-band headshot is 120 + 50")
+	check(sim.score % 10 == 0, "headshot score is a multiple of 10")
+	check(head_events.size() == 1 and int(head_events[0].bonus) == sim.HEADSHOT_BONUS, "headshot event carries the bonus")
+	# Far body shot stays 150; far headshot is 200.
+	sim = fresh()
+	var fh: Dictionary = sim.spawn("rifleman", "far"); settle(sim, fh)
+	sim.fire(sim.headbox(fh).get_center() - Vector2(sim.camera_x, 0))
+	check(sim.score == 200, "far rifleman headshot scores 200")
+	check(sim.score % 10 == 0, "far headshot is a multiple of 10")
+	# Villager: shooting the head still costs the same penalty, no bonus.
+	sim = fresh(); sim.score = 1000
+	var civ: Dictionary = sim.spawn("villager", "mid")
+	var civ_events := []
+	sim.event.connect(func(n, d): if n == "headshot": civ_events.append(d))
+	var civ_head: Vector2 = sim.headbox(civ).get_center() - Vector2(sim.camera_x, 0)
+	check(sim.headbox(civ).size.y > 0.0, "villagers have a head zone")
+	sim.fire(civ_head)
+	check(sim.score == 1000 - sim.VILLAGER_PENALTY_SCORE, "a civilian headshot is still only the penalty")
+	check(civ_events.is_empty(), "CLEAN SHOT is not awarded for civilians")
+	# Vehicles have no head zone.
+	sim = fresh()
+	var tr: Dictionary = sim.spawn("truck", "mid")
+	check(sim.headbox(tr).size.x == 0.0 and not sim.is_headshot(tr, center(sim, tr)), "trucks have no head zone")
+
 	print("Combat: ", checks, " checks, ", failures, " failures")
 	quit(0 if failures == 0 else 1)

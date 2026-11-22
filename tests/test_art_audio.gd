@@ -67,7 +67,11 @@ func run() -> void:
 			"airstrike_jet", "airstrike_whistle", "airstrike_explosion", "helicopter_rotor", "helicopter_mg",
 			"helicopter_crash", "heartbeat", "ambience_river", "villager_gasp", "ui_pause",
 			"rayan_lock_and_load", "rayan_fire_in_the_hole", "rayan_airstrike_now", "rayan_care_package",
-			"rayan_watch_the_civilians", "rayan_mission_complete", "rayan_hit_grunt_01", "rayan_that_all_you_got"]:
+			"rayan_watch_the_civilians", "rayan_mission_complete", "rayan_hit_grunt_01", "rayan_that_all_you_got",
+			"rayan_keep_your_head_down", "rayan_nests_down", "rayan_chopper_inbound",
+			"rayan_still_standing", "rayan_clean_shot", "rayan_theyre_breaking", "rayan_not_today",
+			"rayan_this_is_the_firebreak", "rayan_one_more_push", "rayan_almost_over",
+			"rayan_ill_wear_it"]:
 		check(bank.has_sound(base), "audio present: " + base)
 	check(not bank.has_sound("definitely_missing"), "missing sounds stay silent")
 	bank.play_music("music_title_intro_loop", "music_title_intro")

@@ -82,5 +82,15 @@ func run() -> void:
 	# Health reaching zero fails the stage.
 	sim = StageSim.new(); sim.setup(1, 1); sim.damage_player(150.0); sim.step(0.016)
 	check(sim.state == "failed", "zero health fails the stage")
+	# Clear-bonus rounding: v0.3.3 rounds the time and accuracy terms each to
+	# a multiple of 10, so odd seconds left and a 2/3 accuracy stay legal.
+	sim = StageSim.new(); sim.setup(1, 1); sim.stage.ambient = []; sim.stage.waves = []
+	sim.health = 97.0; sim.time = 178.0; sim.stats.shots = 3; sim.stats.hits = 2
+	sim.kills = sim.quota
+	sim.step(1.0 / 60.0)
+	check(sim.state == "cleared", "quota finish still clears")
+	check(sim.clear_bonus % 10 == 0, "odd-time clear bonus snaps to a multiple of 10 (%d)" % sim.clear_bonus)
+	check(sim.score % 10 == 0, "final score after that bonus is a multiple of 10")
+
 	print("Stage flow: ", checks, " checks, ", failures, " failures; runs ", results, " fast ", [fast.sim.end_reason, int(fast.sim.time)])
 	quit(0 if failures == 0 else 1)

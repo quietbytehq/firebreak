@@ -1,3 +1,55 @@
+# QA report — Firebreak 0.3.4
+
+Date: 22 November 2026. Deployed to and tested on the laptop (HP Victus, Intel RPL-P graphics, Mesa, 144 Hz panel). Box results follow.
+
+## Box results (0.3.4)
+- `./tools/test.sh`: 19 suites, **1277 checks, 0 failures**.
+  Ammo 14, Art and audio 89, Combat 49, Economy 17, Facing 25, First-person view 116, Helicopter 24,
+  HUD click 20, Input map 72, Loadout 34, Main scene 34, Online and campaign scores 33, Pause audio 29,
+  Spawning 25, Stage data 85, Stage flow 35, Store 26, Weapon data 517, Weapons 33.
+  (v0.3.3 was 1207 checks; the delta is sticker/facing/headshot/reload-pose/catchphrase/rounding tests.)
+- `./tools/build-linux.sh`: export built (`build/Firebreak/Firebreak.x86_64`, 109 MB).
+- Box autoplay (llvmpipe, not a laptop figure), 22 s, Hornet 9 loadout, `--qa-aim-head`, reload at 8 s:
+  18 kills, 0 villagers, score 3480 (multiple of 10). Screenshots (real):
+  `/workspace/firebreak_shots/v034/v034-003s.jpg` rear Hornet fire + CLEAN SHOT,
+  `v034-008s.jpg` Hornet side reload pose (RELOADING), stickered farmer,
+  `v034-012s.jpg` and `v034-016s.jpg` rear fire, tracers, CLEAN SHOT, stickered civilian walking
+  the correct way.
+## Laptop results (0.3.4)
+- Deploy: 22 November 2026, about 10:31 PKT (Asia/Karachi). 176 files replaced (moved to
+  `_to_delete/replaced_v033/` with the 0.3.3 build); 54 files were new. Transfer parts and the
+  QA jail are in `_to_delete/v034_transfer/`.
+- `./tools/test.sh`: 19 suites, **1277 checks, 0 failures** (same counts as the development copy).
+- `./tools/build-linux.sh`: export rebuilt (`build/Firebreak/Firebreak.x86_64`, 109 MB). TMPDIR
+  and XDG_DATA/CONFIG/CACHE_HOME were set under `_to_delete/v034_transfer/qa_home/`; Godot wrote
+  its editor settings only in that jail. The real `~/.config/godot/editor_settings-4.7.tres` was
+  unchanged.
+- Autoplay, exported build, seed 7, 60 s, Hornet 9, `--qa-aim-head`, reload at 8 s, pause at 22 s
+  (pause time and capture frames excluded). HP Victus, Mesa Intel(R) Graphics (RPL-P), 144 Hz
+  panel, vsync off + 60 fps limiter, window 1920×952:
+
+| Measure | 0.3.4 wall clock | 0.3.4 smoothed | 0.3.1 wall clock |
+|---|---|---|---|
+| Frames | 3499 | 3500 | 3505 |
+| Average fps | 60.05 | 60.01 | 60.09 |
+| 1% low fps | 49.6 | 60.0 | 44.5 |
+| Frames > 18 ms | 77 (2.2%) | 14 | 65 (1.9%) |
+| Worst frame | 42.1 ms | 33.9 ms | 37.7 ms |
+
+  p99 20.2 ms. 46 kills, 0 villagers hit, score 9,200, health 100. Average fps matches 0.3.1;
+  the 1% low is better (49.6 vs 44.5) with a slightly higher share of frames over 18 ms (2.2% vs
+  1.9%).
+- Screenshots (real, laptop):
+  `qa/laptop/v034/v034-laptop-fire-003s.jpg` rear Hornet fire, muzzle flash, tracer, CLEAN SHOT +200;
+  `qa/laptop/v034/v034-laptop-003s|012s|016s|025s.jpg` gameplay with stickered soldiers/civilians;
+  `qa/laptop/v034/v034-laptop-008s.jpg` stickered farmer walking the correct way, ON A ROLL, CLEAN SHOT;
+  `qa/laptop/v034/v034-laptop-pause.jpg` pause menu;
+  `qa/laptop/v034-reload/v034-laptop-reload-008s.jpg` Hornet side reload pose, HUD RELOADING 0/150,
+  stickered civilian walking correctly.
+  JPEG copies also at `/workspace/firebreak_shots/v034/v034-laptop-*.jpg`.
+
+
+---
 # QA report — Firebreak 0.3.1
 
 Date: 16 November 2026. Deployed to and tested on the laptop (HP Victus, Intel RPL-P graphics,

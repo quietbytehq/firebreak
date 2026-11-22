@@ -27,6 +27,10 @@ const POWERUP_KINDS := ["ammo", "grenade", "rapid", "spread", "power", "airstrik
 const VILLAGER_KINDS := ["farmer", "woman", "elder"]
 const VILLAGER_PENALTY_HEALTH := 10.0
 const VILLAGER_PENALTY_SCORE := 500
+## Bonus added on a killing headshot (already a multiple of 10, and applied
+## after the band multiplier so the total score stays a multiple of 10).
+const HEADSHOT_BONUS := 50
+const HEADSHOT_TYPES := ["rifleman", "paratrooper", "mg"]
 ## RAPID power-up multiplies the carried weapon's fire rate.
 const RAPID_MULT := 1.6
 const SWITCH_TIME := 0.18   # seconds after a weapon swap before it can fire
@@ -474,6 +478,8 @@ func _finish(new_state: String, reason: String) -> void:
 	state = new_state; end_reason = reason
 	if new_state == "cleared":
 		var acc := float(stats.hits) / maxf(1.0, float(stats.shots))
+		# v0.3.3: round the time and accuracy terms each to a multiple of 10
+		# so every campaign score stays legal for the online board.
 		var time_pts := 10 * int(round(float(int(time_left())) * 2.5))
 		clear_bonus = int(health) * 20 + time_pts + int(round(acc * 200.0)) * 10
 		score += clear_bonus
@@ -689,6 +695,27 @@ func damage_player(amount: float, source = null) -> void:
 	event.emit("player_hit", {"amount": amount, "source": source})
 
 # ---------------------------------------------------------------- player
+## Head region of a standing or kneeling person, in world space. Empty if
+## this type has no head zone (vehicles, pickups).
+func headbox(e: Dictionary) -> Rect2:
+	if not (e.type in HEADSHOT_TYPES or e.type == "villager"):
+		return Rect2()
+	var box := hitbox(e)
+	if box.size.y <= 1.0:
+		return Rect2()
+	var frac := 0.28
+	if e.type == "mg":
+		frac = 0.34
+	elif str(e.get("pose", "")) == "kneel":
+		frac = 0.32
+	return Rect2(box.position, Vector2(box.size.x, box.size.y * frac))
+
+func is_headshot(e: Dictionary, screen_pos: Vector2) -> bool:
+	var box := headbox(e)
+	if box.size.x <= 0.0:
+		return false
+	return box.has_point(screen_pos + Vector2(camera_x, 0.0))
+
 func hitbox(e: Dictionary) -> Rect2:
 	var w: float = e.size.x * e.scale
 	var h: float = e.size.y * e.scale
@@ -838,9 +865,14 @@ func damage_entity(e: Dictionary, amount: float, screen_pos: Vector2, blast: boo
 			var mult := float(band_info(e.band).get("score_mult", 1.0))
 			var pts := float(BASE_SCORE.get(e.type, 100))
 			if e.type == "paratrooper" and not e.get("landed", false): pts += 100.0
-			_add_score(int(pts * mult), screen_pos)
+			var award := int(pts * mult)
+			var head := is_headshot(e, screen_pos)
+			if head and (e.type in HEADSHOT_TYPES):
+				award += HEADSHOT_BONUS
+				event.emit("headshot", {"entity": e, "pos": screen_pos, "bonus": HEADSHOT_BONUS})
+			_add_score(award, screen_pos)
 			add_cash(cash_for(e), screen_pos, "kill")
-			event.emit("kill", {"entity": e, "pos": screen_pos})
+			event.emit("kill", {"entity": e, "pos": screen_pos, "headshot": head})
 			if e.type == "truck" or e.type == "mg":
 				event.emit("explosion", {"pos": Vector2(e.x - camera_x, e.y - e.size.y * e.scale * 0.4), "radius": 160.0 * e.scale + 60.0, "harmless": true})
 

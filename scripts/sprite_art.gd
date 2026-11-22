@@ -20,6 +20,9 @@ const MUZZLE := {
 ## left. They are mirrored for enemies left of centre so every gun turns in
 ## toward the player, never along the battlefield at other soldiers.
 const FRONT_NATIVE := -1.0
+## Villager walk and hit frames are painted facing left, so they are flipped
+## when the figure walks right (the opposite of the usual facing=1 convention).
+const VILLAGER_NATIVE := -1.0
 ## Hitbox height each reference frame is scaled to (matches StageSim.SIZES).
 const TARGET_H := {"rifleman": 360.0, "kneel": 250.0, "villager": 340.0, "mg": 240.0, "paratrooper": 350.0}
 ## On-screen height of the whole descending paratrooper (canopy to boots) at scale 1.
@@ -120,6 +123,11 @@ static func warn_ring(ci: CanvasItem, at: Vector2, amount: float, t: float, s: f
 ## Mirror factor for a front pose so the barrel turns toward the player.
 static func front_flip(e: Dictionary) -> float:
 	return float(e.facing) * FRONT_NATIVE
+
+## Mirror factor for a villager so the painted (left-facing) walk cycle
+## travels in the same direction as e.vx / e.facing.
+static func villager_flip(e: Dictionary) -> float:
+	return float(e.facing) * VILLAGER_NATIVE
 
 static func _soldier_frame(e: Dictionary) -> String:
 	var kneel: bool = e.get("pose", "") == "kneel"
@@ -239,7 +247,7 @@ static func villager(ci: CanvasItem, e: Dictionary, pos: Vector2, t: float) -> v
 	else:
 		frame = "villager_%s_walk_0%d" % [kind, 1 + int(e.age * 6.0 + e.id) % 4]
 	shadow(ci, pos, 50.0 * k, e.alpha)
-	draw(ci, frame, pos, k, e.facing, flash_mod(e))
+	draw(ci, frame, pos, k, villager_flip(e), flash_mod(e))
 
 static func pickup(ci: CanvasItem, e: Dictionary, pos: Vector2, t: float) -> void:
 	var is_food: bool = e.type == "food"

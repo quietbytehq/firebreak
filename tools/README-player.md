@@ -1,4 +1,4 @@
-# Firebreak 0.3.3 (Linux)
+# Firebreak 0.3.4 (Linux)
 
 An Operation Wolf-style gallery shooter by QuietByte. Stage 1, River Village.
 
@@ -19,6 +19,8 @@ Scores, settings, cash and weapons are saved locally. A campaign score of 2,000 
 
 The selected weapon is shown in Rayan's hands at the bottom of the screen. Pausing freezes all
 game sound and plays a calm pause-menu track.
+Soldiers and villagers have a thin white sticker outline. Magazine guns show a side-on pose
+while reloading. Head shots award a CLEAN SHOT bonus.
 
 Music, sound effects and voice are built in. To try replacement sounds, see audio/README.md.
 Contact: hello@quietbytehq.uk

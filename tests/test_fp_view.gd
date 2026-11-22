@@ -1,5 +1,5 @@
 extends SceneTree
-## First-person weapon view (0.3.1): one cut-out picture per weapon plus the
+## First-person weapon view (0.3.4): one cut-out picture per weapon plus the
 ## air-strike radio, the view follows the selected weapon through the switch
 ## animation, kicks on every shot, sparks for guns and smoke for launchers,
 ## dips while reloading, hides outside play and stays below the HUD.
@@ -17,7 +17,7 @@ func frames(n: int) -> void:
 func run() -> void:
 	# Data and pictures.
 	var data := FpView.load_data()
-	check(str(data.get("version", "")) == "0.3.1", "fp_weapons.json carries version 0.3.1")
+	check(str(data.get("version", "")) == "0.3.4", "fp_weapons.json carries version 0.3.4")
 	var ids: Array = []
 	for w in Weapons.all(): ids.append(str(w.id))
 	check(ids.size() == 19, "19 guns and launchers in the store")
@@ -33,6 +33,16 @@ func run() -> void:
 			check(img.get_pixel(4, 4).a < 0.05 and img.get_pixel(635, 4).a < 0.05, "background cut away (transparent corners): " + id)
 	for id in ["hammer_rpg", "tankbuster"]:
 		check(data.views[id].has("rear"), "back-blast point for " + id)
+	var reload_ok: Array = [
+		"viper_9", "talon_50", "warden_1911", "kestrel_p9", "rook_revolver",
+		"hornet_9", "buzzsaw", "stinger_v", "mamba_90", "ratchet_mac",
+		"kalash_47", "sentinel_m4", "granite_g3", "longshot_700"]
+	var reload_no: Array = ["thunder_m60", "hammer_rpg", "tankbuster", "thumper_gl", "frag_grenades", "air_strike"]
+	var listed: Array = data.get("reload_poses", [])
+	for id in reload_ok:
+		check(id in listed and ResourceLoader.exists("res://assets/sprites/fp/%s_reload.png" % id), "magazine gun has a side reload pose: " + id)
+	for id in reload_no:
+		check(id not in listed and not ResourceLoader.exists("res://assets/sprites/fp/%s_reload.png" % id), "no side reload pose for " + id)
 
 	var main = load("res://scenes/main.tscn").instantiate()
 	root.add_child(main)
@@ -99,6 +109,16 @@ func run() -> void:
 	sim.loadout[1].mag = 0
 	sim.reload(); await frames(8)
 	check(sim.reload_timer > 0.0 and fp.dip > 0.2, "the view dips during a reload")
+	var rid: String = str(sim.loadout[1].id)
+	check(fp.has_reload_art(rid) and fp.draw_id() == rid + "_reload", "a magazine rifle shows its side reload pose")
+	# Belt-fed MG: dip only, no pose change.
+	sim.loadout[1].id = "thunder_m60"; sim.loadout[1].mag = 0; sim.loadout[1].reserve = 200
+	sim.select_slot(1); await frames(35)
+	sim.reload(); await frames(8)
+	check(sim.reload_timer > 0.0 and fp.dip > 0.2, "the Thunder M60 still dips while reloading")
+	check(not fp.has_reload_art("thunder_m60") and fp.draw_id() == "thunder_m60", "the Thunder M60 keeps its rear view during reload")
+	# Launchers also dip without a side pose.
+	check(not fp.has_reload_art("hammer_rpg") and not fp.has_reload_art("tankbuster") and not fp.has_reload_art("thumper_gl"), "launchers have no side reload pose")
 	# Pause freezes the view; menus hide it.
 	main.pause_game(); await frames(2)
 	var k0: float = fp.kick; var lw: float = fp.lower

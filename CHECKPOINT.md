@@ -1,3 +1,33 @@
+# CHECKPOINT — Firebreak 0.3.4
+
+Updated: 2026-11-22 (PKT, UTC+5)
+
+## v0.3.4 round — polish merged onto the 0.3.3 scoreboard
+- Civilians face the way they walk (`VILLAGER_NATIVE`).
+- Sticker outlines (white outer, thin dark inner) rebaked on 56 sprites from un-outlined masters.
+- First-person: 8 new rear firing views (Hornet 9, Stinger V, Kalash 47, Sentinel M4, Granite G3,
+  Longshot 700, Hammer RPG, Tankbuster). Side reload pose only on magazine/bullet guns (5 pistols,
+  5 SMGs, Kalash, Sentinel, Granite, Longshot). Thunder M60, Hammer RPG, Tankbuster and Thumper GL
+  keep the rear view and only dip. Old side-on pictures of Hornet, Stinger, Kalash, Sentinel,
+  Granite and Longshot are reused as their reload poses.
+- Tracers and smoke from the first-person muzzle; smoke trails on rockets and grenades.
+- Popping score numbers, streak callouts (STREAK 3 / ON A ROLL / UNSTOPPABLE), stage title card,
+  banners including CLEAN SHOT, NEST SILENCED, TRUCK WRECKED, PACKAGE.
+- Head shots: +50 (after the band multiplier, still a multiple of 10) and a CLEAN SHOT banner.
+  No bonus for civilians or vehicles. Clear bonus still uses the 0.3.3 per-term rounding.
+- Weapon rebalance: within a category a dearer gun is never weaker per shot. Longshot 700 (5.0)
+  is the marksman exception versus Thunder M60 (now 2.3). Also raised: Kestrel 1.6, Buzzsaw 1.2,
+  Ratchet 1.2, Mamba 1.3, Stinger 1.3, Sentinel 1.6.
+- Eleven new Rayan catchphrases (Flint, eleven_v4, 183 characters / 183 credits, loudnorm −16 LUFS,
+  48 kHz OGG), unlocked by `profile.stages_cleared` as in `story/CATCHPHRASES.md`. The award line
+  is in the bank but not triggered until the ceremony is built.
+- Ember Ring story draft in `story/STORY.md` (not implemented). Scoreboard, `run_score` and
+  `online.gd` from 0.3.3 kept intact.
+- Box tests: 19 suites, 1277 checks, 0 failures. Box autoplay shots in
+  `/workspace/firebreak_shots/v034/` (rear fire, Hornet reload pose, CLEAN SHOT, stickered civilians).
+- Laptop (22 Nov 2026, about 10:31 PKT / Asia/Karachi): 176 replaced files and the 0.3.3 build are in `_to_delete/replaced_v033/`; 54 files were new; transfer parts live in `_to_delete/v034_transfer/`. 19 suites, **1277 checks, 0 failures**. Export rebuilt (`build/Firebreak/Firebreak.x86_64`, 109 MB) with TMPDIR and XDG_* inside `_to_delete/v034_transfer/qa_home/`; the real `~/.config/godot/editor_settings-4.7.tres` was not written. 60 s autoplay (exported build, seed 7, Hornet 9, `--qa-aim-head`, 144 Hz, vsync off + 60 fps limiter, window 1920×952): 60.05 fps avg (wall clock), 1% low 49.6, 2.2% frames > 18 ms, worst 42.1 ms; 46 kills, 0 villagers, score 9,200. Screenshots in `qa/laptop/v034/` and `qa/laptop/v034-reload/` (reload pose); JPEG copies also at `/workspace/firebreak_shots/v034/v034-laptop-*.jpg`.
+
+---
 # CHECKPOINT — Firebreak 0.3.3
 
 Updated: 2026-11-22 (PKT, UTC+5)

@@ -1,11 +1,12 @@
 extends Node2D
-## First-person weapon view (0.3.1): the selected weapon held in Rayan's arms,
+## First-person weapon view (0.3.4): the selected weapon held in Rayan's arms,
 ## drawn from behind at the bottom centre of the screen, under the HUD layer so
 ## the weapon bar and the reticle always stay on top. It sways, turns toward the
 ## aim point, kicks on every shot, shows a muzzle flash with sparks (guns) or a
 ## launch puff and back-blast (launchers), lowers and raises on a weapon switch,
-## dips during a reload, and briefly shows the special or the radio when a
-## grenade, rocket or air strike is used from another slot.
+## dips during a reload (and, for magazine guns, switches to a side reload pose),
+## and briefly shows the special or the radio when a grenade, rocket or air strike
+## is used from another slot. Belt-fed and launcher weapons dip without a pose change.
 
 const Weapons := preload("res://scripts/weapons.gd")
 const DATA_PATH := "res://data/fp_weapons.json"
@@ -68,6 +69,28 @@ func texture_for(id: String) -> Texture2D:
 		var path := DIR + id + ".png"
 		textures[id] = load(path) if ResourceLoader.exists(path) else null
 	return textures[id]
+
+## True when this weapon has a side-on reload picture. Thunder M60, the
+## launchers and the radio do not — they keep the rear view and only dip.
+func has_reload_art(id: String) -> bool:
+	var listed: Array = data.get("reload_poses", [])
+	if listed:
+		return id in listed
+	return ResourceLoader.exists(DIR + id + "_reload.png")
+
+func is_reloading() -> bool:
+	if sim == null or sim.loadout.is_empty() or override_t > 0.0:
+		return false
+	return sim.reload_timer > 0.0 if sim.slot != 2 else sim.special_reload > 0.0
+
+## Picture currently drawn: the side reload pose while a magazine gun reloads,
+## otherwise the rear firing view.
+func draw_id() -> String:
+	if shown_id == "":
+		return ""
+	if is_reloading() and has_reload_art(shown_id):
+		return shown_id + "_reload"
+	return shown_id
 
 ## The weapon the view should show right now (the special or the radio briefly
 ## replace the selected weapon when they are used from another slot).
@@ -144,7 +167,7 @@ func muzzle_screen(id: String = "") -> Vector2:
 ## True when the reticle is over a solid part of the picture (arms or weapon);
 ## the view then turns see-through so the target under it stays visible.
 func reticle_over_arms() -> bool:
-	var m := mask_for(shown_id)
+	var m := mask_for(draw_id())
 	if m == null: return false
 	var s := SIZE * (1.0 + 0.025 * kick * kick_scale)
 	var local := (crosshair - anchor()).rotated(-angle())
@@ -227,7 +250,7 @@ func _process(delta: float) -> void:
 func _draw() -> void:
 	last_rect = Rect2()
 	if not active or sim == null or shown_id == "": return
-	var tex := texture_for(shown_id)
+	var tex := texture_for(draw_id())
 	if tex == null: return
 	var s := SIZE * (1.0 + 0.025 * kick * kick_scale)
 	var a := anchor()
