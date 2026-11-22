@@ -36,7 +36,9 @@ including the 0.3.0 weapon, reload, dry-fire, cash and store sounds (prompts and
 are listed in AUDIO_BRIEF.md).
 Rayan's voice lines were generated with ElevenLabs text to speech (eleven_v4) using
 the ElevenLabs Voice Library voice "Flint - Commanding Presence". All lines are
-original and are not impressions of real actors. Use follows the ElevenLabs Terms of
+original and are not impressions of real actors. The 0.3.7 title call
+(assets/audio/title_call.ogg) uses the Voice Library voice "Andrew - Fifties
+Announcer". Use follows the ElevenLabs Terms of
 Service and the plan in effect on the generating account when the files were made.
 If that account is on the Free plan, attribution is required, for example:
 "Created with ElevenLabs". [PLAN NOT YET CONFIRMED: keep or remove this attribution

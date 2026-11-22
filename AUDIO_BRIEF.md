@@ -14,6 +14,7 @@ should keep the base names. Effects are peak-normalised to about -1.5 dBTP; voic
 |---|---|---|
 | music_title_intro | Title screen, plays once (0.3.6 replacement) | 12.75 s opening: war drums and heroic brass. |
 | music_title_intro_loop | Title screen and briefing after the intro (0.3.6) | 30.75 s martial loop, crossfaded, no fade-out. |
+| title_call | Title screen, once per launch (0.3.7) | Announcer: “FIREBREAK! Cut the Ember Ring.” 3.28 s. |
 | music_bg_01 | In-game track 1 (default) | Mid-tempo jungle combat: tribal drums, tense strings, gritty guitar. Loops. |
 | music_bg_02 | In-game track 2 | Faster 80s action synth and rock. Loops. |
 | music_bg_03 | In-game track 3 | Darker, suspenseful: drones, ticking percussion, slow build. Loops. |
@@ -197,3 +198,14 @@ The title intro and loop were replaced with a new orchestral-military cue (Eleve
 the following 30.75 s (fade-out trimmed, 0.6 s equal-power crossfade) loops. Both files are
 two-pass loudnorm to −16 LUFS / −1.5 dBTP, OGG Vorbis q6, 48 kHz stereo. The same music plays
 on the opening briefing and the travel map.
+
+
+## 0.3.7 title call
+
+Generated 22 November 2026 with ElevenLabs text-to-speech, Voice Library
+“Andrew - Fifties Announcer” (`p0Gik0TBCfzjohLCb7Mr`), model eleven_v4, one take.
+Prompt: `[announcer, heroic, booming, no smile] FIREBREAK! [short pause] Cut the Ember Ring.`
+Duration 3.28 s. Two-pass loudnorm to −16 LUFS / −1.5 dBTP (measured −16.78 LUFS,
+TP −1.45 dB), OGG Vorbis q6, 48 kHz mono. 83 credits. The line plays once per
+launch, about 0.45 s after the title intro starts, and the music ducks by 7 dB
+while it plays. File: `assets/audio/title_call.ogg`.

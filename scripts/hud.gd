@@ -78,10 +78,10 @@ func text(s: String, pos: Vector2, size: int, col: Color, align: int = HORIZONTA
 
 func panel(r: Rect2) -> void:
 	if plate:
-		draw_texture_rect(plate, r, false)
+		draw_texture_rect(plate, r, false, Color(1, 1, 1, 0.78))
 	else:
-		draw_rect(r, Color(0.08, 0.06, 0.04, 0.82))
-	draw_rect(r.grow(-1.0), Color(1, 0.78, 0.42, 0.35), false, 1.5)
+		draw_rect(r, Color(0.08, 0.06, 0.04, 0.7))
+	draw_rect(r.grow(-1.0), Color(1, 0.78, 0.42, 0.4), false, 1.5)
 
 func icon_at(tex: Texture2D, pos: Vector2, size: float = 28.0) -> void:
 	if tex:

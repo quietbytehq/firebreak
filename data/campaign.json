@@ -1,183 +1,183 @@
 {
- "title": "Firebreak",
- "version": "0.3.6",
- "note": "Twelve stages are planned. Only stage 1 is playable (0.3.6); later environments are decided later.",
- "difficulty": {
-  "accuracy": {
-   "base": 0.4,
-   "growth": 0.06,
-   "max": 0.85
+  "title": "Firebreak",
+  "version": "0.3.7",
+  "note": "Twelve stages are planned. Only stage 1 is playable (0.3.6); later environments are decided later.",
+  "difficulty": {
+    "accuracy": {
+      "base": 0.4,
+      "growth": 0.06,
+      "max": 0.85
+    },
+    "damage": {
+      "base": 1.0,
+      "growth": 0.07
+    },
+    "density": {
+      "base": 1.0,
+      "growth": 0.06
+    },
+    "fire_rate": {
+      "base": 1.0,
+      "growth": 0.05
+    },
+    "enemy_hp": {
+      "base": 1.0,
+      "growth": 0.05
+    },
+    "quota": {
+      "base": 1.0,
+      "growth": 0.05
+    },
+    "telegraph": {
+      "base": 1.0,
+      "shrink": 0.045,
+      "min": 0.55
+    }
   },
-  "damage": {
-   "base": 1.0,
-   "growth": 0.07
-  },
-  "density": {
-   "base": 1.0,
-   "growth": 0.06
-  },
-  "fire_rate": {
-   "base": 1.0,
-   "growth": 0.05
-  },
-  "enemy_hp": {
-   "base": 1.0,
-   "growth": 0.05
-  },
-  "quota": {
-   "base": 1.0,
-   "growth": 0.05
-  },
-  "telegraph": {
-   "base": 1.0,
-   "shrink": 0.045,
-   "min": 0.55
-  }
- },
- "stages": [
-  {
-   "number": 1,
-   "id": "river_village",
-   "name": "River Village",
-   "file": "res://data/stages/stage_01.json",
-   "playable": true,
-   "brief": "A jungle river town at golden hour. The first staging post.",
-   "map": [
-    0.175,
-    0.19
-   ]
-  },
-  {
-   "number": 2,
-   "id": "dune_sea",
-   "name": "Dune Sea",
-   "file": "",
-   "playable": false,
-   "brief": "Open desert and rock canyons. Convoys crossing the sand.",
-   "map": [
-    0.415,
-    0.29
-   ]
-  },
-  {
-   "number": 3,
-   "id": "coral_coast",
-   "name": "Coral Coast",
-   "file": "",
-   "playable": false,
-   "brief": "A quiet bay at golden hour. Gangs on the water, civilians on the shore.",
-   "map": [
-    0.535,
-    0.25
-   ]
-  },
-  {
-   "number": 4,
-   "id": "iron_harbour",
-   "name": "Iron Harbour",
-   "file": "",
-   "playable": false,
-   "brief": "A rusted industrial port in dirty weather. Cranes, freighters and warehouses.",
-   "map": [
-    0.688,
-    0.168
-   ]
-  },
-  {
-   "number": 5,
-   "id": "night_market",
-   "name": "Night Market",
-   "file": "",
-   "playable": false,
-   "brief": "A dense old city after dark. Alleys, rooftops and lantern-lit stalls.",
-   "map": [
-    0.755,
-    0.305
-   ]
-  },
-  {
-   "number": 6,
-   "id": "high_pass",
-   "name": "High Pass",
-   "file": "",
-   "playable": false,
-   "brief": "A snowy mountain border. Switchbacks, a stone fort, a cableway.",
-   "map": [
-    0.72,
-    0.4
-   ]
-  },
-  {
-   "number": 7,
-   "id": "broken_dam",
-   "name": "Broken Dam",
-   "file": "",
-   "playable": false,
-   "brief": "A flood-plain below a cracked dam. Catwalks, sluice gates and rushing water.",
-   "map": [
-    0.678,
-    0.49
-   ]
-  },
-  {
-   "number": 8,
-   "id": "red_quarry",
-   "name": "Red Quarry",
-   "file": "",
-   "playable": false,
-   "brief": "An open-pit mine. Terraces, trucks and a processing shed.",
-   "map": [
-    0.838,
-    0.605
-   ]
-  },
-  {
-   "number": 9,
-   "id": "blackout_city",
-   "name": "Blackout City",
-   "file": "",
-   "playable": false,
-   "brief": "A darkened coastal capital. Street grids and tracer fire in the sky.",
-   "map": [
-    0.615,
-    0.575
-   ]
-  },
-  {
-   "number": 10,
-   "id": "honour_gate",
-   "name": "Honour Gate",
-   "file": "",
-   "playable": false,
-   "brief": "Hold the ceremonial square and the gate of a freed city.",
-   "map": [
-    0.445,
-    0.545
-   ]
-  },
-  {
-   "number": 11,
-   "id": "storm_jetty",
-   "name": "Storm Jetty",
-   "file": "",
-   "playable": false,
-   "brief": "A night raid on a hidden dock. The Ring strikes back.",
-   "map": [
-    0.37,
-    0.55
-   ]
-  },
-  {
-   "number": 12,
-   "id": "ember_yard",
-   "name": "Ember Yard",
-   "file": "",
-   "playable": false,
-   "brief": "The network's last warehouse yard. A hard last stand.",
-   "map": [
-    0.295,
-    0.555
-   ]
-  }
- ]
+  "stages": [
+    {
+      "number": 1,
+      "id": "river_village",
+      "name": "River Village",
+      "file": "res://data/stages/stage_01.json",
+      "playable": true,
+      "brief": "A jungle river town at golden hour. The first staging post.",
+      "map": [
+        0.175,
+        0.19
+      ]
+    },
+    {
+      "number": 2,
+      "id": "dune_sea",
+      "name": "Dune Sea",
+      "file": "",
+      "playable": false,
+      "brief": "Open desert and rock canyons. Convoys crossing the sand.",
+      "map": [
+        0.415,
+        0.29
+      ]
+    },
+    {
+      "number": 3,
+      "id": "coral_coast",
+      "name": "Coral Coast",
+      "file": "",
+      "playable": false,
+      "brief": "A quiet bay at golden hour. Gangs on the water, civilians on the shore.",
+      "map": [
+        0.535,
+        0.25
+      ]
+    },
+    {
+      "number": 4,
+      "id": "iron_harbour",
+      "name": "Iron Harbour",
+      "file": "",
+      "playable": false,
+      "brief": "A rusted industrial port in dirty weather. Cranes, freighters and warehouses.",
+      "map": [
+        0.688,
+        0.168
+      ]
+    },
+    {
+      "number": 5,
+      "id": "night_market",
+      "name": "Night Market",
+      "file": "",
+      "playable": false,
+      "brief": "A dense old city after dark. Alleys, rooftops and lantern-lit stalls.",
+      "map": [
+        0.755,
+        0.305
+      ]
+    },
+    {
+      "number": 6,
+      "id": "high_pass",
+      "name": "High Pass",
+      "file": "",
+      "playable": false,
+      "brief": "A snowy mountain border. Switchbacks, a stone fort, a cableway.",
+      "map": [
+        0.72,
+        0.4
+      ]
+    },
+    {
+      "number": 7,
+      "id": "broken_dam",
+      "name": "Broken Dam",
+      "file": "",
+      "playable": false,
+      "brief": "A flood-plain below a cracked dam. Catwalks, sluice gates and rushing water.",
+      "map": [
+        0.678,
+        0.49
+      ]
+    },
+    {
+      "number": 8,
+      "id": "red_quarry",
+      "name": "Red Quarry",
+      "file": "",
+      "playable": false,
+      "brief": "An open-pit mine. Terraces, trucks and a processing shed.",
+      "map": [
+        0.838,
+        0.605
+      ]
+    },
+    {
+      "number": 9,
+      "id": "blackout_city",
+      "name": "Blackout City",
+      "file": "",
+      "playable": false,
+      "brief": "A darkened coastal capital. Street grids and tracer fire in the sky.",
+      "map": [
+        0.615,
+        0.575
+      ]
+    },
+    {
+      "number": 10,
+      "id": "honour_gate",
+      "name": "Honour Gate",
+      "file": "",
+      "playable": false,
+      "brief": "Hold the ceremonial square and the gate of a freed city.",
+      "map": [
+        0.445,
+        0.545
+      ]
+    },
+    {
+      "number": 11,
+      "id": "storm_jetty",
+      "name": "Storm Jetty",
+      "file": "",
+      "playable": false,
+      "brief": "A night raid on a hidden dock. The Ring strikes back.",
+      "map": [
+        0.37,
+        0.55
+      ]
+    },
+    {
+      "number": 12,
+      "id": "ember_yard",
+      "name": "Ember Yard",
+      "file": "",
+      "playable": false,
+      "brief": "The network's last warehouse yard. A hard last stand.",
+      "map": [
+        0.295,
+        0.555
+      ]
+    }
+  ]
 }

@@ -82,7 +82,7 @@ func run() -> void:
 	sim = fresh(p)
 	var a: Dictionary = sim.spawn("rifleman", "far", {"world_x": 700, "world_y": 900}); settle(sim, a)
 	var b: Dictionary = sim.spawn("rifleman", "mid", {"world_x": 700, "world_y": 1000}); settle(sim, b)
-	var c: Dictionary = sim.spawn("rifleman", "near", {"world_x": 700, "world_y": 1165}); settle(sim, c)
+	var c: Dictionary = sim.spawn("rifleman", "near", {"world_x": 700, "world_y": 920}); settle(sim, c)
 	var pt := Vector2(700, 860)
 	var hits := 0
 	for e in [a, b, c]:

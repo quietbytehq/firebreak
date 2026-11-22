@@ -1,5 +1,5 @@
 {
- "version": "0.3.6",
+ "version": "0.3.7",
  "note": "First-person weapon views (assets/sprites/fp/<id>.png, 640x640). Magazine/bullet guns also have <id>_reload.png (side pose) used only while reloading. Thunder M60, Hammer RPG, Tankbuster and Thumper GL have no reload pose \u2014 they stay on the rear view and dip. Points are fractions of the picture: muzzle = flash/sparks/launch puff; rear = launcher back-blast.",
  "size": 640,
  "views": {

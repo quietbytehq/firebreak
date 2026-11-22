@@ -44,7 +44,9 @@ const START_GRENADES := 5
 const START_AIRSTRIKES := 1
 const AIRSTRIKE_IMPACT := 1.25   # seconds from the call to the bombs landing
 const AIRSTRIKE_DURATION := 2.6
-const PICKUP_GROUND_Y := 960.0
+const PICKUP_GROUND_Y := 900.0
+## Bottom HUD (health + weapon bar) starts here; near feet stay above it.
+const HUD_BAND_TOP := 940.0
 
 var stage: Dictionary = {}
 var stage_number := 1
@@ -682,11 +684,15 @@ func fire_side(e: Dictionary) -> float:
 ## kick up dirt in the near foreground. Always below and toward the player.
 func fire_target(e: Dictionary, hit: bool) -> Vector2:
 	var side := fire_side(e)
+	# Land in the lower playfield, just above the bottom HUD, so tracers stay
+	# visible and still travel down out of the screen toward the player.
+	var y0 := HUD_BAND_TOP - 40.0
+	var y1 := HUD_BAND_TOP - 8.0
 	if hit:
 		return Vector2(clampf(VIEW_W * 0.5 + side * VIEW_W * 0.32 + fx_rng.randf_range(-140.0, 140.0), 60.0, VIEW_W - 60.0),
-			VIEW_H - fx_rng.randf_range(30.0, 150.0))
+			fx_rng.randf_range(y0, y1))
 	return Vector2(clampf(VIEW_W * 0.5 + side * VIEW_W * 0.22 + fx_rng.randf_range(-320.0, 320.0), 40.0, VIEW_W - 40.0),
-		fx_rng.randf_range(VIEW_H * 0.84, VIEW_H * 0.97))
+		fx_rng.randf_range(y0, y1))
 
 func damage_player(amount: float, source = null) -> void:
 	if state != "playing": return

@@ -27,6 +27,8 @@ var music_next := ""     # loop to start when a one-shot intro finishes
 var current_music := ""
 var voice_cooldowns := {}
 var last_voice_ms := -100000
+var duck_left := 0.0
+var duck_db := 0.0
 var paused := false
 var pause_player: AudioStreamPlayer
 var ui_players: Array = []
@@ -106,6 +108,29 @@ func _set_loop(stream: AudioStream, on: bool) -> void:
 func _music_db() -> float:
 	return linear_to_db(maxf(0.001, music_volume)) - 4.0
 
+func _process(delta: float) -> void:
+	if duck_left <= 0.0:
+		return
+	duck_left = maxf(0.0, duck_left - delta)
+	_apply_music_vol()
+
+## Briefly lower the music (for the title call), then ease back.
+func duck_music(db: float, seconds: float) -> void:
+	duck_db = db
+	duck_left = seconds
+	_apply_music_vol()
+
+func _apply_music_vol() -> void:
+	var extra := 0.0
+	if duck_left > 0.0:
+		var fade := 0.25
+		var scale := 1.0 if duck_left > fade else duck_left / fade
+		extra = duck_db * scale
+	if music_player:
+		music_player.volume_db = _music_db() + extra
+	if pause_player:
+		pause_player.volume_db = _music_db()
+
 ## Loops a track. With `intro`, the intro plays once first, then the loop.
 func play_music(base: String, intro: String = "") -> void:
 	current_music = base
@@ -123,7 +148,7 @@ func play_music(base: String, intro: String = "") -> void:
 		if music_player.stream == si and music_player.playing: return
 		_set_loop(si, false)
 		music_next = base
-		music_player.stream = si; music_player.volume_db = _music_db(); music_player.play()
+		music_player.stream = si; _apply_music_vol(); music_player.play()
 		return
 	music_next = ""
 	var stream := find_stream(base)
@@ -132,7 +157,7 @@ func play_music(base: String, intro: String = "") -> void:
 	if music_player.stream == stream and music_player.playing: return
 	_set_loop(stream, true)
 	music_player.stream = stream
-	music_player.volume_db = _music_db()
+	_apply_music_vol()
 	music_player.play()
 
 func _on_music_finished() -> void:
@@ -162,8 +187,7 @@ func set_music_on(on: bool) -> void:
 
 func set_volumes(sfx: float, music: float) -> void:
 	sfx_volume = sfx; music_volume = music
-	if music_player: music_player.volume_db = _music_db()
-	if pause_player: pause_player.volume_db = _music_db()
+	_apply_music_vol()
 	if ambience_player: ambience_player.volume_db = _sfx_db(-10.0)
 
 # ------------------------------------------------------------------ loops

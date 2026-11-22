@@ -31,7 +31,7 @@ func run() -> void:
 	# Near targets are drawn on top: overlapping shots hit the nearest one.
 	sim = fresh()
 	var far: Dictionary = sim.spawn("rifleman", "far", {"world_x": 700, "world_y": 900}); settle(sim, far)
-	var near: Dictionary = sim.spawn("rifleman", "near", {"world_x": 700, "world_y": 1165}); settle(sim, near)
+	var near: Dictionary = sim.spawn("rifleman", "near", {"world_x": 700, "world_y": 920}); settle(sim, near)
 	check(sim.entity_at(Vector2(700, 880)) == near, "nearest band wins overlapping shots")
 	# Far band scores more.
 	sim = fresh()
@@ -56,7 +56,7 @@ func run() -> void:
 	check(sim.health == 100.0, "healing is capped at max health")
 	# Pickups have priority over soldiers behind them.
 	sim = fresh()
-	var behind: Dictionary = sim.spawn("rifleman", "near", {"world_x": 900, "world_y": 1165}); settle(sim, behind)
+	var behind: Dictionary = sim.spawn("rifleman", "near", {"world_x": 900, "world_y": 920}); settle(sim, behind)
 	var box: Dictionary = sim.spawn("powerup", "sky", {"kind": "ammo", "world_x": 900}); box.y = 900.0
 	check(sim.entity_at(Vector2(900, 900)) == box, "falling drops are on top")
 	# Power-ups.
@@ -168,6 +168,19 @@ func run() -> void:
 	sim = fresh()
 	var tr: Dictionary = sim.spawn("truck", "mid")
 	check(sim.headbox(tr).size.x == 0.0 and not sim.is_headshot(tr, center(sim, tr)), "trucks have no head zone")
+
+	# Near-band soldiers stand above the bottom HUD, not behind it.
+	sim = fresh()
+	var zones: Array = sim.stage.bands.near.zones
+	check(zones.size() > 0 and float(zones[0][2]) == 920.0, "near-band feet sit at y 920")
+	check(sim.HUD_BAND_TOP == 940.0, "HUD band starts at y 940")
+	var nr_box: Dictionary = sim.spawn("rifleman", "near", {"world_x": 700, "world_y": 920}); settle(sim, nr_box)
+	var nr_hit := sim.hitbox(nr_box)
+	check(nr_hit.position.y + nr_hit.size.y <= sim.HUD_BAND_TOP, "near rifleman feet stay above the HUD band")
+	check(nr_hit.position.y < 700.0, "near rifleman head is well above the HUD")
+	var aim := sim.fire_target(nr_box, true)
+	var miss := sim.fire_target(nr_box, false)
+	check(aim.y <= sim.HUD_BAND_TOP and miss.y <= sim.HUD_BAND_TOP, "incoming near fire lands above the HUD")
 
 	print("Combat: ", checks, " checks, ", failures, " failures")
 	quit(0 if failures == 0 else 1)

@@ -31,6 +31,8 @@ var blood := 0.0
 var screen_flash := 0.0
 var layer_nodes := {}
 var fx_node: Node2D
+var near_layer: CanvasLayer
+var near_fx: Node2D
 var soft: Texture2D
 var strike_t := -1.0
 var fp = null                  # optional first-person view, for tracer origin
@@ -49,6 +51,14 @@ func _ready() -> void:
 		n.draw.connect(_draw_layer.bind(n, name))
 		add_child(n); layer_nodes[name] = n
 	fx_node = Node2D.new(); fx_node.name = "Fx"; fx_node.draw.connect(_draw_fx); add_child(fx_node)
+	# Near soldiers and pickups sit above the first-person gun (canvas 1) and
+	# below the HUD (canvas 3), so close enemies are not hidden by the weapon.
+	near_layer = CanvasLayer.new(); near_layer.layer = 2; near_layer.name = "NearLayer"
+	add_child(near_layer)
+	remove_child(layer_nodes["near"]); near_layer.add_child(layer_nodes["near"])
+	remove_child(layer_nodes["pickups"]); near_layer.add_child(layer_nodes["pickups"])
+	near_fx = Node2D.new(); near_fx.name = "NearFx"; near_fx.draw.connect(_draw_near_fx)
+	near_layer.add_child(near_fx)
 	var g := Gradient.new()
 	g.set_color(0, Color(1, 1, 1, 1)); g.set_color(1, Color(1, 1, 1, 0))
 	g.add_point(0.45, Color(1, 1, 1, 0.75))
@@ -106,8 +116,9 @@ func _on_event(name: String, d: Dictionary) -> void:
 			var e: Dictionary = d.entity
 			var from := SpriteArt.muzzle_point(e, Vector2(e.x - sim.camera_x, e.y))
 			var dur := 0.14 + 0.1 * (1.0 - clampf(float(e.scale), 0.0, 1.0))
-			incoming.append({"from": from, "to": d.get("to", Vector2(960, 1040)), "life": dur, "max": dur,
-				"hit": d.hit, "mg": e.type in ["mg", "heli"], "side": float(d.get("side", 0.0))})
+			incoming.append({"from": from, "to": d.get("to", Vector2(960, 880)), "life": dur, "max": dur,
+				"hit": d.hit, "mg": e.type in ["mg", "heli"], "side": float(d.get("side", 0.0)),
+				"band": str(e.get("band", ""))})
 		"player_hit":
 			hurt = minf(1.0, hurt + 0.45)
 			blood = minf(1.0, blood + 0.3 + float(d.amount) * 0.02)
@@ -232,9 +243,14 @@ func _process(delta: float) -> void:
 	screen_flash = maxf(0.0, screen_flash - delta * 3.0)
 	shake_offset = Vector2(randf_range(-1, 1), randf_range(-1, 1)) * shake if shake > 0.1 else Vector2.ZERO
 	position = shake_offset
+	if near_fx:
+		layer_nodes["near"].position = shake_offset
+		layer_nodes["pickups"].position = shake_offset
+		near_fx.position = shake_offset
 	queue_redraw()
 	for n in layer_nodes.values(): n.queue_redraw()
 	fx_node.queue_redraw()
+	if near_fx: near_fx.queue_redraw()
 
 func _update_incoming(delta: float) -> void:
 	var j := 0
@@ -391,7 +407,7 @@ func _draw_fx() -> void:
 		ci.draw_line(origin, q.to, Color(1, 0.75, 0.3, 0.28 * a), 6.0)
 		ci.draw_line(origin, q.to, Color(1, 0.95, 0.7, 0.75 * a), 2.0)
 		ci.draw_circle(q.to, 12.0 * a + 4.0, Color(1, 0.95, 0.7, 0.8 * a))
-	_draw_incoming(ci)
+	# Incoming fire is drawn on near_fx, above the first-person gun.
 	var font := ThemeDB.fallback_font
 	for q in popups:
 		var mx: float = float(q.get("max", 1.0))
@@ -430,7 +446,12 @@ func _draw_strike(ci: Node2D) -> void:
 
 ## Enemy rounds come OUT of the screen at the player: a bright streak that
 ## widens as it nears the camera, from the barrel to the lower screen edge.
-func _draw_incoming(ci: Node2D) -> void:
+func _draw_near_fx() -> void:
+	if sim == null or near_fx == null:
+		return
+	_draw_incoming(near_fx)
+
+func _draw_incoming(ci: Node2D, _near_only: bool = false) -> void:
 	for q in incoming:
 		var f: float = 1.0 - q.life / q.max
 		var head: Vector2 = q.from.lerp(q.to, f)

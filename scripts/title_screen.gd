@@ -5,6 +5,8 @@ extends Node2D
 ## PRESS START and a small QuietByte credit.
 
 const LogoShader := preload("res://shaders/logo_fill.gdshader")
+const Scores := preload("res://scripts/scores.gd")
+const UiStyleScript := preload("res://scripts/ui_style.gd")
 const LOGO_POS := Vector2(86, 228)
 const LOGO_SIZE := 190
 const LINE_H := 186.0
@@ -20,6 +22,11 @@ var press_start := true
 var version := ""
 var subtitle := "CUT THE EMBER RING"
 var ui_font: Font
+var ui_font_bold: Font
+var local_scores: Array = []
+const SCORES_RECT := Rect2(1410, 590, 490, 430)
+const GLOBAL_RECT := Rect2(1430, 958, 450, 48)
+const GLOBAL_URL := "https://firebreak.quietbytehq.uk"
 
 func _ready() -> void:
 	bg = load("res://assets/ui/title_bg.jpg")
@@ -29,7 +36,9 @@ func _ready() -> void:
 	font.variation_embolden = 1.1
 	font.variation_transform = Transform2D(Vector2(1.0, 0.0), Vector2(-0.16, 1.0), Vector2.ZERO)
 	font.spacing_glyph = 6
-	ui_font = preload("res://scripts/ui_style.gd").font("semibold")
+	ui_font = UiStyleScript.font("semibold")
+	ui_font_bold = UiStyleScript.font("bold")
+	refresh_scores()
 	var g := Gradient.new()
 	g.set_color(0, Color(1, 1, 1, 1)); g.set_color(1, Color(1, 1, 1, 0))
 	var gt := GradientTexture2D.new(); gt.gradient = g; gt.width = 64; gt.height = 64
@@ -45,7 +54,52 @@ func _ready() -> void:
 	add_child(fill)
 	version = str(ProjectSettings.get_setting("application/config/version", ""))
 
+func refresh_scores() -> void:
+	local_scores = Scores.load_scores()
+	queue_redraw()
+
+func global_hit(pos: Vector2) -> bool:
+	return GLOBAL_RECT.has_point(pos)
+
+func _draw_local_scores() -> void:
+	var r := SCORES_RECT
+	draw_rect(r, Color(0.04, 0.03, 0.02, 0.62))
+	draw_rect(r, Color(1, 0.75, 0.4, 0.4), false, 2.0)
+	var head := "LOCAL HIGH SCORES"
+	draw_string_outline(ui_font_bold, Vector2(r.position.x, r.position.y + 36), head, HORIZONTAL_ALIGNMENT_CENTER, r.size.x, 28, 6, Color(0, 0, 0, 0.85))
+	draw_string(ui_font_bold, Vector2(r.position.x, r.position.y + 36), head, HORIZONTAL_ALIGNMENT_CENTER, r.size.x, 28, Color(1, 0.82, 0.48))
+	var y := r.position.y + 70
+	if local_scores.is_empty():
+		var empty := "No scores yet"
+		draw_string_outline(ui_font, Vector2(r.position.x, y + 20), empty, HORIZONTAL_ALIGNMENT_CENTER, r.size.x, 24, 5, Color(0, 0, 0, 0.85))
+		draw_string(ui_font, Vector2(r.position.x, y + 20), empty, HORIZONTAL_ALIGNMENT_CENTER, r.size.x, 24, Color(0.95, 0.88, 0.75, 0.85))
+	else:
+		var n := mini(local_scores.size(), 8)
+		for i in n:
+			var s: Dictionary = local_scores[i]
+			var line := "%2d   %-12s   %s" % [i + 1, str(s.get("name", "PLAYER")), _fmt_score(int(s.get("score", 0)))]
+			var col := Color(1, 0.9, 0.55) if i == 0 else Color(1, 0.93, 0.82)
+			draw_string_outline(ui_font, Vector2(r.position.x + 24, y), line, HORIZONTAL_ALIGNMENT_LEFT, -1, 22, 5, Color(0, 0, 0, 0.85))
+			draw_string(ui_font, Vector2(r.position.x + 24, y), line, HORIZONTAL_ALIGNMENT_LEFT, -1, 22, col)
+			y += 30
+	var g := GLOBAL_RECT
+	var pulse := 0.75 + 0.25 * sin(t * 3.0)
+	draw_rect(g, Color(0.35, 0.18, 0.06, 0.88))
+	draw_rect(g, Color(1, 0.75, 0.4, 0.7), false, 2.0)
+	var gl := "GLOBAL SCORES"
+	draw_string_outline(ui_font_bold, Vector2(g.position.x, g.position.y + 34), gl, HORIZONTAL_ALIGNMENT_CENTER, g.size.x, 26, 5, Color(0, 0, 0, 0.85))
+	draw_string(ui_font_bold, Vector2(g.position.x, g.position.y + 34), gl, HORIZONTAL_ALIGNMENT_CENTER, g.size.x, 26, Color(1, 0.88, 0.5, pulse))
+
+func _fmt_score(v: int) -> String:
+	var s := str(absi(v))
+	var out := ""
+	while s.length() > 3:
+		out = "," + s.substr(s.length() - 3) + out
+		s = s.substr(0, s.length() - 3)
+	return s + out
+
 func _ember(anywhere: bool) -> Dictionary:
+
 	return {"p": Vector2(randf_range(0, 1920), randf_range(0, 1080) if anywhere else randf_range(1090, 1200)),
 		"v": Vector2(randf_range(-25, 15), randf_range(-90, -35)), "s": randf_range(2.0, 5.5), "ph": randf() * TAU,
 		"c": Color(1, randf_range(0.45, 0.8), 0.2)}
@@ -101,6 +155,7 @@ func _draw() -> void:
 		var hw := f.get_string_size(hint, HORIZONTAL_ALIGNMENT_LEFT, -1, 24).x
 		draw_string_outline(f, Vector2(380 - hw * 0.5, 866), hint, HORIZONTAL_ALIGNMENT_LEFT, -1, 24, 6, Color(0, 0, 0, 0.8))
 		draw_string(f, Vector2(380 - hw * 0.5, 866), hint, HORIZONTAL_ALIGNMENT_LEFT, -1, 24, Color(0.95, 0.88, 0.75))
+	_draw_local_scores()
 	var credit := "A QuietByte game  ·  v" + version
 	var cf := ui_font
 	var cw := cf.get_string_size(credit, HORIZONTAL_ALIGNMENT_LEFT, -1, 22).x

@@ -24,6 +24,7 @@ var pause_left := 0.0
 var done := false
 var spoken := false
 var voice_cb: Callable
+var fade: Texture2D
 
 func _ready() -> void:
 	bg = load("res://assets/ui/briefing_bg.jpg")
@@ -31,6 +32,16 @@ func _ready() -> void:
 	font_body = preload("res://scripts/ui_style.gd").font("medium")
 	font_hint = preload("res://scripts/ui_style.gd").font("semibold")
 	texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	var g := Gradient.new()
+	g.set_color(0, Color(0.02, 0.015, 0.01, 0.58))
+	g.set_color(1, Color(0.02, 0.015, 0.01, 0.0))
+	var gt := GradientTexture2D.new()
+	gt.gradient = g
+	gt.width = 256
+	gt.height = 8
+	gt.fill_from = Vector2(0, 0)
+	gt.fill_to = Vector2(1, 0)
+	fade = gt
 	reset()
 
 func reset() -> void:
@@ -97,8 +108,10 @@ func _process(delta: float) -> void:
 func _draw() -> void:
 	if bg:
 		draw_texture_rect(bg, Rect2(0, 0, 1920, 1080), false)
-	# Left shade so the dossier text stays readable.
-	draw_rect(Rect2(0, 0, 1040, 1080), Color(0.02, 0.015, 0.01, 0.55))
+	# Left shade fading into the map so there is no hard vertical seam.
+	draw_rect(Rect2(0, 0, 720, 1080), Color(0.02, 0.015, 0.01, 0.58))
+	if fade:
+		draw_texture_rect(fade, Rect2(720, 0, 360, 1080), false)
 	draw_rect(Rect2(0, 0, 70, 1080), Color(0, 0, 0, 0.25))
 	var origin := Vector2(110, 170)
 	draw_string_outline(font_head, origin, HEAD, HORIZONTAL_ALIGNMENT_LEFT, -1, 46, 8, Color(0, 0, 0, 0.85))

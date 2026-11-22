@@ -4,7 +4,7 @@ An Operation Wolf-style gallery shooter for Linux by QuietByte. Hold your positi
 battlefield pans slowly across a jungle river village at dusk: shoot riflemen, machine-gun
 nests and paratroopers, spare the villagers, and shoot falling food and supplies.
 
-**Version 0.3.6 — early development build.** Stage 1 of a planned twelve, with painted
+**Version 0.3.7 — early development build.** Stage 1 of a planned twelve, with painted
 character sprites, an enemy helicopter, grenades and air strikes, a Rayan title screen, three
 music tracks, sound effects and voice lines. Enemies face and fire at you (0.2.1). 0.3.0: ink
 outlines on every character, the helicopter and pickups; 19 original weapons in a 3-slot
@@ -106,9 +106,10 @@ eleven new Rayan catchphrases that unlock as you clear stages. The Ember Ring st
 
 0.3.5: Rayan is blended into the mission-failed and stage-clear screens (feathered cut-out, grading and a left vignette) instead of sitting in a hard rectangle. Bullet tracers are gone; the barrel now throws a bigger flash, sparks and a puff of smoke on every shot. Rocket and grenade trails are a little softer.
 
-0.3.6: A cinematic title theme plays from launch. The opening briefing and a travel map for the Ember Ring campaign are in the game (skippable, and on a Story button). The top HUD uses military plates, icons and the Barlow Condensed typeface. Stage 2 is still not playable.
+0.3.7: One START button (the briefing plays the first time, and can be rewatched with F1 or from pause). Near enemies stand above the bottom HUD. A spoken “FIREBREAK!” calls over the title music once per launch. The title shows this computer’s high scores and a GLOBAL SCORES link that opens the public board. The briefing panel fades into the map.
+0.3.6: A cinematic title theme plays from launch. The opening briefing and a travel map for the Ember Ring campaign are in the game. The top HUD uses military plates, icons and the Barlow Condensed typeface. Stage 2 is still not playable.
 
-## Known limitations (0.3.6)
+## Known limitations (0.3.7)
 
 - Only stage 1 is playable; stages 2–12 are planned.
 - The truck is still drawn in code. The ElevenLabs plan behind the audio is not yet confirmed

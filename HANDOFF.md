@@ -1,6 +1,6 @@
 # HANDOFF — Firebreak
 
-Operation Wolf-style gallery shooter by QuietByte. Godot 4.7.2 / GDScript. Version 0.3.6 =
+Operation Wolf-style gallery shooter by QuietByte. Godot 4.7.2 / GDScript. Version 0.3.7 =
 stage 1 "River Village" only (12 stages planned), painted sprites with sticker outlines,
 helicopter, 19 original weapons in a 3-slot loadout, cash economy + Store, grenades/launchers,
 air strike (spares civilians), Rayan title screen, music/SFX/voice, optional global top 100.
@@ -35,7 +35,7 @@ Read `docs/DESIGN.md` first.
 - Frame cap: `Engine.max_fps = 60` (main.gd) + `application/run/max_fps=60`, vsync on.
 - `data/campaign.json`, `data/stages/stage_01.json` stage definitions.
 - `data/fp_weapons.json` first-person muzzle/rear points and `reload_poses` (0.3.4).
-- `story/STORY.md` and `story/CATCHPHRASES.md` — approved drafts, not yet a game mode.
+- `story/STORY.md` (opening briefing and travel map, 0.3.6) and `story/CATCHPHRASES.md`.
 - `_to_delete/` scratch and replaced files only. Safe for the owner to delete. Not exported or committed.
 
 ## Weapons, loadout, economy (0.3.0)
@@ -113,7 +113,7 @@ then regenerates `scripts/sprite_meta.gd`. Re-bake from un-outlined masters only
 
 ## Campaign score and global top 100 (0.3.3)
 - `Main.begin_run()` resets the campaign total; `bank_run_score()` adds the finished stage (clear or fail)
-  once. “Start mission”, “Play again” and the Store start button begin a new run. “Restart stage” from
+  once. START, “Play again” and the Store “Start mission” button begin a new run. “Restart stage” from
   pause keeps earlier stages in the total. `continue_run_to()` is ready for later stages.
 - Clear bonus: `int(health)*20 + 10*int(round(seconds_left*2.5)) + int(round(accuracy*200))*10`.
 - Qualifying scores (≥ 2,000) can be posted after name entry; Tab keeps the score on this computer only.
@@ -127,6 +127,7 @@ then regenerates `scripts/sprite_meta.gd`. Re-bake from un-outlined masters only
   still need the owner’s Cloudflare/GitHub steps.
 
 ## Open items for the owner
+- 0.3.7 is deployed on the laptop (22 Nov 2026, about 12:26 PKT / Asia/Karachi): 20 suites, 1394 checks, 0 failures on the laptop and the development copy; export rebuilt (113 MB). 30 s autoplay 59.98 fps avg (wall clock), 1% low 50.6, 2.0% > 18 ms; captures in `qa/laptop/v037/` and `/workspace/firebreak_shots/v037/`. Replaced 0.3.6 files and the 0.3.6 build are in `_to_delete/replaced_v036/`; transfer parts and the QA jail in `_to_delete/v037_transfer/`. Title call used 83 ElevenLabs speech credits (one take, Andrew — Fifties Announcer). The repo stays on `main` (not pushed from here). Live Cloudflare deploy still needs the owner; do not look up firebreak.quietbytehq.uk until after the first deploy. Fake scores remain possible because the code is public. Stages 2–12 and the Honour Gate ceremony are still to come.
 - 0.3.6 is deployed on the laptop (22 Nov 2026, about 11:54 PKT / Asia/Karachi): 20 suites, 1373 checks, 0 failures on the laptop and the development copy; export rebuilt (113 MB). 30 s autoplay 60.04 fps avg (wall clock), 1% low 49.4, 2.2% > 18 ms; captures in `qa/laptop/v036/` and `/workspace/firebreak_shots/v036/`. Replaced 0.3.5 files are in `_to_delete/replaced_v035/`; transfer parts and the QA jail in `_to_delete/v036_transfer/`. Title theme used 720 ElevenLabs Music credits (one 48 s take). The repo stays on `main` (not pushed from here). Live Cloudflare deploy still needs the owner; do not look up firebreak.quietbytehq.uk until after the first deploy. Fake scores remain possible because the code is public. The Ember Ring briefing and travel map are now in the game; stages 2–12 and the Honour Gate ceremony are still to come.
 - 0.3.5 is deployed on the laptop (22 Nov 2026, about 11:18 PKT / Asia/Karachi): 19 suites, 1280 checks, 0 failures on the laptop and the development copy; export rebuilt (109 MB). 30 s autoplay 60.00 fps avg (wall clock), 1% low 46.5, 2.2% > 18 ms; captures in `qa/laptop/v035/`. Replaced 0.3.4 files and the 0.3.4 build are in `_to_delete/replaced_v034/`; transfer parts and the QA jail in `_to_delete/v035_transfer/`. The repo stays on `main` (not pushed from here). Live Cloudflare deploy still needs the owner; do not look up firebreak.quietbytehq.uk until after the first deploy. Fake scores remain possible because the code is public. The Ember Ring story draft is in `story/` and is not yet in the game.
 - 0.3.4 was deployed on the laptop (22 Nov 2026, about 10:31 PKT / Asia/Karachi): 19 suites, 1277 checks, 0 failures; export rebuilt (109 MB). 60 s autoplay 60.05 fps avg (wall clock), 1% low 49.6, 2.2% > 18 ms; captures in `qa/laptop/v034/` and `qa/laptop/v034-reload/`. Replaced 0.3.3 files and the 0.3.3 build are in `_to_delete/replaced_v033/`; transfer parts and the QA jail in `_to_delete/v034_transfer/`.

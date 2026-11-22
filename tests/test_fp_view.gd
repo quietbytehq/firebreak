@@ -1,5 +1,5 @@
 extends SceneTree
-## First-person weapon view (0.3.6): one cut-out picture per weapon plus the
+## First-person weapon view (0.3.7): one cut-out picture per weapon plus the
 ## air-strike radio, the view follows the selected weapon through the switch
 ## animation, kicks on every shot, sparks for guns and smoke for launchers,
 ## dips while reloading, hides outside play and stays below the HUD.
@@ -17,7 +17,7 @@ func frames(n: int) -> void:
 func run() -> void:
 	# Data and pictures.
 	var data := FpView.load_data()
-	check(str(data.get("version", "")) == "0.3.6", "fp_weapons.json carries version 0.3.6")
+	check(str(data.get("version", "")) == "0.3.7", "fp_weapons.json carries version 0.3.7")
 	var ids: Array = []
 	for w in Weapons.all(): ids.append(str(w.id))
 	check(ids.size() == 19, "19 guns and launchers in the store")

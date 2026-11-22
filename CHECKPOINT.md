@@ -1,3 +1,18 @@
+# CHECKPOINT — Firebreak 0.3.7
+
+Updated: 2026-11-22 (PKT, UTC+5)
+
+## v0.3.7 round — one START, visible near enemies, title call, local scores
+- Single START button on the title. The skippable briefing still plays the first time (`seen_briefing`). Rewatch with F1 on the title or “Story briefing” in the pause menu (returns to pause). The separate Story button is gone.
+- Near-band feet sit at y 920, above the HUD band (y 940). Incoming fire lands at 900–932. Near soldiers, pickups and incoming tracers are drawn on canvas layer 2, above the first-person gun (layer 1) and below the HUD (layer 3). HUD plates are a little more translucent.
+- Title announcer call: “FIREBREAK! Cut the Ember Ring.” ElevenLabs eleven_v4, Voice Library “Andrew - Fifties Announcer” (`p0Gik0TBCfzjohLCb7Mr`), one take, **83 credits**. 3.28 s, two-pass loudnorm −16 LUFS / −1.5 dBTP (measured −16.78 LUFS, TP −1.45 dB), OGG Vorbis q6, 48 kHz mono. Plays once per launch, 0.45 s after the title intro, with a 7 dB music duck. File: `assets/audio/title_call.ogg`.
+- Title shows this computer’s LOCAL HIGH SCORES and a GLOBAL SCORES control that opens `https://firebreak.quietbytehq.uk` with `OS.shell_open` only (the host was not looked up). The existing name-entry post client is unchanged.
+- The briefing’s dark text panel fades into the map (gradient, no hard vertical seam).
+- Box and laptop tests: 20 suites, **1394 checks, 0 failures**.
+- Box shots in `/workspace/firebreak_shots/v037/` (title with local scores and GLOBAL SCORES, title menu with a single START, briefing fade, busy near-enemy gameplay).
+- Laptop (22 Nov 2026, about 12:26 PKT / Asia/Karachi): 24 replaced files plus the 0.3.6 build are in `_to_delete/replaced_v036/`; `title_call.ogg` and its import were new. Transfer archive (md5 `612c9017ac340fa442f290a9dcdbe3b5`, one 200 KB part) lives in `_to_delete/v037_transfer/`. Export rebuilt (`build/Firebreak/Firebreak.x86_64`, 113 MB) with TMPDIR and XDG_* inside `_to_delete/v037_transfer/qa_home/`; the real `~/.config/godot/editor_settings-4.7.tres` was not written (mtime still 21 Nov 2026, 18:02). 30 s autoplay (exported build, 144 Hz, vsync off + 60 fps limiter, window 1920×952): 59.98 fps avg (wall clock), 1% low 50.6, 2.0% frames > 18 ms, worst 73.0 ms; 23 kills, 0 villagers, score 3,360. Screenshots in `qa/laptop/v037/`.
+
+---
 # CHECKPOINT — Firebreak 0.3.6
 
 Updated: 2026-11-22 (PKT, UTC+5)

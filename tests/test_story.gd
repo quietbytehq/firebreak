@@ -1,5 +1,5 @@
 extends SceneTree
-## 0.3.6 story screens, campaign names, bundled font and title/story art.
+## 0.3.7 story screens, one START button, local scores and the title call.
 const StageData := preload("res://scripts/stage_data.gd")
 const Scores := preload("res://scripts/scores.gd")
 const UiStyle := preload("res://scripts/ui_style.gd")
@@ -10,6 +10,11 @@ var failures := 0
 func check(ok: bool, label: String) -> void:
 	checks += 1
 	if not ok: failures += 1; push_error(label)
+func collect_button_text(n: Node, out: Array) -> void:
+	if n == null: return
+	if n is Button: out.append(n.text)
+	for c in n.get_children():
+		collect_button_text(c, out)
 func _initialize() -> void: call_deferred("run")
 func frames(n: int) -> void:
 	for i in n: await process_frame
@@ -27,13 +32,14 @@ func run() -> void:
 			check(bool(s.get("playable", false)), "stage 1 is playable")
 		else:
 			check(not bool(s.get("playable", false)), "stage %d is not playable yet" % (i + 1))
-	check(str(StageData.campaign().get("version", "")) == "0.3.6", "campaign version is 0.3.6")
+	check(str(StageData.campaign().get("version", "")) == "0.3.7", "campaign version is 0.3.7")
 	for path in ["res://assets/ui/briefing_bg.jpg", "res://assets/ui/travel_map.jpg",
 			"res://assets/ui/hud/plate.png", "res://assets/ui/hud/icon_score.png",
 			"res://assets/ui/hud/icon_cash.png", "res://assets/ui/hud/icon_clock.png",
 			"res://assets/ui/hud/icon_enemies.png",
 			"res://assets/fonts/BarlowCondensed-Regular.ttf", "res://assets/fonts/BarlowCondensed-Bold.ttf",
-			"res://assets/fonts/OFL-BarlowCondensed.txt", "res://LICENSES/OFL-BarlowCondensed.txt"]:
+			"res://assets/fonts/OFL-BarlowCondensed.txt", "res://LICENSES/OFL-BarlowCondensed.txt",
+			"res://assets/audio/title_call.ogg"]:
 		check(ResourceLoader.exists(path) or FileAccess.file_exists(path), "asset exists: " + path)
 	var brief_tex: Texture2D = load("res://assets/ui/briefing_bg.jpg")
 	var map_tex: Texture2D = load("res://assets/ui/travel_map.jpg")
@@ -61,7 +67,7 @@ func run() -> void:
 	check(mscr.hint_text().contains("DUNE SEA") and mscr.hint_text().contains("COMING SOON"), "map says Next: Dune Sea — coming soon")
 	mscr.setup(0, true)
 	check(mscr.preview and mscr.hint_text().contains("EMBER RING"), "preview map names the Ember Ring route")
-	# Main scene wiring: first Start mission opens the briefing; Story opens the map.
+	# Main scene wiring: a single START button; first play opens the briefing.
 	var main = load("res://scenes/main.tscn").instantiate()
 	root.add_child(main)
 	await frames(3)
@@ -69,6 +75,20 @@ func run() -> void:
 	check(str(main.title_screen.subtitle).contains("EMBER RING"), "title subtitle mentions the Ember Ring")
 	check(main.briefing != null and main.travel_map != null, "briefing and travel map screens exist")
 	check(main.theme != null and main.theme.default_font == UiStyle.font("semibold"), "menus use Barlow Condensed")
+	check(main.title_screen.GLOBAL_URL == "https://firebreak.quietbytehq.uk", "global scores URL is the public board")
+	check(main.title_screen.global_hit(Vector2(1650, 980)) and not main.title_screen.global_hit(Vector2(200, 200)), "GLOBAL SCORES has a click target")
+	var src := FileAccess.get_file_as_string("res://scripts/main.gd")
+	check(src.contains("func open_global_scores") and src.contains("OS.shell_open(\"https://firebreak.quietbytehq.uk\")"), "GLOBAL SCORES opens the site in the system browser")
+	check(not src.contains("_button(box, \"Story\""), "the title has no separate Story button")
+	Scores.add_score("TESTER", 12500, 1)
+	main.title_screen.refresh_scores()
+	check(main.title_screen.local_scores.size() >= 1 and int(main.title_screen.local_scores[0].score) == 12500, "title shows local high scores")
+	main.show_title(true)
+	await frames(2)
+	var labels: Array = []
+	collect_button_text(main.menu_root, labels)
+	check("START" in labels, "the only start option is labelled START")
+	check(not ("Story" in labels) and not ("Start mission" in labels), "Story and Start mission are not title buttons")
 	main.start_mission()
 	await frames(3)
 	check(main.mode == "briefing" and main.briefing.visible, "first start opens the briefing")
@@ -85,15 +105,30 @@ func run() -> void:
 	check(main.mode == "playing", "later starts skip the briefing")
 	main.show_briefing("story")
 	await frames(2)
-	check(main.mode == "briefing", "Story button opens the briefing")
+	check(main.mode == "briefing", "F1 / show_briefing(story) opens the briefing")
 	main.briefing.skip()
 	main._on_briefing_finished()
 	await frames(3)
-	check(main.mode == "travel_map" and main.travel_map.visible, "Story briefing continues to the travel map")
-	check(main.travel_map.preview, "Story map is a preview")
+	check(main.mode == "travel_map" and main.travel_map.visible, "story rewatch continues to the travel map")
+	check(main.travel_map.preview, "story map is a preview")
 	main._on_travel_map_finished()
 	await frames(2)
 	check(main.mode == "title" and main.title_menu_open, "leaving the preview map returns to the title menu")
+	# Rewatch from pause returns to the pause menu, not the map.
+	main.settings.seen_briefing = true
+	main.start_mission()
+	await frames(4)
+	check(main.mode == "playing", "can start a stage to test the pause rewatch")
+	main.pause_game()
+	await frames(2)
+	check(main.mode == "paused", "pause menu opens")
+	main.show_briefing("pause")
+	await frames(2)
+	check(main.mode == "briefing", "pause Story briefing opens the briefing")
+	main.briefing.skip()
+	main._on_briefing_finished()
+	await frames(3)
+	check(main.mode == "paused", "finishing a pause briefing returns to pause")
 	main.show_travel_map("after_clear", 1)
 	await frames(2)
 	check(main.travel_map.hint_text().contains("COMING SOON"), "clearing stage 1 previews Dune Sea as coming soon")

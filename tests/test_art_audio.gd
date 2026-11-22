@@ -62,7 +62,7 @@ func run() -> void:
 	var bank = AudioBank.new()
 	root.add_child(bank)
 	await process_frame
-	for base in ["music_title_intro", "music_title_intro_loop", "music_bg_01", "music_bg_02", "music_bg_03",
+	for base in ["music_title_intro", "music_title_intro_loop", "title_call", "music_bg_01", "music_bg_02", "music_bg_03",
 			"fire", "fire_rapid", "fire_spread", "enemy_rifle", "enemy_rifle_near", "enemy_rifle_far", "enemy_mg",
 			"airstrike_jet", "airstrike_whistle", "airstrike_explosion", "helicopter_rotor", "helicopter_mg",
 			"helicopter_crash", "heartbeat", "ambience_river", "villager_gasp", "ui_pause",
@@ -78,6 +78,12 @@ func run() -> void:
 		check(ResourceLoader.exists(path), "story asset present: " + path)
 	bank.play_music("music_title_intro_loop", "music_title_intro")
 	check(bank.music_player.stream == bank.find_stream("music_title_intro") and bank.music_next == "music_title_intro_loop", "title intro plays first, loop queued")
+	var vol0: float = bank.music_player.volume_db
+	bank.duck_music(-7.0, 3.8)
+	check(bank.music_player.volume_db < vol0 - 4.0, "title call ducks the music")
+	bank.duck_left = 0.0
+	bank._apply_music_vol()
+	check(absf(bank.music_player.volume_db - vol0) < 0.05, "music volume returns after the duck")
 	check(not bool(bank.find_stream("music_title_intro").get("loop")), "title intro plays once (no loop)")
 	bank._on_music_finished()
 	check(bank.music_player.stream == bank.find_stream("music_title_intro_loop") and bool(bank.music_player.stream.get("loop")), "after the intro the title loop repeats")

@@ -48,6 +48,8 @@ var map_kind := "preview"      # preview | after_clear
 var title_menu_open := false
 var bust_tex: Texture2D
 var pending_sounds: Array = []   # [seconds_left, callable]
+## Title announcer plays once per launch.
+var title_call_played := false
 var audio
 var settings: Dictionary
 var bg_tex: Texture2D
@@ -106,9 +108,9 @@ func _ready() -> void:
 	fx_rect = ColorRect.new(); fx_rect.size = Vector2(1920, 1080); fx_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var mat := ShaderMaterial.new(); mat.shader = ScreenFx; fx_rect.material = mat
 	fx_layer.add_child(fx_rect)
-	var hud_layer := CanvasLayer.new(); hud_layer.layer = 2; add_child(hud_layer)
+	var hud_layer := CanvasLayer.new(); hud_layer.layer = 3; add_child(hud_layer)
 	hud = Hud.new(); hud_layer.add_child(hud); hud.visible = false
-	ui_layer = CanvasLayer.new(); ui_layer.layer = 3; add_child(ui_layer)
+	ui_layer = CanvasLayer.new(); ui_layer.layer = 4; add_child(ui_layer)
 	title_bg = TextureRect.new(); title_bg.texture = bg_tex; title_bg.stretch_mode = TextureRect.STRETCH_KEEP
 	title_bg.mouse_filter = Control.MOUSE_FILTER_IGNORE; title_bg.visible = false
 	var bg_layer := CanvasLayer.new(); bg_layer.layer = -1; add_child(bg_layer); bg_layer.add_child(title_bg)
@@ -361,7 +363,7 @@ func _process(delta: float) -> void:
 		var low := clampf(1.0 - sim.health / (sim.max_health * 0.35), 0.0, 1.0) if in_game and sim.health > 0.0 else 0.0
 		fx_rect.material.set_shader_parameter("low_health", low)
 		fx_rect.material.set_shader_parameter("pulse", 0.5 + 0.5 * sin(title_t * 7.5))
-	if qa.has("run"):
+	if qa.has("run") or qa.has("title") or qa.has("briefing") or qa.has("map"):
 		_qa_tick(delta)
 	elif qa.has("store"):
 		qa_phase_t += delta; _qa_store_tick()
@@ -417,8 +419,13 @@ func _unhandled_input(event: InputEvent) -> void:
 		briefing.advance(); get_viewport().set_input_as_handled(); return
 	if mode == "travel_map" and _is_press(event):
 		_on_travel_map_finished(); get_viewport().set_input_as_handled(); return
-	if mode == "title" and not title_menu_open and _is_press(event):
-		open_title_menu(); get_viewport().set_input_as_handled(); return
+	if mode == "title":
+		if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT and title_screen.global_hit(event.position):
+			open_global_scores(); get_viewport().set_input_as_handled(); return
+		if event is InputEventKey and event.pressed and not event.echo and event.physical_keycode == KEY_F1:
+			show_briefing("story"); get_viewport().set_input_as_handled(); return
+		if not title_menu_open and _is_press(event):
+			open_title_menu(); get_viewport().set_input_as_handled(); return
 	if mode == "playing":
 		if event.is_action_pressed("pause"):
 			pause_game(); get_viewport().set_input_as_handled()
@@ -564,6 +571,17 @@ func _on_briefing_finished() -> void:
 	if briefing_kind == "story":
 		show_travel_map("preview")
 		return
+	if briefing_kind == "pause":
+		if sim != null:
+			sim.paused = true
+		mode = "paused"
+		hud.visible = true
+		view.visible = true
+		title_screen.visible = false
+		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+		audio.pause_all()
+		show_pause()
+		return
 	_mark_briefing_seen()
 	begin_run()
 	start_stage(1)
@@ -617,10 +635,27 @@ func show_title(menu: bool = false) -> void:
 	audio.stop_loops()
 	if audio.current_music != TITLE_LOOP:
 		audio.play_music(TITLE_LOOP, TITLE_INTRO)
+	if not title_call_played:
+		_later(0.45, _play_title_call)
+	title_screen.refresh_scores()
 	_clear_menu()
 	title_menu_open = false
 	title_screen.press_start = true
 	if menu: open_title_menu()
+
+func _play_title_call() -> void:
+	if title_call_played or mode != "title":
+		return
+	if not audio.has_sound("title_call"):
+		return
+	title_call_played = true
+	audio.play("title_call", 2.0)
+	# Line is about five seconds; duck slightly under the announcer, then ease back.
+	audio.duck_music(-7.0, 3.8)
+
+func open_global_scores() -> void:
+	# Opens the public board in the system browser. Never fetch the host from here.
+	OS.shell_open("https://firebreak.quietbytehq.uk")
 
 func open_title_menu() -> void:
 	title_menu_open = true
@@ -630,13 +665,12 @@ func open_title_menu() -> void:
 	box.alignment = BoxContainer.ALIGNMENT_BEGIN
 	box.position = Vector2(110, 500); box.size = Vector2(540, 560)
 	box.add_theme_constant_override("separation", 8)
-	_button(box, "Start mission", start_mission)
-	_button(box, "Story", func(): show_briefing("story"))
+	_button(box, "START", start_mission)
 	_button(box, "Store", func(): show_store("title"))
 	_button(box, "Controls", func(): show_controls("title"))
-	_button(box, "Top scores", func(): show_scores("title"))
 	_button(box, "Fullscreen (F11)", toggle_fullscreen)
 	_button(box, "Quit", func(): get_tree().quit())
+	_label(box, "F1  Story briefing", 24, Color(1, 0.88, 0.62, 0.85))
 	_focus_first(box)
 
 func show_pause() -> void:
@@ -644,6 +678,7 @@ func show_pause() -> void:
 	box.add_theme_constant_override("separation", 12)
 	_label(box, "PAUSED", 90, Color(1, 0.78, 0.4))
 	_button(box, "Resume", resume_game)
+	_button(box, "Story briefing", func(): show_briefing("pause"))
 	var music_btn := _button(box, "", func(): pass)
 	music_btn.text = "Music: " + ("ON" if settings.music_on else "OFF")
 	music_btn.pressed.connect(func(): set_music_on(not bool(settings.music_on)); music_btn.text = "Music: " + ("ON" if settings.music_on else "OFF"))
@@ -959,8 +994,14 @@ func _qa_tick(delta: float) -> void:
 	if mode == "title":
 		if qa_phase_t > 3.0 and not qa_shots_done.has("title"):
 			qa_shots_done["title"] = true; _qa_capture(out.path_join(tag + "-title.png"))
-		if qa.has("title") and not qa.has("run") and qa_phase_t > 3.5:
-			_qa_finish(out); return
+		if qa.has("title") and not qa.has("run"):
+			if qa_phase_t > 3.15 and not title_menu_open:
+				open_title_menu()
+			if qa_phase_t > 3.6 and not qa_shots_done.has("title-menu"):
+				qa_shots_done["title-menu"] = true; _qa_capture(out.path_join(tag + "-title-menu.png"))
+			if qa_phase_t > 4.1:
+				_qa_finish(out)
+			return
 		if qa_phase_t > 3.5: start_stage(1); qa_phase_t = 0.0
 		return
 	if mode == "paused":

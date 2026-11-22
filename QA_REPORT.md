@@ -1,3 +1,55 @@
+# QA report — Firebreak 0.3.7
+
+Date: 22 November 2026. Deployed to and tested on the laptop (HP Victus, Intel RPL-P graphics, Mesa, 144 Hz panel). Box results follow.
+
+## Laptop results (0.3.7)
+- Deploy: 22 November 2026, about 12:26 PKT (Asia/Karachi). 24 files replaced (moved to
+  `_to_delete/replaced_v036/`, including the 0.3.6 export); `assets/audio/title_call.ogg` and
+  its import were added. Transfer archive and the QA jail are in `_to_delete/v037_transfer/`.
+  Archive md5 `612c9017ac340fa442f290a9dcdbe3b5`.
+- `./tools/test.sh`: 20 suites, **1394 checks, 0 failures** (same counts as the development copy;
+  0.3.6 was 1373).
+- `./tools/build-linux.sh`: export rebuilt (`build/Firebreak/Firebreak.x86_64`, 113 MB). TMPDIR
+  and XDG_* were set under `_to_delete/v037_transfer/qa_home/` (export templates symlinked in);
+  the real `~/.config/godot/editor_settings-4.7.tres` was unchanged (mtime 21 Nov 2026, 18:02
+  Asia/Karachi).
+- Autoplay, exported build, 30 s (stage 1; capture frames excluded).
+  Mesa Intel(R) Graphics (RPL-P), 144 Hz, vsync off + 60 fps limiter, window 1920×952:
+
+| Measure | 0.3.7 wall clock (30 s) | 0.3.7 smoothed | 0.3.6 wall clock (30 s) |
+|---|---|---|---|
+| Frames | 1739 | 1740 | 1758 |
+| Average fps | 59.98 | 59.98 | 60.04 |
+| 1% low fps | 50.6 | 60.0 | 49.4 |
+| Frames > 18 ms | 34 (2.0%) | 3 | 39 (2.2%) |
+| Worst frame | 73.0 ms | 52.8 ms | 32.0 ms |
+
+  23 kills, 0 villagers hit, score 3,360, health 87. Average fps and the share of frames over
+  18 ms stay in the same band as 0.3.6; the 1% low is a little higher (50.6 vs 49.4). The worst
+  raw frame (73.0 ms) is a one-off spike; p99 is 19.8 ms.
+- Screenshots (real, laptop): `qa/laptop/v037/v037-laptop-title.jpg` (local high scores and
+  GLOBAL SCORES), `v037-laptop-title-menu.jpg` (single START), `v037-laptop-briefing.jpg`
+  (gradient fade), `v037-laptop-run-013s.jpg` and `v037-laptop-run-014s.jpg` (near rifleman
+  fully visible above the HUD and in front of the gun). JPEG copies also at
+  `/workspace/firebreak_shots/v037/`.
+- Title call: 83 ElevenLabs credits, one take. The live scoreboard was not looked up.
+
+## Development-copy results (0.3.7)
+- `./tools/test.sh`: 20 suites, **1394 checks, 0 failures**.
+- Box screenshots (xvfb, 1920×1080) in `/workspace/firebreak_shots/v037/`:
+  `v037-title.jpg`, `v037-title-menu.jpg`, `v037-briefing.jpg`, `v037-013s.jpg`,
+  `v037-014s.jpg`. Software renderer fps on the box is not comparable to the laptop.
+
+## Not tested
+- A live post to firebreak.quietbytehq.uk (the site is not deployed yet; the host was not
+  looked up). After the owner creates the empty GitHub repo, pushes, logs in to Wrangler and
+  runs `leaderboard/deploy.sh`, the live tests can be done: post a test score, confirm it,
+  delete it via the admin page (`~/.config/firebreak-scores-admin.txt`), confirm the board is
+  empty, then post from the game. Fake scores remain possible because the code is public.
+- Opening GLOBAL SCORES in a real browser session (the call is `OS.shell_open` of the known
+  URL; that was not fired from here).
+
+---
 # QA report — Firebreak 0.3.6
 
 Date: 22 November 2026. Deployed to and tested on the laptop (HP Victus, Intel RPL-P graphics, Mesa, 144 Hz panel). Box results follow.
