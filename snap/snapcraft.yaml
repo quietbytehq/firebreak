@@ -15,7 +15,7 @@ description: |
   required.
   For gamepads, enable controller access with:
   sudo snap connect firebreak-game:joystick
-grade: devel
+grade: stable
 confinement: strict
 license: Apache-2.0
 contact: quietbyte.2026@gmail.com
