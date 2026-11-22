@@ -21,6 +21,7 @@ const TravelMapScreen := preload("res://scripts/travel_map_screen.gd")
 const UiStyle := preload("res://scripts/ui_style.gd")
 const TARGET_FPS := 60
 const MUSIC_TRACKS := ["music_bg_01", "music_bg_02", "music_bg_03"]
+var music_override := ""
 const TITLE_INTRO := "music_title_intro"
 const TITLE_LOOP := "music_title_intro_loop"
 const GRUNTS := ["rayan_hit_grunt_01", "rayan_hit_grunt_02", "rayan_hit_grunt_03"]
@@ -131,10 +132,10 @@ func _ready() -> void:
 		show_title()
 		show_briefing("story")
 	elif qa.has("map"):
-		show_travel_map("after_clear", 1)
+		show_travel_map("after_clear", int(qa.get("stage", 1)))
 	elif qa.has("run") and not qa.has("title"):
 		begin_run()
-		start_stage(1)
+		start_stage(int(qa.get("stage", 1)))
 	else:
 		show_title()
 
@@ -183,6 +184,7 @@ func start_stage(number: int) -> void:
 	crosshair = Vector2(960, 540); last_mouse = get_viewport().get_mouse_position()
 	Input.mouse_mode = Input.MOUSE_MODE_HIDDEN
 	audio.stop_loops()
+	music_override = str(sim.stage.get("music", "")) if sim != null else ""
 	play_game_music()
 	audio.play("stage_start")
 	audio.play_ambience(str(sim.stage.get("ambience", "ambience_river")))
@@ -193,6 +195,9 @@ func start_stage(number: int) -> void:
 	_later(0.9, _opening_line)
 
 func play_game_music() -> void:
+	if music_override != "" and audio.has_sound(music_override):
+		audio.play_music(music_override)
+		return
 	var track := clampi(int(settings.get("music_track", 1)), 1, MUSIC_TRACKS.size())
 	audio.play_music(MUSIC_TRACKS[track - 1])
 
@@ -235,6 +240,8 @@ func _on_sim_event(name: String, d: Dictionary) -> void:
 			if d.entity.type in ["mg", "truck", "heli"] and not d.get("gunner", false): audio.play("hit_metal", -4.0)
 		"kill":
 			if d.entity.type != "heli": audio.play("enemy_down", -2.0, randf_range(0.92, 1.08))
+			if d.entity.type == "sniper":
+				audio.play("bricks", -6.0)
 			if d.entity.type == "mg":
 				_say("rayan_nests_down", 0, 15.0)
 			var now_t: float = float(sim.time)
@@ -317,7 +324,10 @@ func _on_sim_event(name: String, d: Dictionary) -> void:
 			audio.voice("rayan_that_all_you_got", 20.0)
 		"spawn":
 			if d.entity.type == "paratrooper": audio.play("parachute_open", -8.0)
-			elif d.entity.type == "truck": audio.play("truck_engine", -6.0)
+			elif d.entity.type in ["truck", "technical", "convoy"]:
+				audio.play_first(["truck_dune", "truck_engine"], -6.0)
+			elif d.entity.type == "camel":
+				audio.play("camel", -8.0)
 			elif d.entity.type == "heli":
 				_say("rayan_chopper_inbound", 0, 20.0, true)
 		"cleared":
@@ -330,11 +340,22 @@ func _on_sim_event(name: String, d: Dictionary) -> void:
 ## Looping sounds that follow the game state: helicopter rotor and low-health heartbeat.
 func _update_loops() -> void:
 	var heli_near := false
+	var truck_near := false
 	for e in sim.entities:
 		if e.type == "heli" and e.state != "crash" and e.get("sx", -999.0) > -300.0 and e.get("sx", 9999.0) < 2220.0:
 			heli_near = true
+		if e.type in ["technical", "convoy", "truck"] and e.state != "dying":
+			var sx: float = e.x - sim.camera_x
+			if sx > -200.0 and sx < 2120.0:
+				truck_near = true
 	if heli_near: audio.loop_on("helicopter_rotor", -6.0)
 	else: audio.loop_off("helicopter_rotor")
+	if truck_near: audio.loop_on("truck_dune", -10.0)
+	else: audio.loop_off("truck_dune")
+	if sim.has_method("dust_amount") and sim.dust_amount() > 0.15:
+		audio.loop_on("wind_gust", -8.0)
+	else:
+		audio.loop_off("wind_gust")
 	if sim.state == "playing" and sim.health > 0.0 and sim.health < sim.max_health * 0.3:
 		audio.loop_on("heartbeat", -2.0)
 	else:
@@ -617,7 +638,8 @@ func _on_travel_map_finished() -> void:
 	if map_kind == "preview":
 		show_title(true)
 		return
-	show_store("title")
+	var nxt := StageData.next_playable(travel_map.cleared_stage if travel_map else stage_number)
+	show_store("continue" if nxt > 0 else "title")
 
 func _after_clear_continue() -> void:
 	if qa.has("run"):
@@ -712,6 +734,7 @@ func set_music_on(on: bool) -> void:
 
 func set_music_track(track: int) -> void:
 	settings.music_track = clampi(track, 1, MUSIC_TRACKS.size())
+	music_override = ""
 	if mode in ["playing", "paused"]: play_game_music()
 	Scores.save_settings(settings)
 
@@ -788,7 +811,11 @@ func show_result() -> void:
 			_button(box, "Title screen", func(): show_title(true))
 		_focus_first(box)
 	if cleared:
-		_label(box, "Stages 2-12 arrive in later versions.", 24, Color(0.9, 0.8, 0.65))
+		var nxt := StageData.next_playable(stage_number)
+		if nxt > 0:
+			_label(box, "Next: %s" % str(StageData.stage_entry(nxt).get("name", "the next stage")), 24, Color(0.9, 0.8, 0.65))
+		else:
+			_label(box, "Later Ember Ring stages arrive in later versions.", 24, Color(0.9, 0.8, 0.65))
 
 
 func _refresh_online_hint() -> void:
@@ -894,6 +921,7 @@ func _choose_vsync() -> void:
 func _parse_qa_args() -> void:
 	for arg in OS.get_cmdline_user_args():
 		if arg == "--qa-run": qa.run = true
+		elif arg.begins_with("--qa-stage="): qa.stage = int(arg.get_slice("=", 1))
 		elif arg.begins_with("--qa-out="): qa.out = arg.get_slice("=", 1)
 		elif arg.begins_with("--qa-seconds="): qa.seconds = float(arg.get_slice("=", 1))
 		elif arg.begins_with("--qa-skip="): qa.skip = float(arg.get_slice("=", 1))
@@ -933,7 +961,7 @@ func _qa_autopilot(dt: float) -> void:
 		if s > best_score: best_score = s; best = e
 	if not best.is_empty():
 		var goal: Vector2 = sim.hitbox(best).get_center() - Vector2(sim.camera_x, 0)
-		if qa.has("aim_head") and best.type in ["rifleman", "paratrooper", "mg"]:
+		if qa.has("aim_head") and best.type in ["rifleman", "paratrooper", "mg", "sniper", "camel"]:
 			var hb: Rect2 = sim.headbox(best)
 			if hb.size.x > 0.0:
 				goal = hb.get_center() - Vector2(sim.camera_x, 0)
@@ -1200,8 +1228,15 @@ func show_store(back: String = "title") -> void:
 	_place(root, nav, Vector2(1200, 960))
 	var back_b := Button.new(); back_b.text = "Back"; back_b.custom_minimum_size = Vector2(300, 72)
 	back_b.pressed.connect(func(): audio.play("ui_select"); _back()); nav.add_child(back_b)
-	var go := Button.new(); go.text = "Start mission"; go.custom_minimum_size = Vector2(340, 72)
-	go.pressed.connect(func(): audio.play("ui_select"); _save_profile(); begin_run(); start_stage(1)); nav.add_child(go)
+	var nxt := StageData.next_playable(run_stages if store_back == "continue" else 0)
+	var go := Button.new(); go.custom_minimum_size = Vector2(340, 72)
+	if store_back == "continue" and nxt > 0:
+		go.text = "Continue to %s" % str(StageData.stage_entry(nxt).get("name", "next stage"))
+		go.pressed.connect(func(): audio.play("ui_select"); _save_profile(); continue_run_to(nxt))
+	else:
+		go.text = "Start mission"
+		go.pressed.connect(func(): audio.play("ui_select"); _save_profile(); begin_run(); start_stage(1))
+	nav.add_child(go)
 	if sel_btn: sel_btn.call_deferred("grab_focus")
 
 func store_item(id: String) -> Dictionary:

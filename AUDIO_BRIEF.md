@@ -209,3 +209,22 @@ Duration 3.28 s. Two-pass loudnorm to −16 LUFS / −1.5 dBTP (measured −16.7
 TP −1.45 dB), OGG Vorbis q6, 48 kHz mono. 83 credits. The line plays once per
 launch, about 0.45 s after the title intro starts, and the music ducks by 7 dB
 while it plays. File: `assets/audio/title_call.ogg`.
+
+
+## 0.4.0 Dune Sea (CC0)
+
+No new ElevenLabs audio (the account is out of credit). Stage 2 uses third-party
+CC0 recordings, two-pass loudnorm to −16 LUFS / −1.5 dBTP, Ogg Vorbis, 48 kHz
+stereo. Full author, title, URL and licence lines are in NOTICE.
+
+| File | Role | Source |
+| --- | --- | --- |
+| music_dune_sea.ogg | Stage 2 action bed (loops) | Darbuka Delight, Adiutorium, OpenGameArt, CC0 |
+| music_dune_loop.ogg | Backup desert bed (shipped, unused unless selected later) | Desert Loop, iamoneabe, OpenGameArt, CC0 |
+| ambience_dune.ogg | Stage 2 wind bed | Desert sand - Dune atmosphere, Vrymaa, Freesound, CC0 |
+| truck_dune.ogg | Technical / convoy engine loop | Truck Engine Idle Loops, qubodup, Freesound, CC0 |
+| wind_gust.ogg | Dust-storm gusts | S41-20 Gusty desert wind, craigsmith, Freesound, CC0 |
+| camel.ogg | Camel scout spawn / call | Camel, annakstedt, Freesound, CC0 |
+| bricks.ogg | Sniper (and masonry) hit debris | Bricks/Stones/Rocks/Gravel Falling, iwanPlays, Freesound, CC0 |
+
+The Freesound items were taken from each listing's HQ preview.

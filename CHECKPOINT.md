@@ -1,3 +1,26 @@
+# CHECKPOINT — Firebreak 0.4.0
+
+Updated: 2026-11-22 (PKT, UTC+5)
+
+## v0.4.0 round — Stage 2 Dune Sea (noon)
+- Stage 2 is playable. High-noon panorama (seam and ghost palm painted out), heat-shimmer shader on the background only, short dust-storm beat (105–118 s). Quota 85 in 180 s.
+- New enemies: shemagh militia (stage soldier_prefix), rooftop snipers (2 HP), camel scouts (1 HP, max 2), a technical with a bed gunner (no Huey), convoy truck mid-boss (~18 HP after difficulty).
+- Robed adult civilians, same penalty. Pickups: dates, bread, waterskin, ration, ammo.
+- After stage 1 the travel map offers Dune Sea (no “coming soon”). After stage 2 it previews Coral Coast as coming soon. Store button is “Continue to Dune Sea” and calls `continue_run_to(2)` without `begin_run()`.
+- Campaign scoring and the 40,000-point-per-stage leaderboard check are unchanged.
+- Audio is CC0 only (no ElevenLabs this round). Credits in NOTICE: Darbuka Delight (Adiutorium), Desert Loop (iamoneabe, backup), desert atmosphere (Vrymaa), truck idle (qubodup), gusty wind (craigsmith), camel (annakstedt), falling bricks (iwanPlays). Loudnorm −16 LUFS, OGG.
+- Version 0.4.0 in `project.godot`, `snap/snapcraft.yaml` (grade still `stable`, `.deb` name updated), CHANGELOG, README and `.github/RELEASE_v0.4.0.md`.
+- Icon v2 already shipped in 0.3.7 at `assets/logo/firebreak-512.png` (70,652 bytes, palette). `assets/ui/icon.png` now uses that same file so the Godot icon is also under 256 kB.
+- Git: do not move tag `v0.3.7` (`5a1922b`). Local commit of 0.4.0 is not pushed. The owner tags `v0.4.0`.
+- Shots: `/workspace/firebreak_shots/v040/`. Replaced laptop files go to `_to_delete/replaced_v037b/` (never deleted).
+- Laptop tests (22 Nov 2026, about 22:52 PKT / Asia/Karachi): 21 suites, **1463 checks, 0 failures**. Jailed under `_to_delete/v040_transfer/qa_home/` (TMPDIR and XDG_*). The real `~/.config/godot/editor_settings-4.7.tres` was not written by this test or the later rebuilds; its mtime was already 22 Nov 2026, 22:51 (it had been 21 Nov 2026, 18:02 at the 0.3.7 checkpoint).
+- Export rebuilt (`build/Firebreak/Firebreak.x86_64`, 132 MB) in the same jail.
+- 30 s Stage 2 autoplay on the exported build with the noon panorama and heat shimmer visible (seed 7, 144 Hz, vsync off + 60 fps limiter, window 1920×952): 59.95 fps avg (wall clock), smoothed 1% low 55.4, 0.9% smoothed frames > 18 ms; raw 1% low 43.6, 3.5% raw frames > 18 ms, worst 34.4 ms; 22 kills, 0 villagers, score 2,990, quota 85. JSON: `qa/laptop/v040/s2fps2-performance.json`.
+- A first panorama bug (the heat-shimmer sprite sat behind an opaque `_draw` fill) was found in early shots and fixed (`bg_sprite.z_index = 0`) before this fps run.
+- Shots: `qa/laptop/v040/` and `/workspace/firebreak_shots/v040/` (busy oasis, technical, convoy wreck, travel map after stage 1 and after stage 2).
+- Replaced 0.3.7 files are in `_to_delete/replaced_v037b/`; transfer parts in `_to_delete/v040_transfer/`. Not pushed. Tag `v0.3.7` is untouched at `5a1922b`. The owner tags and pushes `v0.4.0`.
+
+---
 # CHECKPOINT — Firebreak 0.3.7
 
 Updated: 2026-11-22 (PKT, UTC+5)

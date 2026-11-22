@@ -3,12 +3,14 @@
 <img src="assets/logo/firebreak-256.png" alt="Firebreak icon" width="128" height="128">
 
 An Operation Wolf-style gallery shooter for Linux by QuietByte. Hold your position as the
-battlefield pans slowly across a jungle river village at dusk: shoot riflemen, machine-gun
-nests and paratroopers, spare the villagers, and shoot falling food and supplies.
+battlefield pans slowly across a jungle river village at dusk and then a high-noon desert:
+shoot riflemen, machine-gun nests, camel scouts and convoys, spare the civilians, and shoot
+falling food and supplies.
 
-**Version 0.3.7 — early development build.** Stage 1 of a planned twelve, with painted
-character sprites, an enemy helicopter, grenades and air strikes, a Rayan title screen, three
-music tracks, sound effects and voice lines. Enemies face and fire at you (0.2.1). 0.3.0: ink
+**Version 0.4.0 — early development build.** Stages 1 and 2 of a planned twelve (River Village
+and Dune Sea), with painted character sprites, an enemy helicopter (stage 1), a technical and
+convoy (stage 2), grenades and air strikes, a Rayan title screen, music, sound effects and
+voice lines. Enemies face and fire at you (0.2.1). 0.3.0: ink
 outlines on every character, the helicopter and pickups; 19 original weapons in a 3-slot
 loadout (pistol, primary, special) with their own magazines and fire sounds; cash and a Store.
 0.3.1: a first-person view of the selected weapon held in Rayan's arms (sway, recoil, muzzle
@@ -22,11 +24,11 @@ scores added up across a run.
 
 ## Play
 
-Download Linux packages from [GitHub Releases](https://github.com/quietbytehq/firebreak/releases): the `Firebreak-0.3.7-linux-x86_64.tar.gz` archive (extract it and run `Firebreak/play.sh`), a `.deb`, and an AppImage. Confirm the files against `SHA256SUMS-0.3.7`. Godot is not required to play the exported build. OpenGL 3.3-compatible graphics are required. The archive launcher selects native Wayland on a Wayland desktop.
+Download Linux packages from [GitHub Releases](https://github.com/quietbytehq/firebreak/releases): the `Firebreak-0.4.0-linux-x86_64.tar.gz` archive (extract it and run `Firebreak/play.sh`), a `.deb`, and an AppImage. Confirm the files against `SHA256SUMS-0.4.0`. Godot is not required to play the exported build. OpenGL 3.3-compatible graphics are required. The archive launcher selects native Wayland on a Wayland desktop.
 
 A Snap Store package named `firebreak-game` is set up in this repository. Once it is published you can install it with `snap install firebreak-game`. A Windows zip may also be attached to the GitHub release for testing; it has not been run on Windows and is not supported.
 
-From this source tree, run `./tools/build-linux.sh` once, then `./play.sh`. The game starts fullscreen; F11 toggles windowed mode. This is an early development build (stage 1 of a planned twelve); public tags are marked as pre-release until later stages ship.
+From this source tree, run `./tools/build-linux.sh` once, then `./play.sh`. The game starts fullscreen; F11 toggles windowed mode. This is an early development build (stages 1 and 2 of a planned twelve); public tags are marked as pre-release until later stages ship.
 
 ## How it plays
 
@@ -54,8 +56,10 @@ From this source tree, run `./tools/build-linux.sh` once, then `./play.sh`. The 
   (radius about 445 px). It hurts everyone inside, civilians included, so time it well.
 - The **air strike** (1 per stage, plus a rare drop) sends jets over to destroy every enemy,
   vehicle and helicopter on screen. It never harms civilians.
-- An **enemy helicopter** crosses with a door gunner. Shoot the gunner to silence it, or
-  keep hitting the airframe until it smokes and crashes.
+- An **enemy helicopter** crosses stage 1 with a door gunner. Shoot the gunner to silence it, or
+  keep hitting the airframe until it smokes and crashes. Stage 2, **Dune Sea**, has no helicopter:
+  instead a pickup **technical** drives by with a bed gunner, camel scouts ride through, rooftop
+  **snipers** take long aim, and a **convoy truck** is the mid-boss.
 
 ## Controls
 
@@ -85,8 +89,8 @@ settings, the local top-ten scores and your cash, weapons and ammo are saved in 
 - `packaging/build_linux.sh` packages the Linux export as `Firebreak-<version>-linux-x86_64.tar.gz`, `firebreak_<version>_amd64.deb` and (when appimagetool is available) an AppImage, all under `dist/`.
 - `tools/package-release.sh` exports and then runs that packager, and writes `SHA256SUMS`.
 - `tools/build-snap.sh` builds a strict core24 snap named `firebreak-game` from the `.deb` (optional; does not upload). `snap/snapcraft.yaml` lists the `network` plug for the scoreboard.
-- A version tag (`v0.3.7`) starts GitHub Actions: Linux and Windows exports, packages attached to a pre-release, and a snap uploaded to the Snap Store `edge` channel.
-- Stages are data: see `data/campaign.json`, `data/stages/stage_01.json` and `docs/DESIGN.md`.
+- A version tag (`v0.4.0`) starts GitHub Actions: Linux and Windows exports, packages attached to a pre-release, and a snap uploaded to the Snap Store `edge` channel.
+- Stages are data: see `data/campaign.json`, `data/stages/stage_01.json`, `data/stages/stage_02.json` and `docs/DESIGN.md`.
 - Art prompts and sprite notes: `ART_PROMPTS.md`. Audio catalogue: `AUDIO_BRIEF.md`.
 - Weapons, prices and the economy are data: `data/weapons.json`.
 - Art tools: `tools/art/cut_heli_sheet.py` (cuts the helicopter/jet sheet),
@@ -114,13 +118,14 @@ eleven new Rayan catchphrases that unlock as you clear stages.
 
 0.3.5: Rayan is blended into the mission-failed and stage-clear screens (feathered cut-out, grading and a left vignette) instead of sitting in a hard rectangle. Bullet tracers are gone; the barrel now throws a bigger flash, sparks and a puff of smoke on every shot. Rocket and grenade trails are a little softer.
 
+0.4.0: Stage 2, Dune Sea, is playable (high noon, shemagh militia, snipers, camel scouts, a technical and a convoy mid-boss). After River Village the travel map continues into Dune Sea; clearing it previews Coral Coast as coming soon. Heat shimmer and a short dust storm. Stage 2 music and desert effects are third-party CC0 recordings (see NOTICE). The Godot app icon is the same sub-256 kB palette PNG as the store icon.
 0.3.7: One START button (the briefing plays the first time, and can be rewatched with F1 or from pause). Near enemies stand above the bottom HUD. A spoken “FIREBREAK!” calls over the title music once per launch. The title shows this computer’s high scores and a GLOBAL SCORES link that opens the public board. The briefing panel fades into the map. The app icon is a flaming gold F, with a quieter Rayan bust and a generic Kalash-style rifle behind it, readable at small sizes. Linux packages and a Snap Store pipeline (`firebreak-game`) are included.
 0.3.6: A cinematic title theme plays from launch. The opening briefing and a travel map for the Ember Ring campaign are in the game. The top HUD uses military plates, icons and the Barlow Condensed typeface. Stage 2 is still not playable.
 
-## Known limitations (0.3.7)
+## Known limitations (0.4.0)
 
-- Only stage 1 is playable; stages 2–12 are planned.
-- The truck is still drawn in code. The ElevenLabs plan behind the audio is not yet confirmed
+- Only stages 1 and 2 are playable; stages 3–12 are planned.
+- The stage 1 supply truck is still drawn in code. Stage 2 vehicles use painted sprites. The ElevenLabs plan behind the older audio is not yet confirmed
   (see `NOTICE`).
 - Tested on Linux x86-64 with Intel Mesa graphics only. No physical gamepad was tested.
   A Windows zip may be produced by the release CI; it has not been run on Windows and is not supported.

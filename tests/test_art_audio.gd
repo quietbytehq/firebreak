@@ -62,7 +62,7 @@ func run() -> void:
 	var bank = AudioBank.new()
 	root.add_child(bank)
 	await process_frame
-	for base in ["music_title_intro", "music_title_intro_loop", "title_call", "music_bg_01", "music_bg_02", "music_bg_03",
+	for base in ["music_title_intro", "music_title_intro_loop", "title_call", "music_bg_01", "music_bg_02", "music_bg_03", "music_dune_sea", "ambience_dune", "truck_dune", "camel", "wind_gust", "bricks",
 			"fire", "fire_rapid", "fire_spread", "enemy_rifle", "enemy_rifle_near", "enemy_rifle_far", "enemy_mg",
 			"airstrike_jet", "airstrike_whistle", "airstrike_explosion", "helicopter_rotor", "helicopter_mg",
 			"helicopter_crash", "heartbeat", "ambience_river", "villager_gasp", "ui_pause",

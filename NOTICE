@@ -4,9 +4,10 @@ Contact: hello@quietbytehq.uk
 Original source code and data files: Apache-2.0 (see LICENSE).
 
 ARTWORK
-The stage 1 background (assets/backgrounds/river_village.jpg), the character,
-pickup and effect sprites (assets/sprites/units/), the helicopter, jet, bomb and
-explosion sprites (assets/sprites/vehicles/), the title art, Rayan portraits, briefing dossier and travel map
+The stage 1 background (assets/backgrounds/river_village.jpg), the stage 2
+background (assets/backgrounds/dune_sea.jpg), the character,
+pickup and effect sprites (assets/sprites/units/), the helicopter, jet, bomb,
+explosion, technical and convoy sprites (assets/sprites/vehicles/), the title art, Rayan portraits, briefing dossier and travel map
 (assets/ui/title_bg.jpg, rayan_portrait.png, rayan_bust.png, briefing_bg.jpg, travel_map.jpg), the weapon icons
 (assets/ui/weapons/, added in 0.3.0), the first-person weapon views held in Rayan's
 arms (assets/sprites/fp/, added in 0.3.1) and the app icon were
@@ -30,7 +31,7 @@ account is on Enterprise Music. If the account is on the Free plan, credit
 ElevenLabs Music (for example: "Created in collaboration with ElevenLabs"). These
 tracks must not be offered as a standalone music library.
 
-SOUND EFFECTS AND VOICE (all other files in assets/audio/)
+SOUND EFFECTS AND VOICE (ElevenLabs; does not include the CC0 files listed above)
 Sound effects were generated with ElevenLabs Sound Effects (eleven_text_to_sound_v2),
 including the 0.3.0 weapon, reload, dry-fire, cash and store sounds (prompts and credits
 are listed in AUDIO_BRIEF.md).
@@ -43,6 +44,31 @@ Service and the plan in effect on the generating account when the files were mad
 If that account is on the Free plan, attribution is required, for example:
 "Created with ElevenLabs". [PLAN NOT YET CONFIRMED: keep or remove this attribution
 once the owner confirms the ElevenLabs plan.]
+
+STAGE 2 MUSIC AND EFFECTS (CC0)
+These files are in the public domain under CC0 1.0
+(https://creativecommons.org/publicdomain/zero/1.0/). Each source page was
+checked before the file was included. They were loudness-normalised for the
+game and converted to Ogg Vorbis; the recordings themselves are unchanged
+apart from that.
+
+- assets/audio/music_dune_sea.ogg — "Darbuka Delight" by Adiutorium,
+  https://opengameart.org/content/darbuka-delight, CC0.
+- assets/audio/music_dune_loop.ogg — "Desert Loop" by iamoneabe,
+  https://opengameart.org/content/desert-loop, CC0. Shipped as a backup bed.
+- assets/audio/ambience_dune.ogg — "Desert sand - Dune atmosphere" by Vrymaa,
+  https://freesound.org/people/Vrymaa/sounds/825860/, CC0.
+- assets/audio/truck_dune.ogg — "Truck Engine Idle Loops" by qubodup,
+  https://freesound.org/people/qubodup/sounds/187564/, CC0.
+- assets/audio/wind_gust.ogg — "S41-20 Gusty desert wind" by craigsmith,
+  https://freesound.org/people/craigsmith/sounds/675710/, CC0.
+- assets/audio/camel.ogg — "Camel" by annakstedt,
+  https://freesound.org/people/annakstedt/sounds/709306/, CC0.
+- assets/audio/bricks.ogg — "Bricks/Stones/Rocks/Gravel Falling" by iwanPlays,
+  https://freesound.org/people/iwanPlays/sounds/567249/, CC0.
+
+The Freesound items were taken from each listing's HQ preview (a full original
+download on that site needs an account). Durations match the listings.
 
 TYPEFACE
 The compact display font is Barlow Condensed, Copyright 2017 The Barlow Project

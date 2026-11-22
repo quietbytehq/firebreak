@@ -1,7 +1,7 @@
 {
   "title": "Firebreak",
-  "version": "0.3.7",
-  "note": "Twelve stages are planned. Only stage 1 is playable (0.3.7); later environments are decided later.",
+  "version": "0.4.0",
+  "note": "Twelve stages are planned. Stages 1 and 2 are playable (0.4.0); later environments follow.",
   "difficulty": {
     "accuracy": {
       "base": 0.4,
@@ -51,9 +51,9 @@
       "number": 2,
       "id": "dune_sea",
       "name": "Dune Sea",
-      "file": "",
-      "playable": false,
-      "brief": "Open desert and rock canyons. Convoys crossing the sand.",
+      "file": "res://data/stages/stage_02.json",
+      "playable": true,
+      "brief": "Open desert and rock canyons at high noon. Convoys crossing the sand.",
       "map": [
         0.415,
         0.29

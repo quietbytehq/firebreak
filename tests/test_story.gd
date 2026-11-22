@@ -1,5 +1,5 @@
 extends SceneTree
-## 0.3.7 story screens, one START button, local scores and the title call.
+## 0.4.0 story screens, one START button, local scores and the title call.
 const StageData := preload("res://scripts/stage_data.gd")
 const Scores := preload("res://scripts/scores.gd")
 const UiStyle := preload("res://scripts/ui_style.gd")
@@ -28,11 +28,11 @@ func run() -> void:
 		check(str(s.get("brief", "")) != "", "stage %d has a one-line brief" % (i + 1))
 		var m: Array = s.get("map", [])
 		check(m.size() == 2 and float(m[0]) > 0.0 and float(m[0]) < 1.0 and float(m[1]) > 0.0 and float(m[1]) < 1.0, "stage %d has a map pin" % (i + 1))
-		if i == 0:
-			check(bool(s.get("playable", false)), "stage 1 is playable")
+		if i <= 1:
+			check(bool(s.get("playable", false)), "stage %d is playable" % (i + 1))
 		else:
 			check(not bool(s.get("playable", false)), "stage %d is not playable yet" % (i + 1))
-	check(str(StageData.campaign().get("version", "")) == "0.3.7", "campaign version is 0.3.7")
+	check(str(StageData.campaign().get("version", "")) == "0.4.0", "campaign version is 0.4.0")
 	for path in ["res://assets/ui/briefing_bg.jpg", "res://assets/ui/travel_map.jpg",
 			"res://assets/ui/hud/plate.png", "res://assets/ui/hud/icon_score.png",
 			"res://assets/ui/hud/icon_cash.png", "res://assets/ui/hud/icon_clock.png",
@@ -64,7 +64,11 @@ func run() -> void:
 	mscr.setup(1, false)
 	check(mscr.current_number() == 1, "after stage 1 the current pin is River Village")
 	check(str(mscr.next_entry().get("name", "")) == "Dune Sea", "next stage is Dune Sea")
-	check(mscr.hint_text().contains("DUNE SEA") and mscr.hint_text().contains("COMING SOON"), "map says Next: Dune Sea — coming soon")
+	check(mscr.hint_text().contains("DUNE SEA") and not mscr.hint_text().contains("COMING SOON"), "after stage 1 the map offers Dune Sea as the next playable stage")
+	mscr.setup(2, false)
+	check(mscr.current_number() == 2, "after stage 2 the current pin is Dune Sea")
+	check(str(mscr.next_entry().get("name", "")) == "Coral Coast", "next stage after Dune Sea is Coral Coast")
+	check(mscr.hint_text().contains("CORAL COAST") and mscr.hint_text().contains("COMING SOON"), "map says Next: Coral Coast — coming soon")
 	mscr.setup(0, true)
 	check(mscr.preview and mscr.hint_text().contains("EMBER RING"), "preview map names the Ember Ring route")
 	# Main scene wiring: a single START button; first play opens the briefing.
@@ -131,7 +135,7 @@ func run() -> void:
 	check(main.mode == "paused", "finishing a pause briefing returns to pause")
 	main.show_travel_map("after_clear", 1)
 	await frames(2)
-	check(main.travel_map.hint_text().contains("COMING SOON"), "clearing stage 1 previews Dune Sea as coming soon")
+	check(main.travel_map.hint_text().contains("DUNE SEA") and not main.travel_map.hint_text().contains("COMING SOON"), "clearing stage 1 offers Dune Sea next")
 	main._on_travel_map_finished()
 	await frames(2)
 	check(main.mode == "store", "continuing after a clear opens the store")

@@ -4,7 +4,7 @@ extends RefCounted
 
 const CAMPAIGN_PATH := "res://data/campaign.json"
 const STAGE_COUNT := 12
-const KNOWN_TYPES := ["rifleman", "mg", "paratrooper", "villager", "food", "powerup", "truck", "heli"]
+const KNOWN_TYPES := ["rifleman", "mg", "paratrooper", "villager", "food", "powerup", "truck", "heli", "camel", "technical", "sniper", "convoy"]
 const BANDS := ["far", "mid", "near"]
 
 static func load_json(path: String) -> Variant:
@@ -54,6 +54,14 @@ static func difficulty(number: int) -> Dictionary:
 		if not out.has(key):
 			out[key] = 1.0
 	return out
+
+
+## First playable stage after `after` (1-based). 0 if none remain.
+static func next_playable(after: int) -> int:
+	for s in campaign().get("stages", []):
+		if int(s.get("number", 0)) > after and bool(s.get("playable", false)):
+			return int(s["number"])
+	return 0
 
 ## Validates a stage dictionary; returns a list of problems (empty = valid).
 static func validate(d: Dictionary) -> Array:

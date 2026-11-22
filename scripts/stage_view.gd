@@ -7,11 +7,14 @@ extends Node2D
 const Art := preload("res://scripts/art.gd")
 const SpriteArt := preload("res://scripts/sprite_art.gd")
 const LightShader := preload("res://shaders/entity_light.gdshader")
+const HeatShader := preload("res://shaders/heat_shimmer.gdshader")
 const LAYERS := ["far", "mid", "sky", "near", "pickups"]
 const MAX_PARTICLES := 420
 
 var sim
 var bg: Texture2D
+var bg_sprite: Sprite2D
+var dust_fade := 0.0
 var t := 0.0
 var particles: Array = []
 var popups: Array = []
@@ -44,6 +47,8 @@ const STREAK_WINDOW := 1.8
 
 func _ready() -> void:
 	texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	bg_sprite = Sprite2D.new(); bg_sprite.name = "HeatBg"; bg_sprite.centered = false
+	bg_sprite.z_index = 0; add_child(bg_sprite)
 	for name in LAYERS:
 		var n := Node2D.new(); n.name = "Layer_" + name
 		if name != "pickups":
@@ -68,6 +73,15 @@ func _ready() -> void:
 
 func bind(s, background: Texture2D) -> void:
 	sim = s; bg = background
+	if bg_sprite:
+		bg_sprite.texture = background
+		var sh := float(sim.stage.get("shimmer", 0.0)) if sim and sim.stage else 0.0
+		if sh > 0.0:
+			var mat := ShaderMaterial.new(); mat.shader = HeatShader
+			mat.set_shader_parameter("strength", sh)
+			bg_sprite.material = mat
+		else:
+			bg_sprite.material = null
 	particles.clear(); popups.clear(); tracers.clear(); incoming.clear(); hit_marks.clear(); flashes.clear(); blasts.clear(); rings.clear(); bombs.clear()
 	shake = 0.0; hurt = 0.0; blood = 0.0; screen_flash = 0.0; strike_t = -1.0
 	streak = 0; streak_gap = 0.0
@@ -106,7 +120,7 @@ func _on_event(name: String, d: Dictionary) -> void:
 			var e: Dictionary = d.entity
 			if e.type in ["food", "powerup"]:
 				sparkle(d.pos, Color(0.6, 1, 0.5) if e.type == "food" else Color(1, 0.85, 0.3))
-			elif e.type in ["mg", "truck", "heli"] and not d.get("gunner", false):
+			elif e.type in ["mg", "truck", "heli", "technical", "convoy", "sniper"] and not d.get("gunner", false):
 				sparks(d.pos, 6)
 			else:
 				dust(d.pos, 4, Color(0.5, 0.45, 0.35))
@@ -164,8 +178,14 @@ func _on_kill(d: Dictionary) -> void:
 	var pos: Vector2 = d.pos
 	if e.type == "mg":
 		banner("NEST SILENCED", pos + Vector2(0, -90), Color(1.0, 0.82, 0.35), 46, 1.5)
-	elif e.type == "truck":
+	elif e.type == "sniper":
+		banner("SNIPER DOWN", pos + Vector2(0, -90), Color(1.0, 0.82, 0.35), 46, 1.5)
+	elif e.type == "truck" or e.type == "convoy":
 		banner("TRUCK WRECKED", pos + Vector2(0, -90), Color(1.0, 0.75, 0.3), 46, 1.5)
+	elif e.type == "technical":
+		banner("TECHNICAL DOWN", pos + Vector2(0, -90), Color(1.0, 0.75, 0.3), 46, 1.5)
+	elif e.type == "camel":
+		banner("SCOUT DOWN", pos + Vector2(0, -90), Color(1.0, 0.82, 0.35), 40, 1.3)
 	streak_gap = 0.0
 	streak += 1
 	if streak == 3:
@@ -276,7 +296,7 @@ func _update_incoming(delta: float) -> void:
 
 func _emit_vehicle_smoke(delta: float) -> void:
 	for e in sim.entities:
-		if e.type != "heli": continue
+		if not (e.type in ["heli", "technical", "convoy"]): continue
 		var pos := Vector2(e.x - sim.camera_x, e.y)
 		if e.state == "crash":
 			if randf() < 0.5: _add({"p": pos + Vector2(randf_range(-40, 40), randf_range(-20, 20)), "v": Vector2(randf_range(-40, 40), randf_range(-120, -40)), "life": 1.2, "max": 1.2, "size": randf_range(28, 44), "col": Color(0.17, 0.15, 0.13, 0.5), "grow": 36.0, "drag": 1.0, "grav": -30.0})
@@ -332,8 +352,12 @@ func _draw() -> void:
 	if sim == null: return
 	if bg:
 		var scale := 1080.0 / float(bg.get_height())
-		draw_rect(Rect2(-60, -60, 2040, 1200), Color(0.08, 0.06, 0.05))
-		draw_texture_rect(bg, Rect2(Vector2(-sim.camera_x, 0), Vector2(bg.get_width() * scale, 1080)), false)
+		draw_rect(Rect2(-60, -60, 2040, 1200), Color(0.12, 0.14, 0.16) if float(sim.stage.get("shimmer", 0.0)) > 0.0 else Color(0.08, 0.06, 0.05))
+		if bg_sprite and bg_sprite.texture:
+			bg_sprite.position = Vector2(-sim.camera_x, 0)
+			bg_sprite.scale = Vector2(scale, scale)
+		else:
+			draw_texture_rect(bg, Rect2(Vector2(-sim.camera_x, 0), Vector2(bg.get_width() * scale, 1080)), false)
 
 func _draw_layer(ci: Node2D, layer: String) -> void:
 	if sim == null: return
@@ -348,11 +372,14 @@ func _draw_layer(ci: Node2D, layer: String) -> void:
 			"rifleman": SpriteArt.soldier(ci, e, pos, t)
 			"paratrooper": SpriteArt.paratrooper(ci, e, pos, t)
 			"mg": SpriteArt.mg_nest(ci, e, pos, t)
+			"sniper": SpriteArt.sniper(ci, e, pos, t)
+			"camel": SpriteArt.camel(ci, e, pos, t)
 			"villager": SpriteArt.villager(ci, e, pos, t)
 			"heli": SpriteArt.heli(ci, e, pos, t)
 			"food", "powerup": SpriteArt.pickup(ci, e, pos, t)
+			"technical": SpriteArt.technical(ci, e, pos, t)
+			"convoy": SpriteArt.convoy(ci, e, pos, t)
 			"truck":
-				# Still procedural (no painted truck sprite); light comes from the layer shader.
 				Art.tint = Color(1, 1, 1); Art.haze = 0.0
 				Art.begin(ci, pos, e.scale, e.facing, 0.0, e.flash, e.alpha)
 				Art.truck(ci, e, t)
@@ -361,6 +388,17 @@ func _draw_layer(ci: Node2D, layer: String) -> void:
 func _draw_fx() -> void:
 	if sim == null: return
 	var ci := fx_node
+	var dust := 0.0
+	if sim.has_method("dust_amount"):
+		dust = float(sim.dust_amount())
+	if dust > 0.0:
+		var a := 0.16 * dust
+		ci.draw_rect(Rect2(-40, -40, 2000, 1160), Color(0.86, 0.74, 0.52, a))
+		# A few wind streaks, cheap (no extra entities).
+		for i in 8:
+			var y := 120.0 + fmod(t * 90.0 + i * 97.0, 820.0)
+			var x := fmod(t * (220.0 + i * 30.0) + i * 240.0, 2100.0) - 80.0
+			ci.draw_rect(Rect2(x, y, 180.0 + i * 10.0, 3.0), Color(0.95, 0.88, 0.7, 0.12 * dust))
 	for g in sim.grenades_in_flight:
 		var f: float = g.t / g.dur
 		var start: Vector2 = g.get("from_screen", muzzle_origin())

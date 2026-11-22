@@ -3,12 +3,27 @@
 All notable changes to Firebreak are listed here. Version numbers follow the
 game's public releases.
 
-## Unreleased
+## 0.4.0 — 22 November 2026
 
-- App icon revised: the flaming gold F stays the hero, with a quieter bust of
-  Rayan (blond hair, black sunglasses) and a generic Kalash-style rifle behind
-  it. Shipped as 512×512 and 256×256 PNG. The SVG was dropped because a vector
-  no longer matches the painted composition.
+- Stage 2, Dune Sea, is playable. High noon over dunes, an oasis and a mud-brick
+  village. After River Village, the travel map offers Dune Sea next; clearing
+  Dune Sea previews Coral Coast as coming soon.
+- New enemies: militia in shemaghs, rooftop snipers, camel scouts (at most two
+  at once) and a pickup technical with a bed gunner. A convoy truck is the
+  mid-boss. There is no helicopter on this stage.
+- Robed adult civilians still cost a health and score penalty. Dates, bread and
+  a waterskin drop as health pickups, alongside ammo.
+- A cheap heat-shimmer on the panorama, and a short dust-storm beat near the
+  village. Near, mid and far bands, sticker outlines, head shots and catchphrases
+  work as they did on stage 1. Near enemies still stand above the bottom HUD.
+- Campaign scoring is unchanged: totals add across a run, and the optional
+  global board still ranks one campaign score with a 40,000-point cap per stage.
+- Stage 2 music and desert effects are third-party CC0 recordings (see NOTICE):
+  Darbuka Delight by Adiutorium, with Desert Loop by iamoneabe as a backup, plus
+  truck, wind, gust, camel and falling-brick sounds. No new ElevenLabs audio.
+- The Godot app icon (`assets/ui/icon.png`) now uses the same palette-quantised
+  512 px artwork as the store icon, so it stays under the Snap Store's 256 kB
+  listing limit.
 
 ## 0.3.7 — 22 November 2026
 

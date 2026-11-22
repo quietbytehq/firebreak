@@ -71,7 +71,6 @@ func run() -> void:
 		check(sim.clear_bonus % 10 == 0, "accuracy %d/%d still yields a multiple of 10" % [pair[0], pair[1]])
 
 	# Campaign run: later stages add to the total; a new run starts from zero.
-	# Stage 2 is not playable, so the second stage reuses stage 1 as a stand-in.
 	var main = load("res://scenes/main.tscn").instantiate()
 	root.add_child(main)
 	await process_frame
@@ -89,9 +88,10 @@ func run() -> void:
 	check(main.displayed_score() == first, "displayed score matches the banked total")
 	main.bank_run_score()
 	check(main.run_score == first, "banking twice does not double the score")
-	main.continue_run_to(1)
+	main.continue_run_to(2)
 	await process_frame
 	check(main.run_live and not main.run_banked and main.run_score == first, "continue keeps the earlier total")
+	check(str(main.sim.stage.get("id", "")) == "dune_sea", "the run continues into Dune Sea")
 	check(main.hud.run_base == first, "HUD shows earlier stages under the current stage score")
 	main.sim.kills = main.sim.quota
 	main.sim.step(0.016)

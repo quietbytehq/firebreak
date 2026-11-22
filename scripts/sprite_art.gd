@@ -24,20 +24,23 @@ const FRONT_NATIVE := -1.0
 ## when the figure walks right (the opposite of the usual facing=1 convention).
 const VILLAGER_NATIVE := -1.0
 ## Hitbox height each reference frame is scaled to (matches StageSim.SIZES).
-const TARGET_H := {"rifleman": 360.0, "kneel": 250.0, "villager": 340.0, "mg": 240.0, "paratrooper": 350.0}
+const TARGET_H := {"rifleman": 360.0, "kneel": 250.0, "villager": 340.0, "mg": 240.0, "paratrooper": 350.0, "sniper": 240.0, "camel": 360.0}
 ## On-screen height of the whole descending paratrooper (canopy to boots) at scale 1.
 const PARA_TOTAL_H := 712.0
 ## Every frame an enemy uses while aiming or firing: all face the player.
 const FRONT_FRAMES := ["rifleman_front_aim", "rifleman_front_fire", "rifleman_tq_aim", "rifleman_tq_fire",
 	"rifleman_kneel_front", "rifleman_kneel_front_flash", "mg_front", "mg_front_flash",
-	"paratrooper_front", "paratrooper_front_flash"]
+	"paratrooper_front", "paratrooper_front_flash",
+	"dune_rifleman_front_aim", "dune_rifleman_front_fire", "dune_rifleman_tq_aim", "dune_rifleman_tq_fire",
+	"dune_rifleman_kneel_front", "dune_rifleman_kneel_front_flash", "dune_sniper", "dune_sniper_flash"]
 const PICKUP_ITEM := {
 	"rice": "food_rice", "fruit": "food_crate", "canteen": "food_canteen", "ration": "food_medkit",
+	"dates": "food_dates", "bread": "food_bread", "waterskin": "food_waterskin",
 	"ammo": "power_ammo", "grenade": "power_grenade", "rapid": "power_weapon", "spread": "power_weapon",
 	"power": "power_weapon", "airstrike": "power_weapon", "cash": "power_cash", "cash_small": "power_cash", "cash_large": "power_cash",
 }
 const PICKUP_LABEL := {
-	"rice": "RICE", "fruit": "FRUIT", "canteen": "WATER", "ration": "MEDKIT", "ammo": "AMMO", "grenade": "GRENADES",
+	"rice": "RICE", "fruit": "FRUIT", "canteen": "WATER", "ration": "MEDKIT", "dates": "DATES", "bread": "BREAD", "waterskin": "WATER", "ammo": "AMMO", "grenade": "GRENADES",
 	"rapid": "RAPID", "spread": "SPREAD", "power": "POWER", "airstrike": "AIR STRIKE",
 	"cash": "$150", "cash_small": "$150", "cash_large": "$400",
 }
@@ -71,6 +74,16 @@ static func loaded_names() -> Array:
 	return out
 
 ## Height of the opaque figure between its top and the anchor (feet).
+
+## Stage-2 militia use dune_rifleman_* frames; missing names fall back to stage 1.
+static func _skinned(e: Dictionary, name: String) -> String:
+	var skin := str(e.get("skin", ""))
+	if skin != "" and name.begins_with("rifleman"):
+		var alt := skin + name.substr(8)
+		if tex(alt) != null:
+			return alt
+	return name
+
 static func fig_h(name: String) -> float:
 	var m := meta(name)
 	return float(m[3] - m[5]) if not m.is_empty() else 1.0
@@ -131,16 +144,18 @@ static func villager_flip(e: Dictionary) -> float:
 
 static func _soldier_frame(e: Dictionary) -> String:
 	var kneel: bool = e.get("pose", "") == "kneel"
+	var name := "rifleman_front_aim"
 	if e.state == "dying":
-		return "rifleman_hit" if e.timer > 0.45 and not kneel else "rifleman_fall"
-	if kneel:
-		return "rifleman_kneel_front_flash" if e.muzzle > 0.0 else "rifleman_kneel_front"
-	if e.muzzle > 0.0:
-		return "rifleman_tq_fire" if int(e.variant) % 2 == 1 else "rifleman_front_fire"
-	return "rifleman_front_aim"
+		name = "rifleman_hit" if e.timer > 0.45 and not kneel else "rifleman_fall"
+	elif kneel:
+		name = "rifleman_kneel_front_flash" if e.muzzle > 0.0 else "rifleman_kneel_front"
+	elif e.muzzle > 0.0:
+		name = "rifleman_tq_fire" if int(e.variant) % 2 == 1 else "rifleman_front_fire"
+	return _skinned(e, name)
 
 static func _soldier_k(e: Dictionary, kneel: bool) -> float:
-	return scale_for(e, "rifleman_kneel_front" if kneel else "rifleman_front_aim", TARGET_H.kneel if kneel else TARGET_H.rifleman)
+	var ref := _skinned(e, "rifleman_kneel_front" if kneel else "rifleman_front_aim")
+	return scale_for(e, ref, TARGET_H.kneel if kneel else TARGET_H.rifleman)
 
 ## Screen position of the barrel tip for any enemy (used for flashes, the
 ## warning ring and the start of the shot toward the player).
@@ -157,6 +172,13 @@ static func muzzle_point(e: Dictionary, pos: Vector2) -> Vector2:
 		"mg":
 			var km := scale_for(e, "mg_front", TARGET_H.mg)
 			return pos + Vector2(MUZZLE.mg.x * km * front_flip(e), MUZZLE.mg.y * km)
+		"sniper":
+			var ks: float = scale_for(e, "dune_sniper", TARGET_H.sniper) if tex("dune_sniper") != null else float(e.scale)
+			return pos + Vector2(8.0 * ks * front_flip(e), -170.0 * ks)
+		"camel":
+			return pos + Vector2(40.0 * e.scale * e.facing, -280.0 * e.scale)
+		"technical", "convoy":
+			return pos + Vector2(-80.0 * e.scale * e.facing, -200.0 * e.scale)
 		"heli":
 			var kh: float = e.scale
 			return pos + Vector2(MUZZLE.heli.x * kh * e.facing, MUZZLE.heli.y * kh)
@@ -235,17 +257,29 @@ static func mg_nest(ci: CanvasItem, e: Dictionary, pos: Vector2, t: float) -> vo
 	if e.state == "aim" and e.timer < 0.7:
 		warn_ring(ci, at, clampf(1.0 - e.timer / 0.7, 0.0, 1.0), t, e.scale)
 
+static func _villager_frame(kind: String, pose: String) -> String:
+	if kind.begins_with("robe_"):
+		return "dune_%s_%s" % [kind, pose]
+	return "villager_%s_%s" % [kind, pose]
+
 static func villager(ci: CanvasItem, e: Dictionary, pos: Vector2, t: float) -> void:
 	var kind: String = str(e.get("kind", "farmer"))
-	if not (kind in ["farmer", "woman", "elder"]): kind = "farmer"
-	var ref := "villager_%s_walk_01" % kind
+	if not (kind in ["farmer", "woman", "elder", "robe_man", "robe_woman"]):
+		kind = "farmer"
+	var ref := _villager_frame(kind, "walk_01")
+	if tex(ref) == null:
+		ref = "villager_farmer_walk_01"
 	var k := scale_for(e, ref, TARGET_H.villager)
 	var frame := ref
 	if e.state == "dying":
-		frame = "villager_%s_hit" % kind
+		frame = _villager_frame(kind, "hit")
+		if tex(frame) == null:
+			frame = "villager_farmer_hit"
 		k = float(e.scale) * TARGET_H.villager * 0.95 / fig_h(frame)
 	else:
-		frame = "villager_%s_walk_0%d" % [kind, 1 + int(e.age * 6.0 + e.id) % 4]
+		frame = _villager_frame(kind, "walk_0%d" % (1 + int(e.age * 6.0 + e.id) % 4))
+		if tex(frame) == null:
+			frame = ref
 	shadow(ci, pos, 50.0 * k, e.alpha)
 	draw(ci, frame, pos, k, villager_flip(e), flash_mod(e))
 
@@ -298,3 +332,41 @@ static func heli(ci: CanvasItem, e: Dictionary, pos: Vector2, t: float) -> void:
 		front_flash(ci, at, 22.0, 1.0, e.id)
 	if e.gunner_alive and e.burst <= 0.0 and e.aim < 0.6:
 		warn_ring(ci, at, clampf(1.0 - e.aim / 0.6, 0.0, 1.0), t, 0.8)
+
+static func sniper(ci: CanvasItem, e: Dictionary, pos: Vector2, t: float) -> void:
+	var frame := "dune_sniper_flash" if e.muzzle > 0.0 and tex("dune_sniper_flash") != null else "dune_sniper"
+	if tex(frame) == null:
+		mg_nest(ci, e, pos, t)
+		return
+	var k := scale_for(e, "dune_sniper", TARGET_H.sniper)
+	shadow(ci, pos, 140.0 * k, 0.28 * e.alpha)
+	draw(ci, frame, pos, k, front_flip(e), flash_mod(e))
+	if e.state == "aim" and e.timer < 0.8:
+		warn_ring(ci, pos + Vector2(0, -160.0 * k), clampf(1.0 - e.timer / 0.8, 0.0, 1.0), t, k)
+
+static func camel(ci: CanvasItem, e: Dictionary, pos: Vector2, t: float) -> void:
+	var k: float = scale_for(e, "dune_camel", TARGET_H.camel) if tex("dune_camel") != null else float(e.scale)
+	shadow(ci, pos, 200.0 * k, 0.3 * e.alpha)
+	if tex("dune_camel") == null:
+		return
+	draw(ci, "dune_camel", pos, k, e.facing, flash_mod(e))
+	if e.muzzle > 0.0:
+		muzzle_fx(ci, muzzle_point(e, pos), k, e.facing, false, e.id, e.muzzle)
+
+static func technical(ci: CanvasItem, e: Dictionary, pos: Vector2, t: float) -> void:
+	_vehicle_sprite(ci, e, pos, t, "dune_technical")
+
+static func convoy(ci: CanvasItem, e: Dictionary, pos: Vector2, t: float) -> void:
+	_vehicle_sprite(ci, e, pos, t, "dune_convoy")
+
+static func _vehicle_sprite(ci: CanvasItem, e: Dictionary, pos: Vector2, t: float, name: String) -> void:
+	if tex(name) == null:
+		return
+	var m := meta(name)
+	var fig := float(m[7] - m[5]) if not m.is_empty() else 300.0
+	var k: float = e.size.y * e.scale / maxf(1.0, fig)
+	shadow(ci, pos, 280.0 * k, 0.32 * e.alpha)
+	var bounce := sin(t * 14.0) * 2.0 if e.state == "drive" else 0.0
+	draw(ci, name, pos + Vector2(0, bounce), k, e.facing, flash_mod(e))
+	if e.muzzle > 0.0:
+		muzzle_fx(ci, muzzle_point(e, pos), k, e.facing, true, e.id, e.muzzle)
