@@ -9,7 +9,9 @@ Updated: 2026-11-22 (PKT, UTC+5)
 - Title shows this computer’s LOCAL HIGH SCORES and a GLOBAL SCORES control that opens `https://firebreak.quietbytehq.uk` with `OS.shell_open` only (the host was not looked up). The existing name-entry post client is unchanged.
 - The briefing’s dark text panel fades into the map (gradient, no hard vertical seam).
 - Box and laptop tests: 20 suites, **1394 checks, 0 failures**.
-- Box shots in `/workspace/firebreak_shots/v037/` (title with local scores and GLOBAL SCORES, title menu with a single START, briefing fade, busy near-enemy gameplay).
+- Public release files (Linux tar.gz, .deb, AppImage when the tool is present, and SHA256SUMS) are packed into gitignored `dist/` by `packaging/build_linux.sh` / `tools/package-release.sh`. Snap name: `firebreak-game`, built from the .deb, with the `network` plug. CI (`.github/workflows/ci.yml`) attaches packages to a GitHub pre-release on the version tag and uploads the snap to `edge`. Tag `v0.3.7` is created locally only; the owner registers the snap name, sets the store secret, and pushes.
+- App icon: original flaming F (512×512, 256×256, SVG) at `assets/logo/`, also `assets/ui/icon.png`. Compared at 16/32/48 px against a Rayan-face candidate; the F stays readable at 16 px. Old scenic icon moved to `_to_delete/replaced_v037_icon/`.
+- Box shots in `firebreak_shots/v037/` (title with local scores and GLOBAL SCORES, title menu with a single START, briefing fade, busy near-enemy gameplay).
 - Laptop (22 Nov 2026, about 12:26 PKT / Asia/Karachi): 24 replaced files plus the 0.3.6 build are in `_to_delete/replaced_v036/`; `title_call.ogg` and its import were new. Transfer archive (md5 `612c9017ac340fa442f290a9dcdbe3b5`, one 200 KB part) lives in `_to_delete/v037_transfer/`. Export rebuilt (`build/Firebreak/Firebreak.x86_64`, 113 MB) with TMPDIR and XDG_* inside `_to_delete/v037_transfer/qa_home/`; the real `~/.config/godot/editor_settings-4.7.tres` was not written (mtime still 21 Nov 2026, 18:02). 30 s autoplay (exported build, 144 Hz, vsync off + 60 fps limiter, window 1920×952): 59.98 fps avg (wall clock), 1% low 50.6, 2.0% frames > 18 ms, worst 73.0 ms; 23 kills, 0 villagers, score 3,360. Screenshots in `qa/laptop/v037/`.
 
 ---
@@ -24,7 +26,7 @@ Updated: 2026-11-22 (PKT, UTC+5)
 - Top HUD: military/ammo-crate plates, score/cash/clock/enemies icons, tighter layout, segmented enemy bar. Barlow Condensed (OFL, bundled with licence, credited in NOTICE) on the HUD, menus and story screens. The stacked FIREBREAK logo still uses the engine default font.
 - QA: `--qa-briefing` and `--qa-map` capture those screens and auto-advance; `--qa-run` still skips them so autopilot is not blocked. `_qa_finish` is safe when no stage has started.
 - Box and laptop tests: 20 suites, **1373 checks, 0 failures**.
-- Box shots in `/workspace/firebreak_shots/v036/` (HUD before/after, title, briefing, travel map).
+- Box shots in `firebreak_shots/v036/` (HUD before/after, title, briefing, travel map).
 - Laptop (22 Nov 2026, about 11:54 PKT / Asia/Karachi): 23 replaced files are in `_to_delete/replaced_v035/`; new files include fonts, briefing/map art, HUD plates and the story scripts. Transfer parts live in `_to_delete/v036_transfer/`. Export rebuilt (`build/Firebreak/Firebreak.x86_64`, 113 MB) with TMPDIR and XDG_* inside `_to_delete/v036_transfer/qa_home/`; the real `~/.config/godot/editor_settings-4.7.tres` was not written. 30 s autoplay (exported build, 144 Hz, vsync off + 60 fps limiter, window 1920×952): 60.04 fps avg (wall clock), 1% low 49.4, 2.2% frames > 18 ms, worst 32.0 ms; 24 kills, 0 villagers, score 3,680. Screenshots in `qa/laptop/v036/`.
 
 ---
@@ -37,7 +39,7 @@ Updated: 2026-11-22 (PKT, UTC+5)
 - Bullet tracers and the smoke line from the gun to the target are gone. Rocket and grenade projectile trails are a little softer.
 - Every gun shot throws a bigger, brighter, varied muzzle flash, more sparks, and a puff of smoke that drifts up from the first-person muzzle and lingers briefly (particle cap, fewer puffs on SMGs).
 - Box and laptop tests: 19 suites, **1280 checks, 0 failures**.
-- Box shots in `/workspace/firebreak_shots/v035/` (fail before and after, muzzle on Viper 9, Hornet 9, Kalash 47 and Thunder M60).
+- Box shots in `firebreak_shots/v035/` (fail before and after, muzzle on Viper 9, Hornet 9, Kalash 47 and Thunder M60).
 - Laptop (22 Nov 2026, about 11:18 PKT / Asia/Karachi): 11 replaced files and the 0.3.4 build are in `_to_delete/replaced_v034/`; 6 files were new; transfer parts live in `_to_delete/v035_transfer/`. Export rebuilt (`build/Firebreak/Firebreak.x86_64`, 109 MB) with TMPDIR and XDG_* inside `_to_delete/v035_transfer/qa_home/`; the real `~/.config/godot/editor_settings-4.7.tres` was not written. 30 s autoplay (exported build, seed 7, Hornet 9, 144 Hz, vsync off + 60 fps limiter, window 1920×952): 60.00 fps avg (wall clock), 1% low 46.5, 2.2% frames > 18 ms, worst 41.7 ms; 23 kills, 0 villagers, score 4,460. Screenshots in `qa/laptop/v035/`.
 
 ---
@@ -67,8 +69,8 @@ Updated: 2026-11-22 (PKT, UTC+5)
 - Ember Ring story draft in `story/STORY.md` (not implemented). Scoreboard, `run_score` and
   `online.gd` from 0.3.3 kept intact.
 - Box tests: 19 suites, 1277 checks, 0 failures. Box autoplay shots in
-  `/workspace/firebreak_shots/v034/` (rear fire, Hornet reload pose, CLEAN SHOT, stickered civilians).
-- Laptop (22 Nov 2026, about 10:31 PKT / Asia/Karachi): 176 replaced files and the 0.3.3 build are in `_to_delete/replaced_v033/`; 54 files were new; transfer parts live in `_to_delete/v034_transfer/`. 19 suites, **1277 checks, 0 failures**. Export rebuilt (`build/Firebreak/Firebreak.x86_64`, 109 MB) with TMPDIR and XDG_* inside `_to_delete/v034_transfer/qa_home/`; the real `~/.config/godot/editor_settings-4.7.tres` was not written. 60 s autoplay (exported build, seed 7, Hornet 9, `--qa-aim-head`, 144 Hz, vsync off + 60 fps limiter, window 1920×952): 60.05 fps avg (wall clock), 1% low 49.6, 2.2% frames > 18 ms, worst 42.1 ms; 46 kills, 0 villagers, score 9,200. Screenshots in `qa/laptop/v034/` and `qa/laptop/v034-reload/` (reload pose); JPEG copies also at `/workspace/firebreak_shots/v034/v034-laptop-*.jpg`.
+  `firebreak_shots/v034/` (rear fire, Hornet reload pose, CLEAN SHOT, stickered civilians).
+- Laptop (22 Nov 2026, about 10:31 PKT / Asia/Karachi): 176 replaced files and the 0.3.3 build are in `_to_delete/replaced_v033/`; 54 files were new; transfer parts live in `_to_delete/v034_transfer/`. 19 suites, **1277 checks, 0 failures**. Export rebuilt (`build/Firebreak/Firebreak.x86_64`, 109 MB) with TMPDIR and XDG_* inside `_to_delete/v034_transfer/qa_home/`; the real `~/.config/godot/editor_settings-4.7.tres` was not written. 60 s autoplay (exported build, seed 7, Hornet 9, `--qa-aim-head`, 144 Hz, vsync off + 60 fps limiter, window 1920×952): 60.05 fps avg (wall clock), 1% low 49.6, 2.2% frames > 18 ms, worst 42.1 ms; 46 kills, 0 villagers, score 9,200. Screenshots in `qa/laptop/v034/` and `qa/laptop/v034-reload/` (reload pose); JPEG copies also at `firebreak_shots/v034/v034-laptop-*.jpg`.
 
 ---
 # CHECKPOINT — Firebreak 0.3.3

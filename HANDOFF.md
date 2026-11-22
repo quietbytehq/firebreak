@@ -8,7 +8,8 @@ Read `docs/DESIGN.md` first.
 
 ## Run
 - Tests: `./tools/test.sh` (uses `godot` on PATH or `$GODOT`; on this PC `GODOT=~/.local/bin/godot`).
-- Build: `GODOT=~/.local/bin/godot ./tools/build-linux.sh` → `build/Firebreak/`.
+- Build: `GODOT=~/.local/bin/godot ./tools/build-linux.sh` → `build/linux/Firebreak.x86_64` and `build/Firebreak/`.
+- Packages: `./packaging/build_linux.sh 0.3.7` → `dist/` (tar.gz, .deb; AppImage if appimagetool is present). `./tools/package-release.sh` exports and packs. `./tools/build-snap.sh` packs `firebreak-game` from the .deb (does not upload).
 - Play: `./play.sh` (runs the exported build). Editor: `~/.local/bin/godot -e --path .`.
 
 ## Layout
@@ -36,6 +37,10 @@ Read `docs/DESIGN.md` first.
 - `data/campaign.json`, `data/stages/stage_01.json` stage definitions.
 - `data/fp_weapons.json` first-person muzzle/rear points and `reload_poses` (0.3.4).
 - `story/STORY.md` (opening briefing and travel map, 0.3.6) and `story/CATCHPHRASES.md`.
+- `assets/logo/firebreak-512.png`, `firebreak-256.png` and `firebreak.svg`: the flaming-F app icon (also copied to `assets/ui/icon.png` for Godot).
+- `packaging/build_linux.sh` and `packaging/firebreak.desktop`: Linux tar.gz, .deb and AppImage, following Nudge.
+- `snap/snapcraft.yaml`: snap name `firebreak-game`, built from the .deb, `network` plug for the scoreboard. Version and the .deb filename must stay in sync with `project.godot`.
+- `.github/workflows/ci.yml`: on a version tag, export Linux and Windows, package, attach a GitHub pre-release, build the snap and upload it to `edge`. Store credentials use the secret name `SNAPCRAFT_STORE_CREDENTIALS` (never commit the value).
 - `_to_delete/` scratch and replaced files only. Safe for the owner to delete. Not exported or committed.
 
 ## Weapons, loadout, economy (0.3.0)
@@ -127,8 +132,8 @@ then regenerates `scripts/sprite_meta.gd`. Re-bake from un-outlined masters only
   still need the owner’s Cloudflare/GitHub steps.
 
 ## Open items for the owner
-- 0.3.7 is deployed on the laptop (22 Nov 2026, about 12:26 PKT / Asia/Karachi): 20 suites, 1394 checks, 0 failures on the laptop and the development copy; export rebuilt (113 MB). 30 s autoplay 59.98 fps avg (wall clock), 1% low 50.6, 2.0% > 18 ms; captures in `qa/laptop/v037/` and `/workspace/firebreak_shots/v037/`. Replaced 0.3.6 files and the 0.3.6 build are in `_to_delete/replaced_v036/`; transfer parts and the QA jail in `_to_delete/v037_transfer/`. Title call used 83 ElevenLabs speech credits (one take, Andrew — Fifties Announcer). The repo stays on `main` (not pushed from here). Live Cloudflare deploy still needs the owner; do not look up firebreak.quietbytehq.uk until after the first deploy. Fake scores remain possible because the code is public. Stages 2–12 and the Honour Gate ceremony are still to come.
-- 0.3.6 is deployed on the laptop (22 Nov 2026, about 11:54 PKT / Asia/Karachi): 20 suites, 1373 checks, 0 failures on the laptop and the development copy; export rebuilt (113 MB). 30 s autoplay 60.04 fps avg (wall clock), 1% low 49.4, 2.2% > 18 ms; captures in `qa/laptop/v036/` and `/workspace/firebreak_shots/v036/`. Replaced 0.3.5 files are in `_to_delete/replaced_v035/`; transfer parts and the QA jail in `_to_delete/v036_transfer/`. Title theme used 720 ElevenLabs Music credits (one 48 s take). The repo stays on `main` (not pushed from here). Live Cloudflare deploy still needs the owner; do not look up firebreak.quietbytehq.uk until after the first deploy. Fake scores remain possible because the code is public. The Ember Ring briefing and travel map are now in the game; stages 2–12 and the Honour Gate ceremony are still to come.
+- 0.3.7 is deployed on the laptop (22 Nov 2026, about 12:26 PKT / Asia/Karachi): 20 suites, 1394 checks, 0 failures on the laptop and the development copy; export rebuilt (113 MB). 30 s autoplay 59.98 fps avg (wall clock), 1% low 50.6, 2.0% > 18 ms; captures in `qa/laptop/v037/` and `firebreak_shots/v037/`. Replaced 0.3.6 files and the 0.3.6 build are in `_to_delete/replaced_v036/`; transfer parts and the QA jail in `_to_delete/v037_transfer/`. Title call used 83 ElevenLabs speech credits (one take, Andrew — Fifties Announcer). A flaming-F app icon and Nudge-style Linux/.deb/AppImage/snap/CI packaging were added after that playtest; the old scenic icon and Last-Pocket-style snapcraft.yaml are in `_to_delete/replaced_v037_icon/`. The repo stays on `main` (not pushed from here). The owner registers the snap name `firebreak-game`, sets `SNAPCRAFT_STORE_CREDENTIALS`, and pushes `main` plus the `v0.3.7` tag. Live Cloudflare deploy still needs the owner; do not look up firebreak.quietbytehq.uk until after the first deploy. Fake scores remain possible because the code is public. Stages 2–12 and the Honour Gate ceremony are still to come.
+- 0.3.6 is deployed on the laptop (22 Nov 2026, about 11:54 PKT / Asia/Karachi): 20 suites, 1373 checks, 0 failures on the laptop and the development copy; export rebuilt (113 MB). 30 s autoplay 60.04 fps avg (wall clock), 1% low 49.4, 2.2% > 18 ms; captures in `qa/laptop/v036/` and `firebreak_shots/v036/`. Replaced 0.3.5 files are in `_to_delete/replaced_v035/`; transfer parts and the QA jail in `_to_delete/v036_transfer/`. Title theme used 720 ElevenLabs Music credits (one 48 s take). The repo stays on `main` (not pushed from here). Live Cloudflare deploy still needs the owner; do not look up firebreak.quietbytehq.uk until after the first deploy. Fake scores remain possible because the code is public. The Ember Ring briefing and travel map are now in the game; stages 2–12 and the Honour Gate ceremony are still to come.
 - 0.3.5 is deployed on the laptop (22 Nov 2026, about 11:18 PKT / Asia/Karachi): 19 suites, 1280 checks, 0 failures on the laptop and the development copy; export rebuilt (109 MB). 30 s autoplay 60.00 fps avg (wall clock), 1% low 46.5, 2.2% > 18 ms; captures in `qa/laptop/v035/`. Replaced 0.3.4 files and the 0.3.4 build are in `_to_delete/replaced_v034/`; transfer parts and the QA jail in `_to_delete/v035_transfer/`. The repo stays on `main` (not pushed from here). Live Cloudflare deploy still needs the owner; do not look up firebreak.quietbytehq.uk until after the first deploy. Fake scores remain possible because the code is public. The Ember Ring story draft is in `story/` and is not yet in the game.
 - 0.3.4 was deployed on the laptop (22 Nov 2026, about 10:31 PKT / Asia/Karachi): 19 suites, 1277 checks, 0 failures; export rebuilt (109 MB). 60 s autoplay 60.05 fps avg (wall clock), 1% low 49.6, 2.2% > 18 ms; captures in `qa/laptop/v034/` and `qa/laptop/v034-reload/`. Replaced 0.3.3 files and the 0.3.3 build are in `_to_delete/replaced_v033/`; transfer parts and the QA jail in `_to_delete/v034_transfer/`.
 - 0.3.3 was deployed on the laptop (22 Nov 2026, about 09:58 PKT): 19 suites, 1207 checks, 0 failures; export rebuilt. Replaced 0.3.1 files and the 0.3.1 build are in `_to_delete/replaced_v031/`; transfer parts in `_to_delete/v033_transfer/`. Local wrangler tests passed on the development copy.
@@ -151,7 +156,7 @@ then regenerates `scripts/sprite_meta.gd`. Re-bake from un-outlined masters only
   but a trademark check before any store release is advisable.
 - ElevenLabs plan not confirmed: NOTICE carries conditional attribution for music, SFX and voice.
   Confirm the plan, then keep or remove the "Created with ElevenLabs" lines.
-- No physical gamepad tested yet; Windows not built; laptop fps measured on battery only.
+- No physical gamepad tested yet. A Windows export preset exists for CI; the zip is untested and not supported. Laptop fps measured on battery only.
 - 0.2.1 was deployed on the laptop (16 Nov 2026): tests, export and autoplay captures done
   (`qa/laptop/v021/`). Replaced 0.2.0 files are in `_to_delete/replaced_v020/`, transfer parts in
   `_to_delete/v021_transfer/`, JPEG copies made for transfer in `_to_delete/v021_jpg_transfer/`.

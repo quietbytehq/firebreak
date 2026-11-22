@@ -3,7 +3,7 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 export FIREBREAK_ROOT="$(cd .. && pwd)"
-export GODOT="${GODOT:-/workspace/godot/godot}"
+export GODOT="${GODOT:-godot}"
 export PORT="${PORT:-8787}"
 export FIREBREAK_SCORES_URL="http://127.0.0.1:${PORT}"
 export ADMIN_KEY="$(openssl rand -hex 16)"

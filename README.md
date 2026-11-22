@@ -1,5 +1,7 @@
 # Firebreak
 
+<img src="assets/logo/firebreak-256.png" alt="Firebreak icon" width="128" height="128">
+
 An Operation Wolf-style gallery shooter for Linux by QuietByte. Hold your position as the
 battlefield pans slowly across a jungle river village at dusk: shoot riflemen, machine-gun
 nests and paratroopers, spare the villagers, and shoot falling food and supplies.
@@ -14,13 +16,17 @@ flash and sparks, launcher back-blast), and pausing now freezes every sound and 
 pause-menu track. 0.3.3: an optional global top 100 at firebreak.quietbytehq.uk, with campaign
 scores added up across a run.
 
-![Gameplay](docs/gameplay.png)
+![Title screen](docs/title-screen.jpg)
+
+![Gameplay](docs/gameplay.jpg)
 
 ## Play
 
-From a Linux build folder run `./play.sh` (Godot is not required to play the exported build).
-From the source tree: `./tools/build-linux.sh` once, then `./play.sh`.
-OpenGL 3.3 graphics required. The game starts fullscreen; F11 toggles windowed mode.
+Download Linux packages from [GitHub Releases](https://github.com/quietbytehq/firebreak/releases): the `Firebreak-0.3.7-linux-x86_64.tar.gz` archive (extract it and run `Firebreak/play.sh`), a `.deb`, and an AppImage. Confirm the files against `SHA256SUMS-0.3.7`. Godot is not required to play the exported build. OpenGL 3.3-compatible graphics are required. The archive launcher selects native Wayland on a Wayland desktop.
+
+A Snap Store package named `firebreak-game` is set up in this repository. Once it is published you can install it with `snap install firebreak-game`. A Windows zip may also be attached to the GitHub release for testing; it has not been run on Windows and is not supported.
+
+From this source tree, run `./tools/build-linux.sh` once, then `./play.sh`. The game starts fullscreen; F11 toggles windowed mode. This is an early development build (stage 1 of a planned twelve); public tags are marked as pre-release until later stages ship.
 
 ## How it plays
 
@@ -75,8 +81,11 @@ settings, the local top-ten scores and your cash, weapons and ammo are saved in 
 
 - Engine: Godot 4.7.2 (GDScript, GL Compatibility renderer), 1920×1080 base resolution.
 - `tools/test.sh` runs the isolated headless test suites in `tests/`.
-- `tools/build-linux.sh` exports `build/Firebreak/`.
-- `tools/build-snap.sh` builds a strict core24 snap (not yet released).
+- `tools/build-linux.sh` exports `build/linux/Firebreak.x86_64` and assembles `build/Firebreak/` for local play.
+- `packaging/build_linux.sh` packages the Linux export as `Firebreak-<version>-linux-x86_64.tar.gz`, `firebreak_<version>_amd64.deb` and (when appimagetool is available) an AppImage, all under `dist/`.
+- `tools/package-release.sh` exports and then runs that packager, and writes `SHA256SUMS`.
+- `tools/build-snap.sh` builds a strict core24 snap named `firebreak-game` from the `.deb` (optional; does not upload). `snap/snapcraft.yaml` lists the `network` plug for the scoreboard.
+- A version tag (`v0.3.7`) starts GitHub Actions: Linux and Windows exports, packages attached to a pre-release, and a snap uploaded to the Snap Store `edge` channel.
 - Stages are data: see `data/campaign.json`, `data/stages/stage_01.json` and `docs/DESIGN.md`.
 - Art prompts and sprite notes: `ART_PROMPTS.md`. Audio catalogue: `AUDIO_BRIEF.md`.
 - Weapons, prices and the economy are data: `data/weapons.json`.
@@ -85,7 +94,7 @@ settings, the local top-ten scores and your cash, weapons and ammo are saved in 
   and `tools/art/contact_sheet.py` (weapon icons) and `tools/art/bake_outlines.py` (outlines).
   `tools/art/cut_fp.py` and `tools/art/fp_contact_sheet.py` (first-person weapon views; muzzle
   and back-blast points in `data/fp_weapons.json`).
-- QA results: `QA_REPORT.md`.
+- QA results: `QA_REPORT.md`. Changes by version: `CHANGELOG.md`.
 
 ## Global top 100
 
@@ -101,12 +110,11 @@ be proved genuine.
 side reload pose on magazine guns (the Thunder M60 and launchers dip without a pose change);
 muzzle tracers and smoke trails; popping scores, streak callouts and a stage title card; head
 shots with a CLEAN SHOT bonus; pricier guns never hit softer than cheaper ones of the same type;
-eleven new Rayan catchphrases that unlock as you clear stages. The Ember Ring story draft is in
-`story/` and is not yet in the game.
+eleven new Rayan catchphrases that unlock as you clear stages.
 
 0.3.5: Rayan is blended into the mission-failed and stage-clear screens (feathered cut-out, grading and a left vignette) instead of sitting in a hard rectangle. Bullet tracers are gone; the barrel now throws a bigger flash, sparks and a puff of smoke on every shot. Rocket and grenade trails are a little softer.
 
-0.3.7: One START button (the briefing plays the first time, and can be rewatched with F1 or from pause). Near enemies stand above the bottom HUD. A spoken “FIREBREAK!” calls over the title music once per launch. The title shows this computer’s high scores and a GLOBAL SCORES link that opens the public board. The briefing panel fades into the map.
+0.3.7: One START button (the briefing plays the first time, and can be rewatched with F1 or from pause). Near enemies stand above the bottom HUD. A spoken “FIREBREAK!” calls over the title music once per launch. The title shows this computer’s high scores and a GLOBAL SCORES link that opens the public board. The briefing panel fades into the map. The app icon is a flaming F, readable at small sizes. Linux packages and a Snap Store pipeline (`firebreak-game`) are included.
 0.3.6: A cinematic title theme plays from launch. The opening briefing and a travel map for the Ember Ring campaign are in the game. The top HUD uses military plates, icons and the Barlow Condensed typeface. Stage 2 is still not playable.
 
 ## Known limitations (0.3.7)
@@ -115,7 +123,7 @@ eleven new Rayan catchphrases that unlock as you clear stages. The Ember Ring st
 - The truck is still drawn in code. The ElevenLabs plan behind the audio is not yet confirmed
   (see `NOTICE`).
 - Tested on Linux x86-64 with Intel Mesa graphics only. No physical gamepad was tested.
-  Windows is not supported yet.
+  A Windows zip may be produced by the release CI; it has not been run on Windows and is not supported.
 - The Store is not reachable from the pause menu mid-stage. Launcher rounds reuse the grenade
   in-flight art, and Rayan's portrait does not change with the selected weapon.
 - First-person view: launchers still show the loaded rocket while reloading, and the arms
@@ -125,3 +133,5 @@ eleven new Rayan catchphrases that unlock as you clear stages. The Ember Ring st
 
 Source code: Apache-2.0 (see `LICENSE`). Attributions and asset terms: `NOTICE`.
 Third-party licences: `LICENSES/`. Contact: hello@quietbytehq.uk
+
+Source: https://github.com/quietbytehq/firebreak

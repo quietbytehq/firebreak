@@ -15,7 +15,7 @@ import urllib.request
 BASE = os.environ.get("FIREBREAK_SCORES_URL", "http://127.0.0.1:8787")
 ADMIN_KEY = os.environ["ADMIN_KEY"]
 ROOT = os.environ.get("FIREBREAK_ROOT", os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-GODOT = os.environ.get("GODOT", "/workspace/godot/godot")
+GODOT = os.environ.get("GODOT", "godot")
 failures = 0
 
 

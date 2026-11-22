@@ -1,6 +1,6 @@
 # QA report — Firebreak 0.3.7
 
-Date: 22 November 2026. Deployed to and tested on the laptop (HP Victus, Intel RPL-P graphics, Mesa, 144 Hz panel). Box results follow.
+Date: 22 November 2026. Deployed to and tested on the test laptop (Intel RPL-P graphics, Mesa, 144 Hz panel). Box results follow.
 
 ## Laptop results (0.3.7)
 - Deploy: 22 November 2026, about 12:26 PKT (Asia/Karachi). 24 files replaced (moved to
@@ -31,12 +31,17 @@ Date: 22 November 2026. Deployed to and tested on the laptop (HP Victus, Intel R
   GLOBAL SCORES), `v037-laptop-title-menu.jpg` (single START), `v037-laptop-briefing.jpg`
   (gradient fade), `v037-laptop-run-013s.jpg` and `v037-laptop-run-014s.jpg` (near rifleman
   fully visible above the HUD and in front of the gun). JPEG copies also at
-  `/workspace/firebreak_shots/v037/`.
+  `firebreak_shots/v037/`.
 - Title call: 83 ElevenLabs credits, one take. The live scoreboard was not looked up.
+- App icon: a flaming F was chosen after viewing 16, 32 and 48 px previews of two original
+  candidates (flaming F vs Rayan's sunglassed face). At 16 px the F is still a letter; the
+  face becomes an orange blob. 512×512 and 256×256 PNGs plus an SVG are in `assets/logo/`.
+  `project.godot` `application/config/icon`, the Windows export icon, the desktop file, the
+  snap / store listing and the README all use this icon.
 
 ## Development-copy results (0.3.7)
 - `./tools/test.sh`: 20 suites, **1394 checks, 0 failures**.
-- Box screenshots (xvfb, 1920×1080) in `/workspace/firebreak_shots/v037/`:
+- Box screenshots (xvfb, 1920×1080) in `firebreak_shots/v037/`:
   `v037-title.jpg`, `v037-title-menu.jpg`, `v037-briefing.jpg`, `v037-013s.jpg`,
   `v037-014s.jpg`. Software renderer fps on the box is not comparable to the laptop.
 
@@ -48,11 +53,15 @@ Date: 22 November 2026. Deployed to and tested on the laptop (HP Victus, Intel R
   empty, then post from the game. Fake scores remain possible because the code is public.
 - Opening GLOBAL SCORES in a real browser session (the call is `OS.shell_open` of the known
   URL; that was not fired from here).
+- A Snap Store upload or login (the owner does `snapcraft login`, the store secret and any
+  promotion from `edge` to `stable`). The snap name `firebreak-game` still has to be
+  registered. A local snap pack is attempted without sudo when the .deb is ready.
+- A real Windows run. CI exports a Windows zip; that artifact is untested and not supported.
 
 ---
 # QA report — Firebreak 0.3.6
 
-Date: 22 November 2026. Deployed to and tested on the laptop (HP Victus, Intel RPL-P graphics, Mesa, 144 Hz panel). Box results follow.
+Date: 22 November 2026. Deployed to and tested on the test laptop (Intel RPL-P graphics, Mesa, 144 Hz panel). Box results follow.
 
 ## Laptop results (0.3.6)
 - Deploy: 22 November 2026, about 11:54 PKT (Asia/Karachi). 23 files replaced (moved to
@@ -78,12 +87,12 @@ Date: 22 November 2026. Deployed to and tested on the laptop (HP Victus, Intel R
   18 ms match 0.3.5; the 1% low is a little higher (49.4 vs 46.5).
 - Screenshots (real, laptop): `qa/laptop/v036/v036-laptop-title.jpg` (CUT THE EMBER RING),
   `v036-laptop-008s.jpg` (new HUD plates), `v036-laptop-briefing.jpg`, `v036-laptop-map.jpg`
-  (Next: Dune Sea — coming soon). JPEG copies also at `/workspace/firebreak_shots/v036/`.
+  (Next: Dune Sea — coming soon). JPEG copies also at `firebreak_shots/v036/`.
 
 ## Box results (0.3.6)
 - `./tools/test.sh`: 20 suites, **1373 checks, 0 failures**.
   Ammo 14, Art and audio 92, Combat 49, Economy 17, Facing 25, First-person view 119, Helicopter 24, HUD click 20, Input map 72, Loadout 34, Main scene 36, Online and campaign scores 33, Pause audio 29, Spawning 25, Stage data 86, Stage flow 35, Store 26, Story 87, Weapon data 517, Weapons 33.
-- Screenshots (real, llvmpipe): `/workspace/firebreak_shots/v036/hud-before.jpg`,
+- Screenshots (real, llvmpipe): `firebreak_shots/v036/hud-before.jpg`,
   `hud-after.jpg`, `v036-title.jpg`, `v036-briefing.jpg`, `v036-map.jpg`.
 - Title music: one ElevenLabs Music take, 720 credits. No new speech credits (the briefing
   reuses `rayan_lock_and_load`).
@@ -91,7 +100,7 @@ Date: 22 November 2026. Deployed to and tested on the laptop (HP Victus, Intel R
 ---
 # QA report — Firebreak 0.3.5
 
-Date: 22 November 2026. Deployed to and tested on the laptop (HP Victus, Intel RPL-P graphics, Mesa, 144 Hz panel). Box results follow.
+Date: 22 November 2026. Deployed to and tested on the test laptop (Intel RPL-P graphics, Mesa, 144 Hz panel). Box results follow.
 
 ## Laptop results (0.3.5)
 - Deploy: 22 November 2026, about 11:18 PKT (Asia/Karachi). 11 files replaced (moved to
@@ -118,14 +127,14 @@ Date: 22 November 2026. Deployed to and tested on the laptop (HP Victus, Intel R
   18 ms match 0.3.4; the 1% low is a little lower on this shorter run (46.5 vs 49.6).
 - Screenshots (real, laptop): `qa/laptop/v035/v035-laptop-fail-result.jpg` blended mission-failed
   screen; `qa/laptop/v035/v035-laptop-fire-008s.jpg` Hornet muzzle burst, no bullet tracer.
-  JPEG copies also at `/workspace/firebreak_shots/v035/v035-laptop-*.jpg`.
+  JPEG copies also at `firebreak_shots/v035/v035-laptop-*.jpg`.
 
 ## Box results (0.3.5)
 - `./tools/test.sh`: 19 suites, **1280 checks, 0 failures**.
   Ammo 14, Art and audio 89, Combat 49, Economy 17, Facing 25, First-person view 119, Helicopter 24,
   HUD click 20, Input map 72, Loadout 34, Main scene 34, Online and campaign scores 33, Pause audio 29,
   Spawning 25, Stage data 85, Stage flow 35, Store 26, Weapon data 517, Weapons 33.
-- Screenshots (real, llvmpipe): `/workspace/firebreak_shots/v035/v035-fail-before.jpg` (hard
+- Screenshots (real, llvmpipe): `firebreak_shots/v035/v035-fail-before.jpg` (hard
   rectangular bust), `v035-fail-after.jpg` (feathered cut-out in the scene),
   `v035-muzzle-pistol-fire-003s.jpg` (Viper 9), `v035-muzzle-smg-fire-003s.jpg` (Hornet 9),
   `v035-muzzle-rifle-fire-003s.jpg` (Kalash 47), `v035-muzzle-m60-fire-003s.jpg` (Thunder M60).
@@ -133,7 +142,7 @@ Date: 22 November 2026. Deployed to and tested on the laptop (HP Victus, Intel R
 ---
 # QA report — Firebreak 0.3.4
 
-Date: 22 November 2026. Deployed to and tested on the laptop (HP Victus, Intel RPL-P graphics, Mesa, 144 Hz panel). Box results follow.
+Date: 22 November 2026. Deployed to and tested on the test laptop (Intel RPL-P graphics, Mesa, 144 Hz panel). Box results follow.
 
 ## Box results (0.3.4)
 - `./tools/test.sh`: 19 suites, **1277 checks, 0 failures**.
@@ -144,7 +153,7 @@ Date: 22 November 2026. Deployed to and tested on the laptop (HP Victus, Intel R
 - `./tools/build-linux.sh`: export built (`build/Firebreak/Firebreak.x86_64`, 109 MB).
 - Box autoplay (llvmpipe, not a laptop figure), 22 s, Hornet 9 loadout, `--qa-aim-head`, reload at 8 s:
   18 kills, 0 villagers, score 3480 (multiple of 10). Screenshots (real):
-  `/workspace/firebreak_shots/v034/v034-003s.jpg` rear Hornet fire + CLEAN SHOT,
+  `firebreak_shots/v034/v034-003s.jpg` rear Hornet fire + CLEAN SHOT,
   `v034-008s.jpg` Hornet side reload pose (RELOADING), stickered farmer,
   `v034-012s.jpg` and `v034-016s.jpg` rear fire, tracers, CLEAN SHOT, stickered civilian walking
   the correct way.
@@ -158,7 +167,7 @@ Date: 22 November 2026. Deployed to and tested on the laptop (HP Victus, Intel R
   its editor settings only in that jail. The real `~/.config/godot/editor_settings-4.7.tres` was
   unchanged.
 - Autoplay, exported build, seed 7, 60 s, Hornet 9, `--qa-aim-head`, reload at 8 s, pause at 22 s
-  (pause time and capture frames excluded). HP Victus, Mesa Intel(R) Graphics (RPL-P), 144 Hz
+  (pause time and capture frames excluded). test laptop, Mesa Intel(R) Graphics (RPL-P), 144 Hz
   panel, vsync off + 60 fps limiter, window 1920×952:
 
 | Measure | 0.3.4 wall clock | 0.3.4 smoothed | 0.3.1 wall clock |
@@ -179,13 +188,13 @@ Date: 22 November 2026. Deployed to and tested on the laptop (HP Victus, Intel R
   `qa/laptop/v034/v034-laptop-pause.jpg` pause menu;
   `qa/laptop/v034-reload/v034-laptop-reload-008s.jpg` Hornet side reload pose, HUD RELOADING 0/150,
   stickered civilian walking correctly.
-  JPEG copies also at `/workspace/firebreak_shots/v034/v034-laptop-*.jpg`.
+  JPEG copies also at `firebreak_shots/v034/v034-laptop-*.jpg`.
 
 
 ---
 # QA report — Firebreak 0.3.1
 
-Date: 16 November 2026. Deployed to and tested on the laptop (HP Victus, Intel RPL-P graphics,
+Date: 16 November 2026. Deployed to and tested on the test laptop (Intel RPL-P graphics,
 Mesa, 144 Hz panel, plugged in at 88%). Box results follow; 0.3.0 laptop results further down.
 
 ## Laptop results (0.3.1)
@@ -249,7 +258,7 @@ repeated on the laptop GPU after deploy.
 ---
 # QA report — Firebreak 0.3.0
 
-Date: 16 November 2026. Deployed to and tested on the laptop (HP Victus, Ubuntu, Mesa 26.0.8,
+Date: 16 November 2026. Deployed to and tested on the test laptop (Ubuntu, Mesa 26.0.8,
 Intel RPL-P graphics, 144 Hz panel, GL Compatibility renderer), **on battery** (81% → 77%).
 Development-copy (box) results follow the laptop section; 0.2.1 results are further down.
 
@@ -320,7 +329,7 @@ Kept outside the project folder with the other review captures.
 ---
 # QA report — Firebreak 0.2.1
 
-Date: 15–16 November 2026. Deployed to and tested on the laptop (HP Victus, Ubuntu 26.04.1,
+Date: 15–16 November 2026. Deployed to and tested on the test laptop (Ubuntu 26.04.1,
 Mesa 26.0.8, Intel RPL-P graphics, Wayland, 144 Hz panel, GL Compatibility renderer).
 **All laptop runs were on battery** (80% → 79%). Development-copy results are further down.
 
@@ -374,7 +383,7 @@ Four autoplay captures: 44–49 fps average, as with 0.2.0 on the same renderer.
 
 # QA report — Firebreak 0.2.0
 
-Date: 15 November 2026. Machine: HP Victus laptop, Ubuntu 26.04.1, Mesa 26.0.8,
+Date: 15 November 2026. Machine: test laptop, Ubuntu 26.04.1, Mesa 26.0.8,
 Intel Graphics (RPL-P), 144 Hz built-in display, GNOME Wayland session, Godot 4.7.2 official.
 **All laptop runs below were on battery** (AC unplugged, 78% → 73%, "balanced" power profile).
 
@@ -452,7 +461,7 @@ renderer, same build) were captured instead and are labelled as such.
 
 # QA report — Firebreak 0.1.0
 
-Date: 15 November 2026. Machine: HP Victus laptop, Ubuntu 26.04.1, Mesa 26.0.8,
+Date: 15 November 2026. Machine: test laptop, Ubuntu 26.04.1, Mesa 26.0.8,
 Intel Graphics (RPL-P), 144 Hz built-in display, GNOME Wayland session. Godot 4.7.2 official.
 
 ## Automated tests (`./tools/test.sh`, headless, isolated user folders)

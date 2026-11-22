@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://degke08p6fsau"
-path="res://.godot/imported/firebreak.png-5a95373d3d5e6c8ec408a73c70eb7945.ctex"
+uid="uid://dscyk26as77m4"
+path="res://.godot/imported/firebreak-256.png-2db6b374a29326273be396e02b0226e7.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://snap/gui/firebreak.png"
-dest_files=["res://.godot/imported/firebreak.png-5a95373d3d5e6c8ec408a73c70eb7945.ctex"]
+source_file="res://assets/logo/firebreak-256.png"
+dest_files=["res://.godot/imported/firebreak-256.png-2db6b374a29326273be396e02b0226e7.ctex"]
 
 [params]
 

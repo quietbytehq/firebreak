@@ -1,36 +1,45 @@
-name: firebreak
+name: firebreak-game
 title: Firebreak
 base: core24
-version: '0.3.7'
+version: "0.3.7"
 summary: Operation Wolf-style gallery shooter in a jungle river village
 description: |
-  Hold the line in an Operation Wolf-style gallery shooter. Aim with the
-  mouse or a gamepad as the battlefield pans slowly across a jungle river
-  village at dusk. Shoot riflemen, machine-gun nests and paratroopers,
-  spare the villagers, and shoot falling food and supplies for health,
-  ammunition, grenades and weapon upgrades. Call in air strikes and bring
-  down helicopters. Version 0.3.7 contains stage 1 of a planned twelve, with a global top 100.
-  Mouse, keyboard and mapped gamepad controls. Offline, local top-ten
-  scores. Linux x86-64, OpenGL 3.3 required.
+  Firebreak is an Operation Wolf-style gallery shooter by QuietByte. Aim with
+  the mouse or a gamepad as the battlefield pans slowly across a jungle river
+  village at dusk. Shoot riflemen, machine-gun nests and paratroopers, spare
+  the villagers, and shoot falling food and supplies for health, ammunition,
+  grenades and weapon upgrades. Call in air strikes and bring down helicopters.
+  Version 0.3.7 is an early development build (stage 1 of a planned twelve)
+  with a global top 100 at firebreak.quietbytehq.uk.
+  Mouse, keyboard and mapped gamepad controls. Linux x86-64, OpenGL 3.3
+  required.
   For gamepads, enable controller access with:
-  sudo snap connect firebreak:joystick
+  sudo snap connect firebreak-game:joystick
 grade: devel
 confinement: strict
 license: Apache-2.0
-contact: hello@quietbytehq.uk
+contact: quietbyte.2026@gmail.com
 website: https://github.com/quietbytehq/firebreak
 source-code: https://github.com/quietbytehq/firebreak
 issues: https://github.com/quietbytehq/firebreak/issues
-icon: snap/gui/firebreak.png
-platforms:
-  amd64:
+icon: assets/logo/firebreak-512.png
+
 apps:
-  firebreak:
-    command: bin/launch-firebreak
+  firebreak-game:
+    command: usr/bin/firebreak
+    desktop: usr/share/applications/firebreak.desktop
     extensions: [gnome]
-    plugs: [audio-playback, joystick, network]
+    plugs:
+      - opengl
+      - audio-playback
+      - joystick
+      - network
+
 parts:
-  game:
+  firebreak-game:
     plugin: dump
-    source: build/snap-payload
-    stage-packages: [libasound2t64, libpulse0, libxinerama1, libxcursor1, libxi6, libxrandr2]
+    source: dist/firebreak_0.3.7_amd64.deb
+    override-build: |
+      craftctl default
+      sed -i 's|^Icon=.*|Icon=${SNAP}/usr/share/icons/hicolor/512x512/apps/firebreak.png|' \
+        "$CRAFT_PART_INSTALL/usr/share/applications/firebreak.desktop"

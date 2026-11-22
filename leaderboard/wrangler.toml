@@ -12,4 +12,4 @@ MAX_SCORE = "5000000"
 [[d1_databases]]
 binding = "DB"
 database_name = "firebreak-scores"
-database_id = "REPLACE_WITH_DATABASE_ID"
+database_id = "e9e18dd2-d080-4cf0-911f-2606c714cc1b"
