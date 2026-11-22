@@ -1,6 +1,6 @@
-# Firebreak — story (0.3.2 draft)
+# Firebreak — story
 
-Original story for approval. Nothing here is wired into the game yet.
+The opening briefing and travel map shipped in 0.3.6, as a plain mission to cut the Ember Ring. The award ceremony and stages 2–12 are still to come.
 No real units, places, or trademarks.
 
 ## Premise

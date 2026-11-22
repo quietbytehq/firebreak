@@ -18,6 +18,8 @@ var font: FontVariation
 var fill: Node2D
 var press_start := true
 var version := ""
+var subtitle := "CUT THE EMBER RING"
+var ui_font: Font
 
 func _ready() -> void:
 	bg = load("res://assets/ui/title_bg.jpg")
@@ -27,6 +29,7 @@ func _ready() -> void:
 	font.variation_embolden = 1.1
 	font.variation_transform = Transform2D(Vector2(1.0, 0.0), Vector2(-0.16, 1.0), Vector2.ZERO)
 	font.spacing_glyph = 6
+	ui_font = preload("res://scripts/ui_style.gd").font("semibold")
 	var g := Gradient.new()
 	g.set_color(0, Color(1, 1, 1, 1)); g.set_color(1, Color(1, 1, 1, 0))
 	var gt := GradientTexture2D.new(); gt.gradient = g; gt.width = 64; gt.height = 64
@@ -80,16 +83,16 @@ func _draw() -> void:
 		draw_string_outline(font, l[1], l[0], HORIZONTAL_ALIGNMENT_LEFT, -1, LOGO_SIZE, 30, Color(0.18, 0.04, 0.01))
 		draw_string_outline(font, l[1], l[0], HORIZONTAL_ALIGNMENT_LEFT, -1, LOGO_SIZE, 14, Color(1.0, 0.45, 0.08))
 		draw_string_outline(font, l[1], l[0], HORIZONTAL_ALIGNMENT_LEFT, -1, LOGO_SIZE, 6, Color(0.3, 0.06, 0.02))
-	var sub := "RIVER VILLAGE  ·  STAGE 1"
-	draw_string_outline(ThemeDB.fallback_font, LOGO_POS + Vector2(40, LINE_H + 74), sub, HORIZONTAL_ALIGNMENT_LEFT, -1, 34, 8, Color(0, 0, 0, 0.85))
-	draw_string(ThemeDB.fallback_font, LOGO_POS + Vector2(40, LINE_H + 74), sub, HORIZONTAL_ALIGNMENT_LEFT, -1, 34, Color(1, 0.86, 0.62))
+	var sub := subtitle
+	draw_string_outline(ui_font, LOGO_POS + Vector2(40, LINE_H + 74), sub, HORIZONTAL_ALIGNMENT_LEFT, -1, 34, 8, Color(0, 0, 0, 0.85))
+	draw_string(ui_font, LOGO_POS + Vector2(40, LINE_H + 74), sub, HORIZONTAL_ALIGNMENT_LEFT, -1, 34, Color(1, 0.86, 0.62))
 	for e in embers:
 		var fl := 0.6 + 0.4 * sin(t * 7.0 + e.ph)
 		draw_texture_rect(soft, Rect2(e.p - Vector2(e.s, e.s) * 2.0, Vector2(e.s, e.s) * 4.0), false, Color(e.c.r, e.c.g, e.c.b, 0.85 * fl))
 	if press_start:
 		var a := 0.55 + 0.45 * sin(t * 3.4)
 		var txt := "PRESS START"
-		var f := ThemeDB.fallback_font
+		var f := ui_font
 		var w := f.get_string_size(txt, HORIZONTAL_ALIGNMENT_LEFT, -1, 60).x
 		var pos := Vector2(380 - w * 0.5, 820)
 		draw_string_outline(f, pos, txt, HORIZONTAL_ALIGNMENT_LEFT, -1, 60, 12, Color(0, 0, 0, 0.8 * a))
@@ -99,7 +102,7 @@ func _draw() -> void:
 		draw_string_outline(f, Vector2(380 - hw * 0.5, 866), hint, HORIZONTAL_ALIGNMENT_LEFT, -1, 24, 6, Color(0, 0, 0, 0.8))
 		draw_string(f, Vector2(380 - hw * 0.5, 866), hint, HORIZONTAL_ALIGNMENT_LEFT, -1, 24, Color(0.95, 0.88, 0.75))
 	var credit := "A QuietByte game  ·  v" + version
-	var cf := ThemeDB.fallback_font
+	var cf := ui_font
 	var cw := cf.get_string_size(credit, HORIZONTAL_ALIGNMENT_LEFT, -1, 22).x
 	draw_string_outline(cf, Vector2(1890 - cw, 1058), credit, HORIZONTAL_ALIGNMENT_LEFT, -1, 22, 6, Color(0, 0, 0, 0.85))
 	draw_string(cf, Vector2(1890 - cw, 1058), credit, HORIZONTAL_ALIGNMENT_LEFT, -1, 22, Color(1, 0.92, 0.8, 0.9))

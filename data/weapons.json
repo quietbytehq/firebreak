@@ -1,5 +1,5 @@
 {
- "version": "0.3.5",
+ "version": "0.3.6",
  "note": "Original in-game weapons. Names and art are original; no real makers, models or logos. fire_rate = rounds per second while the trigger is held; spread = random aim offset radius in screen pixels; reserve -1 = unlimited; issue_mags = spare magazines every carried weapon is topped up to at the start of a stage; ammo_pack = rounds one store ammo purchase adds; ammo drop in the field adds drop_mags magazines.",
  "slots": [
   {

@@ -1,3 +1,18 @@
+# CHECKPOINT — Firebreak 0.3.6
+
+Updated: 2026-11-22 (PKT, UTC+5)
+
+## v0.3.6 round — title music, Ember Ring briefing and travel map, HUD plates and font
+- New cinematic title theme (ElevenLabs Music `eleven_music_v2_5`, one 48 s instrumental take, **720 credits**). Opening 12.75 s plays once; a 30.75 s loop (fade-out trimmed, 0.6 s crossfade) follows. Two-pass loudnorm −16 LUFS / −1.5 dBTP, OGG Vorbis q6, 48 kHz stereo. Plays from launch on the title, the briefing and the travel map.
+- Opening briefing (STORY.md text, plain mission to cut the Ember Ring): typewriter over a painted dossier, skippable, `rayan_lock_and_load` at the last line (no new speech credits). Shown on the first Start mission; later starts skip it (`seen_briefing` in settings). A title **Story** button replays the briefing and then the travel map, then returns to the title.
+- Travel map after a stage-1 clear: 12-stage ember route, current pin, “Next: Dune Sea — coming soon”, one-line brief. Title subtitle is “CUT THE EMBER RING”.
+- Top HUD: military/ammo-crate plates, score/cash/clock/enemies icons, tighter layout, segmented enemy bar. Barlow Condensed (OFL, bundled with licence, credited in NOTICE) on the HUD, menus and story screens. The stacked FIREBREAK logo still uses the engine default font.
+- QA: `--qa-briefing` and `--qa-map` capture those screens and auto-advance; `--qa-run` still skips them so autopilot is not blocked. `_qa_finish` is safe when no stage has started.
+- Box and laptop tests: 20 suites, **1373 checks, 0 failures**.
+- Box shots in `/workspace/firebreak_shots/v036/` (HUD before/after, title, briefing, travel map).
+- Laptop (22 Nov 2026, about 11:54 PKT / Asia/Karachi): 23 replaced files are in `_to_delete/replaced_v035/`; new files include fonts, briefing/map art, HUD plates and the story scripts. Transfer parts live in `_to_delete/v036_transfer/`. Export rebuilt (`build/Firebreak/Firebreak.x86_64`, 113 MB) with TMPDIR and XDG_* inside `_to_delete/v036_transfer/qa_home/`; the real `~/.config/godot/editor_settings-4.7.tres` was not written. 30 s autoplay (exported build, 144 Hz, vsync off + 60 fps limiter, window 1920×952): 60.04 fps avg (wall clock), 1% low 49.4, 2.2% frames > 18 ms, worst 32.0 ms; 24 kills, 0 villagers, score 3,680. Screenshots in `qa/laptop/v036/`.
+
+---
 # CHECKPOINT — Firebreak 0.3.5
 
 Updated: 2026-11-22 (PKT, UTC+5)

@@ -27,6 +27,7 @@ func run() -> void:
 	check(float(s.bands.far.scale) < float(s.bands.mid.scale) and float(s.bands.mid.scale) < float(s.bands.near.scale), "far < mid < near scale")
 	check(float(s.bands.far.damage) < float(s.bands.near.damage), "near enemies hit harder")
 	check(StageData.load_stage(2).is_empty(), "unbuilt stages are not playable yet")
+	check(str(StageData.stage_entry(2).get("name", "")) == "Dune Sea", "stage 2 is named Dune Sea")
 	var prev := StageData.difficulty(1)
 	for n in range(2, 13):
 		var d := StageData.difficulty(n)

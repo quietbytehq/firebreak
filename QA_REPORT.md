@@ -1,3 +1,42 @@
+# QA report — Firebreak 0.3.6
+
+Date: 22 November 2026. Deployed to and tested on the laptop (HP Victus, Intel RPL-P graphics, Mesa, 144 Hz panel). Box results follow.
+
+## Laptop results (0.3.6)
+- Deploy: 22 November 2026, about 11:54 PKT (Asia/Karachi). 23 files replaced (moved to
+  `_to_delete/replaced_v035/`); fonts, story art, HUD plates and new scripts were added. Transfer
+  parts and the QA jail are in `_to_delete/v036_transfer/`.
+- `./tools/test.sh`: 20 suites, **1373 checks, 0 failures** (same counts as the development copy;
+  0.3.5 was 1280, the delta is the story/font/HUD suite and a few extra existing checks).
+- `./tools/build-linux.sh`: export rebuilt (`build/Firebreak/Firebreak.x86_64`, 113 MB). TMPDIR
+  and XDG_* were set under `_to_delete/v036_transfer/qa_home/` (export templates symlinked in);
+  the real `~/.config/godot/editor_settings-4.7.tres` was unchanged.
+- Autoplay, exported build, 30 s (title intro then stage 1; capture frames excluded).
+  Mesa Intel(R) Graphics (RPL-P), 144 Hz, vsync off + 60 fps limiter, window 1920×952:
+
+| Measure | 0.3.6 wall clock (30 s) | 0.3.6 smoothed | 0.3.5 wall clock (30 s) |
+|---|---|---|---|
+| Frames | 1758 | 1758 | 1746 |
+| Average fps | 60.04 | 60.04 | 60.00 |
+| 1% low fps | 49.4 | 60.0 | 46.5 |
+| Frames > 18 ms | 39 (2.2%) | 2 | 39 (2.2%) |
+| Worst frame | 32.0 ms | 21.7 ms | 41.7 ms |
+
+  24 kills, 0 villagers hit, score 3,680, health 100. Average fps and the share of frames over
+  18 ms match 0.3.5; the 1% low is a little higher (49.4 vs 46.5).
+- Screenshots (real, laptop): `qa/laptop/v036/v036-laptop-title.jpg` (CUT THE EMBER RING),
+  `v036-laptop-008s.jpg` (new HUD plates), `v036-laptop-briefing.jpg`, `v036-laptop-map.jpg`
+  (Next: Dune Sea — coming soon). JPEG copies also at `/workspace/firebreak_shots/v036/`.
+
+## Box results (0.3.6)
+- `./tools/test.sh`: 20 suites, **1373 checks, 0 failures**.
+  Ammo 14, Art and audio 92, Combat 49, Economy 17, Facing 25, First-person view 119, Helicopter 24, HUD click 20, Input map 72, Loadout 34, Main scene 36, Online and campaign scores 33, Pause audio 29, Spawning 25, Stage data 86, Stage flow 35, Store 26, Story 87, Weapon data 517, Weapons 33.
+- Screenshots (real, llvmpipe): `/workspace/firebreak_shots/v036/hud-before.jpg`,
+  `hud-after.jpg`, `v036-title.jpg`, `v036-briefing.jpg`, `v036-map.jpg`.
+- Title music: one ElevenLabs Music take, 720 credits. No new speech credits (the briefing
+  reuses `rayan_lock_and_load`).
+
+---
 # QA report — Firebreak 0.3.5
 
 Date: 22 November 2026. Deployed to and tested on the laptop (HP Victus, Intel RPL-P graphics, Mesa, 144 Hz panel). Box results follow.

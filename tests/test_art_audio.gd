@@ -74,6 +74,8 @@ func run() -> void:
 			"rayan_ill_wear_it"]:
 		check(bank.has_sound(base), "audio present: " + base)
 	check(not bank.has_sound("definitely_missing"), "missing sounds stay silent")
+	for path in ["res://assets/ui/briefing_bg.jpg", "res://assets/ui/travel_map.jpg", "res://assets/fonts/BarlowCondensed-Bold.ttf"]:
+		check(ResourceLoader.exists(path), "story asset present: " + path)
 	bank.play_music("music_title_intro_loop", "music_title_intro")
 	check(bank.music_player.stream == bank.find_stream("music_title_intro") and bank.music_next == "music_title_intro_loop", "title intro plays first, loop queued")
 	check(not bool(bank.find_stream("music_title_intro").get("loop")), "title intro plays once (no loop)")

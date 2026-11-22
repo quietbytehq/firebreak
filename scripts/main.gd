@@ -16,13 +16,16 @@ const ScreenFx := preload("res://shaders/screen_fx.gdshader")
 const Weapons := preload("res://scripts/weapons.gd")
 const Online := preload("res://scripts/online.gd")
 const FpView := preload("res://scripts/fp_view.gd")
+const BriefingScreen := preload("res://scripts/briefing_screen.gd")
+const TravelMapScreen := preload("res://scripts/travel_map_screen.gd")
+const UiStyle := preload("res://scripts/ui_style.gd")
 const TARGET_FPS := 60
 const MUSIC_TRACKS := ["music_bg_01", "music_bg_02", "music_bg_03"]
 const TITLE_INTRO := "music_title_intro"
 const TITLE_LOOP := "music_title_intro_loop"
 const GRUNTS := ["rayan_hit_grunt_01", "rayan_hit_grunt_02", "rayan_hit_grunt_03"]
 
-var mode := "title"   # title | playing | paused | result | scores | controls | store
+var mode := "title"   # title | briefing | travel_map | playing | paused | result | scores | controls | store
 var profile: Dictionary
 var bar_press := false      # a mouse press that began on the weapon bar never fires
 var store_cat := "pistol"
@@ -38,6 +41,10 @@ var ui_layer: CanvasLayer
 var menu_root: Control
 var title_bg: TextureRect
 var title_screen: Node2D
+var briefing: Node2D
+var travel_map: Node2D
+var briefing_kind := "play"    # play | story
+var map_kind := "preview"      # preview | after_clear
 var title_menu_open := false
 var bust_tex: Texture2D
 var pending_sounds: Array = []   # [seconds_left, callable]
@@ -106,6 +113,11 @@ func _ready() -> void:
 	title_bg.mouse_filter = Control.MOUSE_FILTER_IGNORE; title_bg.visible = false
 	var bg_layer := CanvasLayer.new(); bg_layer.layer = -1; add_child(bg_layer); bg_layer.add_child(title_bg)
 	title_screen = TitleScreen.new(); bg_layer.add_child(title_screen)
+	briefing = BriefingScreen.new(); briefing.visible = false; bg_layer.add_child(briefing)
+	briefing.finished.connect(_on_briefing_finished)
+	briefing.voice_cb = func(): audio.voice("rayan_lock_and_load", 8.0, true)
+	travel_map = TravelMapScreen.new(); travel_map.visible = false; bg_layer.add_child(travel_map)
+	travel_map.finished.connect(_on_travel_map_finished)
 	_build_theme()
 	if not qa.is_empty() and not DisplayServer.get_name() == "headless":
 		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
@@ -113,6 +125,11 @@ func _ready() -> void:
 		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
 	if qa.has("store"):
 		show_store("title")
+	elif qa.has("briefing"):
+		show_title()
+		show_briefing("story")
+	elif qa.has("map"):
+		show_travel_map("after_clear", 1)
 	elif qa.has("run") and not qa.has("title"):
 		begin_run()
 		start_stage(1)
@@ -396,6 +413,10 @@ func _unhandled_input(event: InputEvent) -> void:
 			get_viewport().set_input_as_handled(); return
 	if event.is_action_pressed("fullscreen"):
 		toggle_fullscreen(); get_viewport().set_input_as_handled(); return
+	if mode == "briefing" and _is_press(event):
+		briefing.advance(); get_viewport().set_input_as_handled(); return
+	if mode == "travel_map" and _is_press(event):
+		_on_travel_map_finished(); get_viewport().set_input_as_handled(); return
 	if mode == "title" and not title_menu_open and _is_press(event):
 		open_title_menu(); get_viewport().set_input_as_handled(); return
 	if mode == "playing":
@@ -453,7 +474,8 @@ func resume_game() -> void:
 # ------------------------------------------------------------------ UI
 func _build_theme() -> void:
 	theme = Theme.new()
-	theme.default_font_size = 34
+	theme.default_font = UiStyle.font("semibold")
+	theme.default_font_size = 30
 	var normal := StyleBoxFlat.new(); normal.bg_color = Color(0.1, 0.08, 0.06, 0.88)
 	normal.border_color = Color(0.85, 0.55, 0.25, 0.6); normal.set_border_width_all(2); normal.set_corner_radius_all(6)
 	normal.content_margin_left = 24; normal.content_margin_right = 24; normal.content_margin_top = 10; normal.content_margin_bottom = 10
@@ -499,7 +521,7 @@ func _label(box: Control, text: String, size: int, col: Color = Color(1, 0.93, 0
 	box.add_child(l); return l
 
 func _button(box: Control, text: String, cb: Callable, disabled: bool = false) -> Button:
-	var b := Button.new(); b.text = text; b.custom_minimum_size = Vector2(520, 66); b.disabled = disabled
+	var b := Button.new(); b.text = text; b.custom_minimum_size = Vector2(520, 56); b.disabled = disabled
 	b.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	b.pressed.connect(func(): audio.play("ui_select"); cb.call())
 	b.focus_entered.connect(func(): audio.play("ui_move", -10.0))
@@ -510,8 +532,85 @@ func _focus_first(box: Control) -> void:
 		if c is Button and not c.disabled:
 			c.call_deferred("grab_focus"); return
 
+func start_mission() -> void:
+	if qa.has("run") or bool(settings.get("seen_briefing", false)):
+		begin_run()
+		start_stage(1)
+		return
+	show_briefing("play")
+
+func show_briefing(kind: String = "play") -> void:
+	briefing_kind = kind
+	mode = "briefing"
+	_clear_menu()
+	title_menu_open = false
+	hud.visible = false
+	view.visible = false
+	if travel_map: travel_map.visible = false
+	title_screen.visible = false
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	audio.clear_pause()
+	audio.stop_loops()
+	if audio.current_music != TITLE_LOOP:
+		audio.play_music(TITLE_LOOP, TITLE_INTRO)
+	briefing.reset()
+	briefing.visible = true
+	if qa.has("run") and not qa.has("briefing"):
+		briefing.skip()
+		_on_briefing_finished()
+
+func _on_briefing_finished() -> void:
+	if briefing: briefing.visible = false
+	if briefing_kind == "story":
+		show_travel_map("preview")
+		return
+	_mark_briefing_seen()
+	begin_run()
+	start_stage(1)
+
+func _mark_briefing_seen() -> void:
+	if qa.has("run") or qa.has("briefing") or qa.has("map") or qa.has("title"):
+		return
+	settings.seen_briefing = true
+	Scores.save_settings(settings)
+
+func show_travel_map(kind: String = "preview", cleared: int = 0) -> void:
+	map_kind = kind
+	mode = "travel_map"
+	_clear_menu()
+	title_menu_open = false
+	hud.visible = false
+	view.visible = false
+	title_screen.visible = false
+	if briefing: briefing.visible = false
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	audio.clear_pause()
+	audio.stop_loops()
+	if audio.current_music != TITLE_LOOP and audio.current_music != TITLE_INTRO:
+		audio.play_music(TITLE_LOOP, TITLE_INTRO)
+	var stage_cleared := cleared if cleared > 0 else (stage_number if kind == "after_clear" else 0)
+	travel_map.setup(stage_cleared, kind == "preview")
+	travel_map.visible = true
+	if qa.has("run") and not qa.has("map") and not qa.has("briefing"):
+		_on_travel_map_finished()
+
+func _on_travel_map_finished() -> void:
+	if travel_map: travel_map.visible = false
+	if map_kind == "preview":
+		show_title(true)
+		return
+	show_store("title")
+
+func _after_clear_continue() -> void:
+	if qa.has("run"):
+		show_store("title")
+		return
+	show_travel_map("after_clear", stage_number)
+
 func show_title(menu: bool = false) -> void:
 	mode = "title"; hud.visible = false; view.visible = false; title_bg.visible = false
+	if briefing: briefing.visible = false
+	if travel_map: travel_map.visible = false
 	title_screen.visible = true
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	audio.clear_pause()
@@ -529,9 +628,10 @@ func open_title_menu() -> void:
 	audio.play("ui_select", -6.0)
 	var box := _new_menu(0.0)
 	box.alignment = BoxContainer.ALIGNMENT_BEGIN
-	box.position = Vector2(110, 520); box.size = Vector2(540, 540)
-	box.add_theme_constant_override("separation", 12)
-	_button(box, "Start mission", func(): begin_run(); start_stage(1))
+	box.position = Vector2(110, 500); box.size = Vector2(540, 560)
+	box.add_theme_constant_override("separation", 8)
+	_button(box, "Start mission", start_mission)
+	_button(box, "Story", func(): show_briefing("story"))
 	_button(box, "Store", func(): show_store("title"))
 	_button(box, "Controls", func(): show_controls("title"))
 	_button(box, "Top scores", func(): show_scores("title"))
@@ -637,17 +737,23 @@ func show_result() -> void:
 			if bool(settings.get("online", true)) and run_score >= Online.MIN_SCORE:
 				Online.submit(self, name_edit.text, run_score, run_stages)
 			Scores.add_score(name_edit.text, run_score, run_stages)
-			show_store("title")
+			_after_clear_continue()
 		name_edit.text_submitted.connect(func(_t): save.call())
 		_button(box, "Save score", save)
 		name_edit.call_deferred("grab_focus")
 		name_edit.call_deferred("select_all")
 	else:
-		_button(box, "Play again", func(): begin_run(); start_stage(stage_number))
-		_button(box, "Store", func(): show_store("result"))
-		_button(box, "Title screen", func(): show_title(true))
+		if cleared:
+			_button(box, "Continue", _after_clear_continue)
+			_button(box, "Play again", func(): begin_run(); start_stage(stage_number))
+			_button(box, "Title screen", func(): show_title(true))
+		else:
+			_button(box, "Play again", func(): begin_run(); start_stage(stage_number))
+			_button(box, "Store", func(): show_store("result"))
+			_button(box, "Title screen", func(): show_title(true))
 		_focus_first(box)
-	if cleared: _label(box, "Stages 2-12 arrive in later versions.", 24, Color(0.9, 0.8, 0.65))
+	if cleared:
+		_label(box, "Stages 2-12 arrive in later versions.", 24, Color(0.9, 0.8, 0.65))
 
 
 func _refresh_online_hint() -> void:
@@ -761,6 +867,8 @@ func _parse_qa_args() -> void:
 		elif arg.begins_with("--qa-tag="): qa.tag = arg.get_slice("=", 1)
 		elif arg.begins_with("--qa-react="): qa.react = float(arg.get_slice("=", 1))
 		elif arg == "--qa-title": qa.title = true
+		elif arg == "--qa-briefing": qa.briefing = true
+		elif arg == "--qa-map": qa.map = true
 		elif arg.begins_with("--qa-pause-at="): qa.pause_at = float(arg.get_slice("=", 1))
 		elif arg.begins_with("--qa-grenade-at="): qa.grenade_at = float(arg.get_slice("=", 1))
 		elif arg.begins_with("--qa-airstrike-at="): qa.airstrike_at = float(arg.get_slice("=", 1))
@@ -833,9 +941,26 @@ func _qa_tick(delta: float) -> void:
 	var tag := str(qa.get("tag", "gameplay"))
 	qa_phase_t += delta
 	if mode != "playing": qa_last_us = 0   # don't count title/pause time as a frame
+	if mode == "briefing":
+		if qa_phase_t > 3.8 and not qa_shots_done.has("briefing"):
+			qa_shots_done["briefing"] = true; _qa_capture(out.path_join(tag + "-briefing.png"))
+		if qa_phase_t > 4.3:
+			briefing.skip(); _on_briefing_finished(); qa_phase_t = 0.0
+		return
+	if mode == "travel_map":
+		if qa_phase_t > 1.4 and not qa_shots_done.has("map"):
+			qa_shots_done["map"] = true; _qa_capture(out.path_join(tag + "-map.png"))
+		if qa_phase_t > 2.0:
+			if qa.has("map") or (qa.has("briefing") and qa_shots_done.has("briefing")):
+				_qa_finish(out)
+			else:
+				_on_travel_map_finished(); qa_phase_t = 0.0
+		return
 	if mode == "title":
 		if qa_phase_t > 3.0 and not qa_shots_done.has("title"):
 			qa_shots_done["title"] = true; _qa_capture(out.path_join(tag + "-title.png"))
+		if qa.has("title") and not qa.has("run") and qa_phase_t > 3.5:
+			_qa_finish(out); return
 		if qa_phase_t > 3.5: start_stage(1); qa_phase_t = 0.0
 		return
 	if mode == "paused":
@@ -931,13 +1056,25 @@ func _qa_finish(out: String) -> void:
 		"adapter": RenderingServer.get_video_adapter_name(), "vendor": RenderingServer.get_video_adapter_vendor(),
 		"api": RenderingServer.get_video_adapter_api_version(), "display": DisplayServer.get_name(),
 		"window": [DisplayServer.window_get_size().x, DisplayServer.window_get_size().y],
-		"stage_time": sim.time, "stage_state": sim.state, "end_reason": sim.end_reason, "score": sim.score,
-		"kills": sim.kills, "quota": sim.quota, "health": sim.health, "villagers_hit": sim.stats.villagers_hit,
-		"shots": sim.stats.shots, "hits": sim.stats.hits, "max_fps": Engine.max_fps,
-		"grenades_left": sim.grenades, "airstrikes_left": sim.airstrikes,
+		"max_fps": Engine.max_fps,
 		"vsync_note": vsync_note,
 		"delta_smoothing": ProjectSettings.get_setting("application/run/delta_smoothing", true),
 	}
+	if sim != null:
+		report["stage_time"] = sim.time
+		report["stage_state"] = sim.state
+		report["end_reason"] = sim.end_reason
+		report["score"] = sim.score
+		report["kills"] = sim.kills
+		report["quota"] = sim.quota
+		report["health"] = sim.health
+		report["villagers_hit"] = sim.stats.villagers_hit
+		report["shots"] = sim.stats.shots
+		report["hits"] = sim.stats.hits
+		report["grenades_left"] = sim.grenades
+		report["airstrikes_left"] = sim.airstrikes
+	else:
+		report["stage_state"] = mode
 	# Wall-clock timing measured between _process calls, independent of Godot's delta smoothing.
 	var raw := qa_raw.slice(30)
 	if not raw.is_empty():

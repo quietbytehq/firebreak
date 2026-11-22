@@ -1,5 +1,5 @@
 extends Node2D
-## First-person weapon view (0.3.5): the selected weapon held in Rayan's arms,
+## First-person weapon view (0.3.6): the selected weapon held in Rayan's arms,
 ## drawn from behind at the bottom centre of the screen, under the HUD layer so
 ## the weapon bar and the reticle always stay on top. It sways, turns toward the
 ## aim point, kicks on every shot, shows a muzzle flash with sparks (guns) or a

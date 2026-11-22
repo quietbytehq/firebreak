@@ -28,6 +28,7 @@ func run() -> void:
 	check(is_equal_approx(float(Scores.load_settings().music_volume), 0.3), "settings persist")
 	var d := Scores.load_settings()
 	check(bool(d.music_on) and int(d.music_track) == 1, "music defaults: on, track 1")
+	check(not bool(d.seen_briefing), "briefing starts unseen")
 	s.music_on = false; s.music_track = 3; s.sfx_volume = 0.4; Scores.save_settings(s)
 	var l := Scores.load_settings()
 	check(not bool(l.music_on) and int(l.music_track) == 3 and is_equal_approx(float(l.sfx_volume), 0.4), "music on/off, track and effects volume persist")
@@ -41,6 +42,7 @@ func run() -> void:
 	check(main.mode == "title", "starts on the title screen")
 	check(main.title_screen.visible and main.title_screen.press_start, "title art with PRESS START")
 	check(main.audio.current_music == "music_title_intro_loop" and main.audio.music_next == "music_title_intro_loop", "title plays the intro, then its loop")
+	check("EMBER RING" in str(main.title_screen.subtitle), "title mentions the Ember Ring")
 	check(Engine.max_fps == 60, "frame rate capped at 60")
 	var press := InputEventKey.new(); press.physical_keycode = KEY_ENTER; press.keycode = KEY_ENTER; press.pressed = true
 	Input.parse_input_event(press)

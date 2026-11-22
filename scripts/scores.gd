@@ -37,7 +37,7 @@ static func add_score(name: String, score: int, stage: int) -> int:
 	return rank + 1 if rank >= 0 else 0
 
 static func load_settings() -> Dictionary:
-	var s := {"fullscreen": true, "music_volume": 0.8, "sfx_volume": 0.9, "aim_speed": 1.0, "music_on": true, "music_track": 1, "online": true}
+	var s := {"fullscreen": true, "music_volume": 0.8, "sfx_volume": 0.9, "aim_speed": 1.0, "music_on": true, "music_track": 1, "online": true, "seen_briefing": false}
 	var cfg := ConfigFile.new()
 	if cfg.load(SETTINGS_PATH) == OK:
 		for k in s.keys():
@@ -47,6 +47,7 @@ static func load_settings() -> Dictionary:
 	s.sfx_volume = clampf(float(s.sfx_volume), 0.0, 1.0)
 	s.music_on = bool(s.music_on)
 	s.online = bool(s.online)
+	s.seen_briefing = bool(s.seen_briefing)
 	return s
 
 static func save_settings(s: Dictionary) -> void:

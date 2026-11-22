@@ -12,8 +12,8 @@ should keep the base names. Effects are peak-normalised to about -1.5 dBTP; voic
 
 | Base name | Use | Notes |
 |---|---|---|
-| music_title_intro | Title screen, plays once | About 40 s, builds from war drums to brass and guitar, ends on a hit. |
-| music_title_intro_loop | Title screen after the intro | Short seamless loop. |
+| music_title_intro | Title screen, plays once (0.3.6 replacement) | 12.75 s opening: war drums and heroic brass. |
+| music_title_intro_loop | Title screen and briefing after the intro (0.3.6) | 30.75 s martial loop, crossfaded, no fade-out. |
 | music_bg_01 | In-game track 1 (default) | Mid-tempo jungle combat: tribal drums, tense strings, gritty guitar. Loops. |
 | music_bg_02 | In-game track 2 | Faster 80s action synth and rock. Loops. |
 | music_bg_03 | In-game track 3 | Darker, suspenseful: drones, ticking percussion, slow build. Loops. |
@@ -189,3 +189,11 @@ Original lines, no impressions. Two-pass loudnorm to −16 LUFS / −1.5 dBTP
 | rayan_one_more_push | One more push. | After stage 7, late in a late-campaign stage |
 | rayan_almost_over | Almost over. | After stage 7, stage 12 start |
 | rayan_ill_wear_it | I'll wear it. Then we finish this. | Award interlude after stage 10 (not yet in play) |
+
+## 0.3.6 title theme
+
+The title intro and loop were replaced with a new orchestral-military cue (ElevenLabs Music
+`eleven_music_v2_5`, one 48 s instrumental take, 720 credits). The opening 12.75 s plays once;
+the following 30.75 s (fade-out trimmed, 0.6 s equal-power crossfade) loops. Both files are
+two-pass loudnorm to −16 LUFS / −1.5 dBTP, OGG Vorbis q6, 48 kHz stereo. The same music plays
+on the opening briefing and the travel map.
