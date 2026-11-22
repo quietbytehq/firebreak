@@ -1,7 +1,7 @@
 {
  "title": "Firebreak",
- "version": "0.3.4",
- "note": "Twelve stages are planned. Only stage 1 is playable (0.3.4); later environments are decided later.",
+ "version": "0.3.5",
+ "note": "Twelve stages are planned. Only stage 1 is playable (0.3.5); later environments are decided later.",
  "difficulty": {
   "accuracy": {
    "base": 0.4,

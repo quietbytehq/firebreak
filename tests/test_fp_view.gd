@@ -1,5 +1,5 @@
 extends SceneTree
-## First-person weapon view (0.3.4): one cut-out picture per weapon plus the
+## First-person weapon view (0.3.5): one cut-out picture per weapon plus the
 ## air-strike radio, the view follows the selected weapon through the switch
 ## animation, kicks on every shot, sparks for guns and smoke for launchers,
 ## dips while reloading, hides outside play and stays below the HUD.
@@ -17,7 +17,7 @@ func frames(n: int) -> void:
 func run() -> void:
 	# Data and pictures.
 	var data := FpView.load_data()
-	check(str(data.get("version", "")) == "0.3.4", "fp_weapons.json carries version 0.3.4")
+	check(str(data.get("version", "")) == "0.3.5", "fp_weapons.json carries version 0.3.5")
 	var ids: Array = []
 	for w in Weapons.all(): ids.append(str(w.id))
 	check(ids.size() == 19, "19 guns and launchers in the store")
@@ -79,6 +79,9 @@ func run() -> void:
 	check(fp.sparks.size() >= 6 and fp.flash > 0.0 and fp.flash_kind == "gun", "guns show a muzzle flash and sparks")
 	var spark_start: Vector2 = fp.sparks[0].p
 	check(spark_start.distance_to(fp.muzzle_screen()) < 2.0, "sparks start at the muzzle")
+	check(fp.puffs.size() >= 3, "guns throw a puff of smoke from the barrel")
+	check(fp.puffs[0].p.distance_to(fp.muzzle_screen()) < 16.0, "barrel smoke starts at the muzzle")
+	check(fp.flash_scale > 0.8 and fp.FLASH_TIME >= 0.1, "the muzzle flash is larger and lasts a moment")
 	await frames(30)
 	check(fp.kick < 0.2 and fp.sparks.is_empty(), "recoil settles and the sparks die out")
 	# Launcher: smoke and back-blast, no gun sparks.

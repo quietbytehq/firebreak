@@ -4,7 +4,7 @@ An Operation Wolf-style gallery shooter for Linux by QuietByte. Hold your positi
 battlefield pans slowly across a jungle river village at dusk: shoot riflemen, machine-gun
 nests and paratroopers, spare the villagers, and shoot falling food and supplies.
 
-**Version 0.3.4 — early development build.** Stage 1 of a planned twelve, with painted
+**Version 0.3.5 — early development build.** Stage 1 of a planned twelve, with painted
 character sprites, an enemy helicopter, grenades and air strikes, a Rayan title screen, three
 music tracks, sound effects and voice lines. Enemies face and fire at you (0.2.1). 0.3.0: ink
 outlines on every character, the helicopter and pickups; 19 original weapons in a 3-slot
@@ -104,7 +104,9 @@ shots with a CLEAN SHOT bonus; pricier guns never hit softer than cheaper ones o
 eleven new Rayan catchphrases that unlock as you clear stages. The Ember Ring story draft is in
 `story/` and is not yet in the game.
 
-## Known limitations (0.3.4)
+0.3.5: Rayan is blended into the mission-failed and stage-clear screens (feathered cut-out, grading and a left vignette) instead of sitting in a hard rectangle. Bullet tracers are gone; the barrel now throws a bigger flash, sparks and a puff of smoke on every shot. Rocket and grenade trails are a little softer.
+
+## Known limitations (0.3.5)
 
 - Only stage 1 is playable; stages 2–12 are planned.
 - The truck is still drawn in code. The ElevenLabs plan behind the audio is not yet confirmed

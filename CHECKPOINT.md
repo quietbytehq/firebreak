@@ -1,3 +1,16 @@
+# CHECKPOINT — Firebreak 0.3.5
+
+Updated: 2026-11-22 (PKT, UTC+5)
+
+## v0.3.5 round — fail-screen blend, no bullet tracers, bigger muzzle burst
+- Mission-failed and stage-clear screens: Rayan is a feathered cut-out with colour grading, a left vignette and a contact shadow, sitting in the battlefield instead of a hard rectangular illustration. The title screen is already a full composed painting and the HUD portrait sits in a framed panel; both were left alone.
+- Bullet tracers and the smoke line from the gun to the target are gone. Rocket and grenade projectile trails are a little softer.
+- Every gun shot throws a bigger, brighter, varied muzzle flash, more sparks, and a puff of smoke that drifts up from the first-person muzzle and lingers briefly (particle cap, fewer puffs on SMGs).
+- Box and laptop tests: 19 suites, **1280 checks, 0 failures**.
+- Box shots in `/workspace/firebreak_shots/v035/` (fail before and after, muzzle on Viper 9, Hornet 9, Kalash 47 and Thunder M60).
+- Laptop (22 Nov 2026, about 11:18 PKT / Asia/Karachi): 11 replaced files and the 0.3.4 build are in `_to_delete/replaced_v034/`; 6 files were new; transfer parts live in `_to_delete/v035_transfer/`. Export rebuilt (`build/Firebreak/Firebreak.x86_64`, 109 MB) with TMPDIR and XDG_* inside `_to_delete/v035_transfer/qa_home/`; the real `~/.config/godot/editor_settings-4.7.tres` was not written. 30 s autoplay (exported build, seed 7, Hornet 9, 144 Hz, vsync off + 60 fps limiter, window 1920×952): 60.00 fps avg (wall clock), 1% low 46.5, 2.2% frames > 18 ms, worst 41.7 ms; 23 kills, 0 villagers, score 4,460. Screenshots in `qa/laptop/v035/`.
+
+---
 # CHECKPOINT — Firebreak 0.3.4
 
 Updated: 2026-11-22 (PKT, UTC+5)

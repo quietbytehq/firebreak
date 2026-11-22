@@ -89,15 +89,7 @@ func banner(text: String, pos: Vector2, col: Color, size: int = 48, life: float 
 func _on_event(name: String, d: Dictionary) -> void:
 	match name:
 		"shot":
-			var origin := muzzle_origin()
-			for p in d.points:
-				tracers.append({"from": origin, "to": p, "life": 0.16, "max": 0.16})
-				# A short wisp of smoke leaving the muzzle toward the aim point.
-				var dir: Vector2 = (p - origin)
-				var nrm := dir.normalized() if dir.length() > 1.0 else Vector2.UP
-				for i in 3:
-					var along := origin + nrm * (18.0 + i * 22.0)
-					_add({"p": along, "v": nrm * randf_range(80, 160) + Vector2(randf_range(-30, 30), randf_range(-40, -10)), "life": randf_range(0.22, 0.4), "max": 0.4, "size": randf_range(8, 14), "col": Color(0.55, 0.52, 0.48, 0.4), "grow": 28.0, "drag": 2.4, "grav": -20.0})
+			pass  # Bullet tracers were removed in 0.3.5; muzzle fire and smoke live on the FP view.
 		"miss":
 			dust(d.pos, 5, Color(0.55, 0.45, 0.3))
 		"hit":
@@ -285,9 +277,9 @@ func _emit_flight_smoke(delta: float) -> void:
 		var arc := 220.0 if str(g.get("kind", "thrown")) == "rocket" else 300.0
 		var p := start.lerp(target, f) + Vector2(0, -sin(f * PI) * arc)
 		var n := 2 if str(g.get("kind", "")) == "rocket" else 1
-		if randf() < delta * (18.0 if n > 1 else 10.0):
+		if randf() < delta * (10.0 if n > 1 else 6.0):
 			for i in n:
-				_add({"p": p + Vector2(randf_range(-6, 6), randf_range(-6, 6)), "v": Vector2(randf_range(-20, 20), randf_range(-30, 10)), "life": randf_range(0.4, 0.75), "max": 0.75, "size": randf_range(10, 20), "col": Color(0.5, 0.48, 0.44, 0.45), "grow": 36.0, "drag": 1.6, "grav": -18.0})
+				_add({"p": p + Vector2(randf_range(-5, 5), randf_range(-5, 5)), "v": Vector2(randf_range(-16, 16), randf_range(-24, 8)), "life": randf_range(0.35, 0.65), "max": 0.65, "size": randf_range(8, 16), "col": Color(0.48, 0.46, 0.42, 0.26), "grow": 28.0, "drag": 1.6, "grav": -16.0})
 
 func _draw_title_card(ci: Node2D, font: Font) -> void:
 	if title_card <= 0.0 or sim == null:

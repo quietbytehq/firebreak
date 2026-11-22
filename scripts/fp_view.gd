@@ -1,5 +1,5 @@
 extends Node2D
-## First-person weapon view (0.3.4): the selected weapon held in Rayan's arms,
+## First-person weapon view (0.3.5): the selected weapon held in Rayan's arms,
 ## drawn from behind at the bottom centre of the screen, under the HUD layer so
 ## the weapon bar and the reticle always stay on top. It sways, turns toward the
 ## aim point, kicks on every shot, shows a muzzle flash with sparks (guns) or a
@@ -16,7 +16,8 @@ const BASE := Vector2(960.0, 1092.0)   # bottom centre of the picture at rest (f
 const LOWER_TIME := 0.15        # switch: seconds to lower the old weapon
 const RAISE_TIME := 0.2         # switch: seconds to raise the new one
 const KICK_DECAY := 13.0
-const FLASH_TIME := 0.07
+const FLASH_TIME := 0.12
+const PUFF_CAP := 80
 const OVERRIDE_TIME := {"special": 0.75, "air_strike": 1.5}
 
 var sim
@@ -35,6 +36,8 @@ var kick_scale := 1.0
 var dip := 0.0
 var flash := 0.0
 var flash_kind := ""            # gun | launch
+var flash_spin := 0.0           # per-shot rotation so flashes do not look identical
+var flash_scale := 1.0          # per-shot size jitter
 var sparks: Array = []          # {p, v, life, max}
 var puffs: Array = []           # {p, v, r, life, max, hot}
 var override_id := ""
@@ -117,7 +120,10 @@ func on_event(name: String, d: Dictionary) -> void:
 			shots += 1
 			_kick(id)
 			flash = FLASH_TIME; flash_kind = "gun"
+			flash_spin = randf() * TAU
+			flash_scale = randf_range(0.88, 1.18)
 			_spawn_sparks(id)
+			_spawn_muzzle_smoke(id)
 		"grenade_throw":
 			var id := str(d.get("weapon", ""))
 			if sim != null and sim.slot != 2:
@@ -188,14 +194,32 @@ func mask_for(id: String) -> Image:
 
 func _spawn_sparks(id: String) -> void:
 	var m := muzzle_screen(id)
-	var n := 10 + int(kick_scale * 8.0)
+	var n := 14 + int(kick_scale * 10.0)
 	var dir := (crosshair - m).normalized() if crosshair.distance_to(m) > 1.0 else Vector2.UP
 	for i in n:
-		var a := dir.angle() + randf_range(-0.9, 0.9)
-		var sp := randf_range(300.0, 900.0)
-		var life := randf_range(0.1, 0.26)
+		var a := dir.angle() + randf_range(-1.15, 1.15)
+		var sp := randf_range(280.0, 1100.0)
+		var life := randf_range(0.10, 0.32)
 		sparks.append({"p": m, "v": Vector2.from_angle(a) * sp, "life": life, "max": life})
 	if sparks.size() > 160: sparks = sparks.slice(sparks.size() - 160)
+
+## A puff of barrel smoke that drifts up and lingers briefly. SMGs spawn fewer
+## puffs so a long burst stays cheap.
+func _spawn_muzzle_smoke(id: String) -> void:
+	var m := muzzle_screen(id)
+	var cat := str(Weapons.get_weapon(id).get("category", ""))
+	var n := 3 if cat == "smg" else 5
+	for i in n:
+		var life := randf_range(0.40, 0.85)
+		var hot := i < 2
+		puffs.append({
+			"p": m + Vector2(randf_range(-8, 8), randf_range(-6, 4)),
+			"v": Vector2(randf_range(-28, 28), randf_range(-150, -70)),
+			"r": randf_range(10, 20) if hot else randf_range(16, 28),
+			"life": life, "max": life, "hot": hot
+		})
+	if puffs.size() > PUFF_CAP:
+		puffs = puffs.slice(puffs.size() - PUFF_CAP)
 
 func _spawn_launch(id: String) -> void:
 	var m := muzzle_screen(id)
@@ -208,6 +232,8 @@ func _spawn_launch(id: String) -> void:
 		for i in 9:
 			var life := randf_range(0.4, 0.9)
 			puffs.append({"p": r, "v": Vector2(randf_range(120, 380), randf_range(-160, -10)), "r": randf_range(24, 46), "life": life, "max": life, "hot": i < 4})
+	if puffs.size() > PUFF_CAP:
+		puffs = puffs.slice(puffs.size() - PUFF_CAP)
 
 func _process(delta: float) -> void:
 	var dt := minf(delta, 0.05)
@@ -287,14 +313,25 @@ func _draw_glow() -> void:
 		glow.draw_line(sp.p - sp.v * 0.015, sp.p, Color(1.0, 0.95, 0.75, k), 2.0)
 
 func _draw_flash(c: Vector2, k: float) -> void:
-	var r := 72.0 * (0.65 + 0.35 * k) * clampf(kick_scale, 0.6, 1.4)
-	glow.draw_circle(c, r * 1.5, Color(0.8, 0.35, 0.05, 0.35 * k))
-	glow.draw_circle(c, r * 0.9, Color(1.0, 0.55, 0.12, 0.45 * k))
+	var r := 118.0 * (0.70 + 0.30 * k) * clampf(kick_scale, 0.65, 1.45) * flash_scale
+	# Soft bloom, then a hotter mid glow.
+	glow.draw_circle(c, r * 2.1, Color(0.75, 0.28, 0.04, 0.28 * k))
+	glow.draw_circle(c, r * 1.25, Color(1.0, 0.45, 0.08, 0.50 * k))
+	glow.draw_circle(c, r * 0.80, Color(1.0, 0.70, 0.20, 0.70 * k))
+	# Irregular star, stable for the duration of this shot (not re-rolled each frame).
 	var pts := PackedVector2Array()
-	var n := 9
-	var rot := randf() * TAU
+	var n := 8
 	for i in n * 2:
-		var rr := r * randf_range(0.85, 1.2) if i % 2 == 0 else r * 0.32
-		pts.append(c + Vector2.from_angle(rot + i * PI / n) * rr)
-	glow.draw_colored_polygon(pts, Color(1.0, 0.72, 0.25, 0.95 * k))
-	glow.draw_circle(c, r * 0.38, Color(1.0, 0.95, 0.8, k))
+		var lobe := 1.0 if i % 2 == 0 else 0.28
+		# Deterministic jitter from the shot spin so the shape holds still while it fades.
+		var jitter := 0.85 + 0.30 * sin(flash_spin * 3.0 + float(i) * 1.7)
+		var rr := r * lobe * jitter
+		pts.append(c + Vector2.from_angle(flash_spin + i * PI / n) * rr)
+	glow.draw_colored_polygon(pts, Color(1.0, 0.78, 0.28, 0.95 * k))
+	# Upward tongues of fire.
+	for i in 3:
+		var ang := -PI * 0.5 + (float(i) - 1.0) * 0.28 + sin(flash_spin + float(i)) * 0.08
+		var tip := c + Vector2.from_angle(ang) * r * (1.15 + 0.25 * float(i % 2))
+		glow.draw_line(c, tip, Color(1.0, 0.85, 0.35, 0.85 * k), 7.0 - float(i))
+	glow.draw_circle(c, r * 0.36, Color(1.0, 0.97, 0.85, k))
+	glow.draw_circle(c, r * 0.16, Color(1.0, 1.0, 1.0, k))

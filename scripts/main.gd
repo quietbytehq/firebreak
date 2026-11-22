@@ -11,6 +11,7 @@ const Scores := preload("res://scripts/scores.gd")
 const AudioBank := preload("res://scripts/audio.gd")
 const SpriteArt := preload("res://scripts/sprite_art.gd")
 const TitleScreen := preload("res://scripts/title_screen.gd")
+const ResultPortrait := preload("res://scripts/result_portrait.gd")
 const ScreenFx := preload("res://shaders/screen_fx.gdshader")
 const Weapons := preload("res://scripts/weapons.gd")
 const Online := preload("res://scripts/online.gd")
@@ -603,12 +604,10 @@ func show_result() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	var cleared: bool = sim.state == "cleared"
 	var box := _new_menu(0.6)
-	if bust_tex:
-		var bust := TextureRect.new(); bust.texture = bust_tex; bust.position = Vector2(60, 200); bust.size = Vector2(540, 720)
-		bust.expand_mode = TextureRect.EXPAND_IGNORE_SIZE; bust.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT
-		bust.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		if not cleared: bust.modulate = Color(0.75, 0.6, 0.55)
-		menu_root.add_child(bust); menu_root.move_child(bust, 1)
+	var portrait := ResultPortrait.new()
+	portrait.fail = not cleared
+	menu_root.add_child(portrait)
+	menu_root.move_child(portrait, 1)
 	box.position = Vector2(640, 0); box.size = Vector2(1220, 1080)
 	_label(box, "STAGE CLEAR" if cleared else "MISSION FAILED", 110, Color(1, 0.8, 0.4) if cleared else Color(1, 0.4, 0.3))
 	var reason := ""
@@ -774,6 +773,7 @@ func _parse_qa_args() -> void:
 		elif arg.begins_with("--qa-slot-at="): qa.slot_at = Array(arg.get_slice("=", 1).split(",")).map(func(x): return float(x))
 		elif arg.begins_with("--qa-reload-at="): qa.reload_at = float(arg.get_slice("=", 1))
 		elif arg == "--qa-aim-head": qa.aim_head = true
+		elif arg.begins_with("--qa-fail-at="): qa.fail_at = float(arg.get_slice("=", 1))
 
 func _qa_autopilot(dt: float) -> void:
 	# Aims at the most urgent enemy (or a drop), avoids villagers, fires when on target.
@@ -870,6 +870,10 @@ func _qa_tick(delta: float) -> void:
 				qa_shots_done["slot%d" % i] = true; sim.select_slot(i % 3)
 	if qa.has("hurt_at") and qa_clock >= float(qa.hurt_at) and not qa_shots_done.has("hurt"):
 		qa_shots_done["hurt"] = true; sim.damage_player(12.0)
+	if qa.has("fail_at") and qa_clock >= float(qa.fail_at) and not qa_shots_done.has("fail"):
+		qa_shots_done["fail"] = true
+		if sim.state == "playing":
+			sim.damage_player(sim.health + 20.0)
 	# Mid-fire captures: force one shot at each time, then grab the next frame,
 	# which shows the muzzle flash and sparks drawn for that shot.
 	if not qa_fire_capture.is_empty():

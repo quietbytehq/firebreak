@@ -1,4 +1,4 @@
-# Firebreak 0.3.4 (Linux)
+# Firebreak 0.3.5 (Linux)
 
 An Operation Wolf-style gallery shooter by QuietByte. Stage 1, River Village.
 

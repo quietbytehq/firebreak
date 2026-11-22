@@ -1,6 +1,6 @@
 # HANDOFF — Firebreak
 
-Operation Wolf-style gallery shooter by QuietByte. Godot 4.7.2 / GDScript. Version 0.3.4 =
+Operation Wolf-style gallery shooter by QuietByte. Godot 4.7.2 / GDScript. Version 0.3.5 =
 stage 1 "River Village" only (12 stages planned), painted sprites with sticker outlines,
 helicopter, 19 original weapons in a 3-slot loadout, cash economy + Store, grenades/launchers,
 air strike (spares civilians), Rayan title screen, music/SFX/voice, optional global top 100.
@@ -108,6 +108,7 @@ then regenerates `scripts/sprite_meta.gd`. Re-bake from un-outlined masters only
   villagers and captures `<tag>-fire-NNNs.png` on the next frame (flash and sparks visible);
   `--qa-no-fp` hides the view (for frame-rate A/B).
   0.3.4 flags: `--qa-reload-at=S` empties the mag and starts a reload; `--qa-aim-head` aims at the head zone of riflemen, paratroopers and MG gunners.
+  0.3.5 flag: `--qa-fail-at=S` drops health to zero so the mission-failed screen can be captured.
 
 
 ## Campaign score and global top 100 (0.3.3)
@@ -126,7 +127,8 @@ then regenerates `scripts/sprite_meta.gd`. Re-bake from un-outlined masters only
   still need the owner’s Cloudflare/GitHub steps.
 
 ## Open items for the owner
-- 0.3.4 is deployed on the laptop (22 Nov 2026, about 10:31 PKT / Asia/Karachi): 19 suites, 1277 checks, 0 failures on the laptop and the development copy; export rebuilt (109 MB). 60 s autoplay 60.05 fps avg (wall clock), 1% low 49.6, 2.2% > 18 ms; captures in `qa/laptop/v034/` and `qa/laptop/v034-reload/`. Replaced 0.3.3 files and the 0.3.3 build are in `_to_delete/replaced_v033/`; transfer parts and the QA jail in `_to_delete/v034_transfer/`. The repo stays on `main` (not pushed from here). Live Cloudflare deploy still needs the owner; do not look up firebreak.quietbytehq.uk until after the first deploy. Fake scores remain possible because the code is public.
+- 0.3.5 is deployed on the laptop (22 Nov 2026, about 11:18 PKT / Asia/Karachi): 19 suites, 1280 checks, 0 failures on the laptop and the development copy; export rebuilt (109 MB). 30 s autoplay 60.00 fps avg (wall clock), 1% low 46.5, 2.2% > 18 ms; captures in `qa/laptop/v035/`. Replaced 0.3.4 files and the 0.3.4 build are in `_to_delete/replaced_v034/`; transfer parts and the QA jail in `_to_delete/v035_transfer/`. The repo stays on `main` (not pushed from here). Live Cloudflare deploy still needs the owner; do not look up firebreak.quietbytehq.uk until after the first deploy. Fake scores remain possible because the code is public. The Ember Ring story draft is in `story/` and is not yet in the game.
+- 0.3.4 was deployed on the laptop (22 Nov 2026, about 10:31 PKT / Asia/Karachi): 19 suites, 1277 checks, 0 failures; export rebuilt (109 MB). 60 s autoplay 60.05 fps avg (wall clock), 1% low 49.6, 2.2% > 18 ms; captures in `qa/laptop/v034/` and `qa/laptop/v034-reload/`. Replaced 0.3.3 files and the 0.3.3 build are in `_to_delete/replaced_v033/`; transfer parts and the QA jail in `_to_delete/v034_transfer/`.
 - 0.3.3 was deployed on the laptop (22 Nov 2026, about 09:58 PKT): 19 suites, 1207 checks, 0 failures; export rebuilt. Replaced 0.3.1 files and the 0.3.1 build are in `_to_delete/replaced_v031/`; transfer parts in `_to_delete/v033_transfer/`. Local wrangler tests passed on the development copy.
 - 0.3.1 is deployed on the laptop (16 Nov 2026): 1174 checks 0 failures, export rebuilt, autoplay
   60.09 fps avg, 1% low 44.5, 1.9% > 18 ms; captures in `qa/laptop/v031/`. Replaced 0.3.0 files and
@@ -134,7 +136,7 @@ then regenerates `scripts/sprite_meta.gd`. Re-bake from un-outlined masters only
   temp/QA-home folders in `_to_delete/v031_transfer/`; JPEG copies in `_to_delete/v031_jpg_transfer/`;
   the pre-results 0.3.1 docs in `_to_delete/replaced_v031_predeploy_docs/`.
 - Laptop QA and build runs set TMPDIR and XDG_DATA/CONFIG/CACHE_HOME inside the game folder
-  (currently `_to_delete/v034_transfer/qa_home/`) so nothing is written outside it.
+  (currently `_to_delete/v035_transfer/qa_home/`) so nothing is written outside it.
 - 0.3.0 is deployed on the laptop (16 Nov 2026): 1053 checks 0 failures, export built, autoplay
   and Store captures in `qa/laptop/v030/`. Replaced 0.2.1 files and the 0.2.1 build are in
   `_to_delete/replaced_v021/`; transfer parts, logs and checksum lists in `_to_delete/v030_transfer/`;
