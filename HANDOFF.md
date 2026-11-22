@@ -37,7 +37,7 @@ Read `docs/DESIGN.md` first.
 - `data/campaign.json`, `data/stages/stage_01.json` stage definitions.
 - `data/fp_weapons.json` first-person muzzle/rear points and `reload_poses` (0.3.4).
 - `story/STORY.md` (opening briefing and travel map, 0.3.6) and `story/CATCHPHRASES.md`.
-- `assets/logo/firebreak-512.png`, `firebreak-256.png` and `firebreak.svg`: the flaming-F app icon (also copied to `assets/ui/icon.png` for Godot).
+- `assets/logo/firebreak-512.png` and `firebreak-256.png`: app icon (flaming gold F with a quieter Rayan bust and a generic Kalash-style rifle; also copied to `assets/ui/icon.png` for Godot). No SVG — the painted composition does not have a practical matching vector.
 - `packaging/build_linux.sh` and `packaging/firebreak.desktop`: Linux tar.gz, .deb and AppImage, following Nudge.
 - `snap/snapcraft.yaml`: snap name `firebreak-game`, built from the .deb, `network` plug for the scoreboard. Version and the .deb filename must stay in sync with `project.godot`.
 - `.github/workflows/ci.yml`: on a version tag, export Linux and Windows, package, attach a GitHub pre-release, build the snap and upload it to `edge`. Store credentials use the secret name `SNAPCRAFT_STORE_CREDENTIALS` (never commit the value).

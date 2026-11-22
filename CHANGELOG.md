@@ -3,6 +3,13 @@
 All notable changes to Firebreak are listed here. Version numbers follow the
 game's public releases.
 
+## Unreleased
+
+- App icon revised: the flaming gold F stays the hero, with a quieter bust of
+  Rayan (blond hair, black sunglasses) and a generic Kalash-style rifle behind
+  it. Shipped as 512×512 and 256×256 PNG. The SVG was dropped because a vector
+  no longer matches the painted composition.
+
 ## 0.3.7 — 22 November 2026
 
 - One START button. The skippable Ember Ring briefing plays the first time you
