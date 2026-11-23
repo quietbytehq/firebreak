@@ -42,9 +42,11 @@ func run() -> void:
 	check(outside.state != "dying", "enemy 600 px away is outside the blast")
 	# Grenades hurt civilians, with the usual penalty.
 	sim = fresh(); sim.score = 2000
-	var v: Dictionary = sim.spawn("villager", "mid", {"world_x": 1000, "world_y": 748})
-	var r: Dictionary = sim.spawn("rifleman", "mid", {"world_x": 950, "world_y": 748}); settle(r)
-	sim.throw_grenade(Vector2(980, 680))
+	# Mid ground on River Village now stops before the paddies (~x 820), so
+	# the civilian has to stand on the left bank, still inside the blast.
+	var v: Dictionary = sim.spawn("villager", "mid", {"world_x": 600, "world_y": 762})
+	var r: Dictionary = sim.spawn("rifleman", "mid", {"world_x": 650, "world_y": 762}); settle(r)
+	sim.throw_grenade(Vector2(620, 680))
 	for i in 45: sim.step(1.0 / 60.0)
 	check(v.state == "dying", "a grenade kills a civilian inside the blast")
 	check(sim.stats.villagers_hit == 1, "civilian casualty counted")

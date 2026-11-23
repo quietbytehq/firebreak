@@ -20,7 +20,8 @@ func run() -> void:
 	check(ResourceLoader.exists(str(s.background)) or FileAccess.file_exists(str(s.background)), "Dune Sea background file exists")
 	var tex: Texture2D = load(str(s.background))
 	check(tex != null and tex.get_width() == 3840 and tex.get_height() == 1080, "Dune Sea background is 3840x1080")
-	check(float(s.bands.near.zones[0][2]) == 920.0, "near-band ground is above the HUD")
+	check(s.has("ground") and (s.ground.near.points as Array).size() >= 2, "Dune Sea has a near ground map")
+	check(s.has("roads") and (s.roads.track.points as Array).size() >= 2, "Dune Sea has a vehicle track")
 	var types := {}
 	var has_heli := false
 	for w in s.waves:

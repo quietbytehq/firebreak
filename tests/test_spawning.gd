@@ -1,6 +1,7 @@
 extends SceneTree
 ## Spawning respects the three depth bands and the landscape zones.
 const StageSim := preload("res://scripts/stage_sim.gd")
+const Ground := preload("res://scripts/stage_ground.gd")
 var checks := 0
 var failures := 0
 func check(ok: bool, label: String) -> void:
@@ -8,9 +9,9 @@ func check(ok: bool, label: String) -> void:
 	if not ok: failures += 1; push_error(label)
 func _initialize() -> void: call_deferred("run")
 func in_zone(sim, e: Dictionary) -> bool:
-	for z in sim.band_info(e.band).zones:
-		if e.x >= float(z[0]) - 1.0 and e.x <= float(z[1]) + 1.0 and is_equal_approx(e.ground_y, float(z[2])): return true
-	return false
+	if not Ground.on_ground(sim.stage, e.band, e.x):
+		return false
+	return absf(e.ground_y - Ground.ground_y(sim.stage, e.band, e.x)) <= 1.5
 func run() -> void:
 	var sim = StageSim.new()
 	check(sim.setup(1, 7), "sim setup")

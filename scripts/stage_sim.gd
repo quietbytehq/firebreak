@@ -7,6 +7,7 @@ signal event(name: String, data: Dictionary)
 
 const StageData := preload("res://scripts/stage_data.gd")
 const Weapons := preload("res://scripts/weapons.gd")
+const Ground := preload("res://scripts/stage_ground.gd")
 const VIEW_W := 1920.0
 const VIEW_H := 1080.0
 const ENEMY_TYPES := ["rifleman", "mg", "paratrooper", "truck", "heli", "camel", "technical", "sniper", "convoy"]
@@ -262,33 +263,37 @@ func _weighted(weights: Dictionary) -> String:
 		if r <= 0.0: return str(k)
 	return str(weights.keys()[0])
 
-## Picks a spawn point for a band inside the current view and the band's
-## landscape zones. Returns Vector2(world_x, ground_y) or Vector2(-1, -1).
+## Picks a spawn point for a band inside the current view and that band's
+## walkable ground spans. Y comes from the stage ground map (panorama art).
+## Returns Vector2(world_x, ground_y) or Vector2(-1, -1).
 func pick_point(band: String, margin: float = 120.0, frac: float = -1.0) -> Vector2:
 	var lo := camera_x + margin
 	var hi := camera_x + VIEW_W - margin
 	var spans := []
 	var total := 0.0
-	for z in band_info(band).get("zones", []):
+	for z in Ground.ground_spans(stage, band):
 		var a := maxf(lo, float(z[0])); var b := minf(hi, float(z[1]))
 		if b - a > 20.0:
-			spans.append([a, b, float(z[2])]); total += b - a
+			spans.append([a, b]); total += b - a
 	if spans.is_empty():
 		return Vector2(-1, -1)
+	var x: float
 	if frac >= 0.0:
 		var want := lerpf(lo, hi, frac)
 		var best = spans[0]; var bd := INF
 		for s in spans:
 			var cx := clampf(want, s[0], s[1])
 			if absf(cx - want) < bd: bd = absf(cx - want); best = s
-		return Vector2(clampf(want, best[0], best[1]), best[2])
-	var r := rng.randf() * total
-	for s in spans:
-		r -= s[1] - s[0]
-		if r <= 0.0:
-			return Vector2(rng.randf_range(s[0], s[1]), s[2])
-	var l = spans[spans.size() - 1]
-	return Vector2(l[1], l[2])
+		x = clampf(want, best[0], best[1])
+	else:
+		var r := rng.randf() * total
+		x = spans[spans.size() - 1][1]
+		for s in spans:
+			r -= s[1] - s[0]
+			if r <= 0.0:
+				x = rng.randf_range(s[0], s[1])
+				break
+	return Vector2(x, Ground.ground_y(stage, band, x))
 
 func count_alive(type: String) -> int:
 	var n := 0
@@ -300,7 +305,7 @@ func count_alive(type: String) -> int:
 func spawn(type: String, band: String = "mid", opts: Dictionary = {}) -> Dictionary:
 	var e := {"id": next_id, "type": type, "band": band, "age": 0.0, "timer": 0.0, "state": "", "flash": 0.0,
 		"rise": 1.0, "alpha": 1.0, "vx": 0.0, "vy": 0.0, "muzzle": 0.0, "shots_left": 0, "kind": "", "variant": rng.randi() % 4,
-		"facing": 1.0, "ground_y": 0.0, "fall_rot": 0.0, "escaped": false}
+		"facing": 1.0, "ground_y": 0.0, "fall_rot": 0.0, "escaped": false, "planted": false, "path": ""}
 	var s := float(opts.get("scale", band_scale(band)))
 	e.scale = s
 	var size: Vector2 = SIZES.get(type, Vector2(100, 100))
@@ -324,7 +329,7 @@ func spawn(type: String, band: String = "mid", opts: Dictionary = {}) -> Diction
 	elif type in ["food", "powerup"]:
 		if p.x < 0: p.x = camera_x + rng.randf_range(260.0, VIEW_W - 260.0)
 		e.scale = 1.0; e.band = "sky"
-		e.x = p.x; e.y = -80.0; e.ground_y = PICKUP_GROUND_Y; e.vy = 105.0; e.state = "fall"
+		e.x = p.x; e.y = -80.0; e.ground_y = _pickup_land_y(p.x); e.vy = 105.0; e.state = "fall"
 		e.kind = str(opts.get("kind", ""))
 		if e.kind == "":
 			var rule := _ambient_rule(type)
@@ -339,6 +344,11 @@ func spawn(type: String, band: String = "mid", opts: Dictionary = {}) -> Diction
 						band = alt; e.band = alt; e.scale = band_scale(alt); break
 			if p.x < 0:
 				return {}
+		e.planted = opts.has("world_y") and float(opts.get("world_y", -1.0)) > 0.0
+		if not e.planted:
+			var gy := Ground.ground_y(stage, band, p.x)
+			if gy > 0.0:
+				p.y = gy
 		e.x = p.x; e.ground_y = p.y; e.y = p.y
 		e.facing = -1.0 if e.x > camera_x + VIEW_W * 0.5 else 1.0
 		match type:
@@ -372,6 +382,7 @@ func spawn(type: String, band: String = "mid", opts: Dictionary = {}) -> Diction
 				e.facing = cdir
 				e.vx = cdir * rng.randf_range(95.0, 140.0) * e.scale
 				e.shots_left = 1; e.timer = _aim_time(e) * 0.85
+		_place_on_path(e)
 	if type == "rifleman":
 		e.skin = str(stage.get("soldier_prefix", ""))
 	if type == "villager":
@@ -409,8 +420,63 @@ func truck_stop_x(e: Dictionary) -> float:
 	return best
 
 func _in_zone(band: String, x: float) -> bool:
-	for z in band_info(band).get("zones", []):
-		if x >= float(z[0]) and x <= float(z[1]): return true
+	return Ground.on_ground(stage, band, x)
+
+func _pickup_land_y(x: float) -> float:
+	for band in ["near", "mid", "far"]:
+		if Ground.on_ground(stage, band, x):
+			return Ground.ground_y(stage, band, x)
+	return PICKUP_GROUND_Y
+
+## Put a vehicle or camel on its road / sand track, entering from the side
+## they will travel from, and clamp any parking target onto that path.
+func _place_on_path(e: Dictionary) -> void:
+	var name := Ground.road_for(str(e.type), str(e.band))
+	if name == "":
+		return
+	var b := Ground.road_bounds(stage, name)
+	if b.x < 0.0:
+		return
+	e.path = name
+	var off := 360.0 if e.type == "technical" else (200.0 if e.type == "camel" else 320.0)
+	if e.vx < 0.0:
+		e.x = clampf(camera_x + VIEW_W + off, b.x, b.y)
+		e.facing = -1.0
+	else:
+		e.x = clampf(camera_x - off, b.x, b.y)
+		e.facing = 1.0
+	e.y = Ground.road_y(stage, name, e.x)
+	e.ground_y = e.y
+	if e.type in ["truck", "convoy"]:
+		e.target_x = clampf(float(e.get("target_x", e.x)), b.x, b.y)
+	elif e.type == "technical":
+		e.target_x = b.x - 40.0
+
+func _follow_path(e: Dictionary, dt: float) -> void:
+	e.x += e.vx * dt
+	var name := str(e.get("path", ""))
+	if name == "":
+		return
+	var b := Ground.road_bounds(stage, name)
+	if b.x < 0.0:
+		return
+	e.x = clampf(e.x, b.x, b.y)
+	e.y = Ground.road_y(stage, name, e.x)
+	e.ground_y = e.y
+	if absf(e.vx) > 1.0:
+		e.facing = -1.0 if e.vx < 0.0 else 1.0
+
+func _path_ended(e: Dictionary) -> bool:
+	var name := str(e.get("path", ""))
+	if name == "":
+		return false
+	var b := Ground.road_bounds(stage, name)
+	if b.x < 0.0:
+		return false
+	if e.vx < 0.0 and e.x <= b.x + 2.0:
+		return true
+	if e.vx > 0.0 and e.x >= b.y - 2.0:
+		return true
 	return false
 
 func _overlaps_avoid(x: float, half: float) -> bool:
@@ -573,6 +639,9 @@ func _update_rifleman(e: Dictionary, dt: float) -> void:
 
 func _update_para(e: Dictionary, dt: float) -> void:
 	if e.state == "descend":
+		var gy := Ground.ground_y(stage, e.band, e.x)
+		if gy > 0.0:
+			e.ground_y = gy
 		e.y = minf(e.ground_y, e.y + e.vy * dt)
 		e.x += sin(e.age * 0.9 + e.id) * 10.0 * e.scale * dt
 		e.timer -= dt
@@ -603,8 +672,12 @@ func _update_mg(e: Dictionary, dt: float) -> void:
 
 func _update_truck(e: Dictionary, dt: float) -> void:
 	if e.state == "drive":
-		e.x += e.vx * dt
-		if e.x <= e.target_x:
+		_follow_path(e, dt)
+		if (e.vx <= 0.0 and e.x <= e.target_x) or (e.vx > 0.0 and e.x >= e.target_x):
+			e.x = e.target_x
+			if str(e.get("path", "")) != "":
+				e.y = Ground.road_y(stage, e.path, e.x)
+				e.ground_y = e.y
 			e.state = "aim"; e.timer = 1.6
 	else:
 		_update_mg(e, dt)
@@ -612,9 +685,9 @@ func _update_truck(e: Dictionary, dt: float) -> void:
 		_update_vehicle_gunner(e, dt)
 
 func _update_technical(e: Dictionary, dt: float) -> void:
-	e.x += e.vx * dt
+	_follow_path(e, dt)
 	_update_vehicle_gunner(e, dt)
-	if e.x < camera_x - 480.0:
+	if _path_ended(e) or e.x < camera_x - 480.0:
 		e.escaped = true; entities.erase(e)
 
 func _update_vehicle_gunner(e: Dictionary, dt: float) -> void:
@@ -645,7 +718,7 @@ func _update_sniper(e: Dictionary, dt: float) -> void:
 				e.state = "aim"; e.timer = 2.0 * float(diff.get("telegraph", 1.0))
 
 func _update_camel(e: Dictionary, dt: float) -> void:
-	e.x += e.vx * dt
+	_follow_path(e, dt)
 	e.y = e.ground_y + sin(e.age * 6.0) * 3.0 * e.scale
 	if e.state == "ride":
 		e.timer -= dt
@@ -653,9 +726,10 @@ func _update_camel(e: Dictionary, dt: float) -> void:
 			_enemy_fire(e, 1.0)
 			e.shots_left -= 1
 			e.state = "leave"
-			e.vx = e.facing * maxf(absf(e.vx) * 1.35, 150.0 * e.scale)
+			var dir: float = e.facing if absf(e.facing) > 0.0 else (-1.0 if e.vx < 0.0 else 1.0)
+			e.vx = dir * maxf(absf(e.vx) * 1.35, 150.0 * e.scale)
 	var half: float = e.size.x * e.scale * 0.5
-	if e.x + half < camera_x - 80.0 or e.x - half > camera_x + VIEW_W + 80.0:
+	if _path_ended(e) or e.x + half < camera_x - 80.0 or e.x - half > camera_x + VIEW_W + 80.0:
 		e.escaped = true; entities.erase(e)
 
 ## Huey-style helicopter: flies in, hovers while the door gunner fires bursts,
@@ -711,10 +785,13 @@ func gunner_rect(e: Dictionary) -> Rect2:
 
 func _update_villager(e: Dictionary, dt: float) -> void:
 	e.x += e.vx * dt
-	var inside := false
-	for z in band_info(e.band).get("zones", []):
-		if e.x >= float(z[0]) and e.x <= float(z[1]): inside = true
-	if not inside:
+	if absf(e.vx) > 1.0:
+		e.facing = -1.0 if e.vx < 0.0 else 1.0
+	var gy := Ground.ground_y(stage, e.band, e.x)
+	if gy > 0.0:
+		e.y = gy
+		e.ground_y = gy
+	if not Ground.on_ground(stage, e.band, e.x):
 		e.alpha -= dt * 2.0
 		if e.alpha <= 0.0: entities.erase(e)
 
@@ -749,7 +826,7 @@ func _enemy_fire(e: Dictionary, chance_mult: float, damage_override: float = -1.
 ## Inside the dead zone near the centre the front pose already points straight
 ## at the camera, so the last facing is kept (no flicker while the camera scrolls).
 const FACE_DEADZONE := 80.0
-const FACING_TYPES := ["rifleman", "paratrooper", "mg", "camel", "sniper"]
+const FACING_TYPES := ["rifleman", "paratrooper", "mg", "sniper"]
 
 func face_player(e: Dictionary) -> void:
 	if not (e.type in FACING_TYPES) or e.state == "dying": return

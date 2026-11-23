@@ -2,9 +2,15 @@
 # Runs every isolated headless test suite with a throwaway user:// folder.
 set -eu
 cd "$(dirname "$0")/.."
-test_dir=$(mktemp -d)
+# Keep Godot editor settings and temp files out of the real home.
+test_dir=$(mktemp -d "${TMPDIR:-/tmp}/firebreak-test.XXXXXX")
+mkdir -p "$test_dir/config" "$test_dir/data" "$test_dir/cache" "$test_dir/state" "$test_dir/tmp"
 trap 'rm -rf "$test_dir"' EXIT HUP INT TERM
 export XDG_CONFIG_HOME="$test_dir/config"
+export XDG_DATA_HOME="$test_dir/data"
+export XDG_CACHE_HOME="$test_dir/cache"
+export XDG_STATE_HOME="$test_dir/state"
+export TMPDIR="$test_dir/tmp"
 "${GODOT:-godot}" --headless --editor --path . --import --quit >/dev/null 2>&1
 status=0
 for test_file in tests/test_*.gd; do

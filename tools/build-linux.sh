@@ -3,6 +3,15 @@
 # (play.sh, icon, docs) for local play.
 set -eu
 cd "$(dirname "$0")/.."
+# --headless --editor --import writes editor_settings; keep that out of ~/.config/godot.
+qa_dir=$(mktemp -d "${TMPDIR:-/tmp}/firebreak-build.XXXXXX")
+mkdir -p "$qa_dir/config" "$qa_dir/data" "$qa_dir/cache" "$qa_dir/state" "$qa_dir/tmp"
+trap 'rm -rf "$qa_dir"' EXIT HUP INT TERM
+export XDG_CONFIG_HOME="$qa_dir/config"
+export XDG_CACHE_HOME="$qa_dir/cache"
+export XDG_STATE_HOME="$qa_dir/state"
+export TMPDIR="$qa_dir/tmp"
+# XDG_DATA_HOME is left alone so export templates in ~/.local/share/godot still resolve.
 mkdir -p build/linux build/Firebreak/audio
 touch build/.gdignore
 "${GODOT:-godot}" --headless --editor --path . --import --quit

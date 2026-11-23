@@ -114,6 +114,12 @@ func run() -> void:
 	check(SpriteArt.villager_flip(right_v) < 0.0, "a villager walking right is drawn flipped (faces right)")
 	check(SpriteArt.villager_flip(left_v) > 0.0, "a villager walking left is drawn unflipped (faces left)")
 	check(SpriteArt.villager_flip(right_v) == -right_v.facing, "villager flip is facing times VILLAGER_NATIVE")
+	# Dune Sea robes are painted facing right (the opposite of stage 1).
+	var robe_r := {"kind": "robe_man", "facing": 1.0}
+	var robe_l := {"kind": "robe_woman", "facing": -1.0}
+	check(SpriteArt.villager_native(robe_r) == 1.0, "robe frames are painted facing right")
+	check(SpriteArt.villager_flip(robe_r) > 0.0, "a robe villager walking right is drawn unflipped")
+	check(SpriteArt.villager_flip(robe_l) < 0.0, "a robe villager walking left is drawn flipped")
 
 	print("Facing: %d checks, %d failures" % [checks, failures])
 	quit(1 if failures > 0 else 0)

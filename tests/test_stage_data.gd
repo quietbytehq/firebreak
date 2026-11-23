@@ -26,7 +26,9 @@ func run() -> void:
 		check(types.has(t) or s.ambient.any(func(r): return r.type == t), "stage uses " + t)
 	check(float(s.bands.far.scale) < float(s.bands.mid.scale) and float(s.bands.mid.scale) < float(s.bands.near.scale), "far < mid < near scale")
 	check(float(s.bands.far.damage) < float(s.bands.near.damage), "near enemies hit harder")
-	check(float(s.bands.near.zones[0][2]) == 920.0, "near-band ground is above the HUD")
+	check(s.has("ground") and (s.ground.near.points as Array).size() >= 2, "stage 1 has a near ground map")
+	var g1: Array = s.ground.near.points[0]
+	check(float(g1[1]) <= 940.0, "stage 1 near ground starts at or above the HUD lip")
 	var s2 := StageData.load_stage(2)
 	check(not s2.is_empty(), "stage 2 loads")
 	check(s2.get("name", "") == "Dune Sea", "stage 2 is Dune Sea")

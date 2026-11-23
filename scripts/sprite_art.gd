@@ -20,9 +20,16 @@ const MUZZLE := {
 ## left. They are mirrored for enemies left of centre so every gun turns in
 ## toward the player, never along the battlefield at other soldiers.
 const FRONT_NATIVE := -1.0
-## Villager walk and hit frames are painted facing left, so they are flipped
-## when the figure walks right (the opposite of the usual facing=1 convention).
+## Stage 1 villager walk and hit frames are painted facing left, so they are
+## flipped when the figure walks right. Dune Sea robes are painted facing right.
 const VILLAGER_NATIVE := -1.0
+const VILLAGER_NATIVE_KIND := {
+	"farmer": -1.0, "woman": -1.0, "elder": -1.0,
+	"robe_man": 1.0, "robe_woman": 1.0,
+}
+
+static func villager_native(e: Dictionary) -> float:
+	return float(VILLAGER_NATIVE_KIND.get(str(e.get("kind", "farmer")), VILLAGER_NATIVE))
 ## Hitbox height each reference frame is scaled to (matches StageSim.SIZES).
 const TARGET_H := {"rifleman": 360.0, "kneel": 250.0, "villager": 340.0, "mg": 240.0, "paratrooper": 350.0, "sniper": 240.0, "camel": 360.0}
 ## On-screen height of the whole descending paratrooper (canopy to boots) at scale 1.
@@ -109,8 +116,10 @@ static func draw_rising(ci: CanvasItem, name: String, pos: Vector2, k: float, fa
 	ci.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
 static func flash_mod(e: Dictionary) -> Color:
-	var f: float = 1.0 + 1.6 * float(e.flash)
-	return Color(f, f, f, float(e.alpha))
+	# Lift toward a warm highlight. A 1.6 multiplier (peak 2.6) clipped desert
+	# camo — and even darker uniforms — to a flat white, which read as a bug.
+	var f: float = clampf(float(e.flash), 0.0, 1.0)
+	return Color(1.0 + 0.50 * f, 1.0 + 0.42 * f, 1.0 + 0.28 * f, float(e.alpha))
 
 static func scale_for(e: Dictionary, ref: String, target: float) -> float:
 	return float(e.scale) * target / fig_h(ref)
@@ -140,7 +149,7 @@ static func front_flip(e: Dictionary) -> float:
 ## Mirror factor for a villager so the painted (left-facing) walk cycle
 ## travels in the same direction as e.vx / e.facing.
 static func villager_flip(e: Dictionary) -> float:
-	return float(e.facing) * VILLAGER_NATIVE
+	return float(e.facing) * villager_native(e)
 
 static func _soldier_frame(e: Dictionary) -> String:
 	var kneel: bool = e.get("pose", "") == "kneel"

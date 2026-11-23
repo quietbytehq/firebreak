@@ -1,3 +1,14 @@
+# CHECKPOINT — Firebreak 0.4.0 (ground, roads, callouts)
+
+Laptop, 23 Nov 2026, afternoon Asia/Karachi. Version stays 0.4.0 (nothing pushed or tagged). Replaced files in `_to_delete/replaced_v040b/`.
+
+- Callouts stay out of the top HUD and fully on screen (PACKAGE, TRUCK WRECKED). Hit flash capped so desert camo does not blow out to white.
+- Ground maps per band, digitized from the panoramas. Near enemies stand on the sandbag line; mid/far skip the river and the oasis. Paratroopers only fly while descending.
+- Vehicles (truck, technical, convoy) follow a road polyline; camels follow sand tracks. They face their direction of travel and do not cross water.
+- Dune Sea robe civilians use a right-facing native (stage 1 villagers stay left-facing). Heat shimmer is a weak horizon-only warp, not a whole-screen wobble.
+- `tools/test.sh` and `tools/build-linux.sh` jail XDG_CONFIG/CACHE/STATE and TMPDIR. `~/.config/godot/editor_settings-4.7.tres` mtime stayed 22 Nov 2026, 22:51:37 Asia/Karachi.
+- Tests: 1,523 checks, 0 failures. 30 s autoplay (exported build, seed 7, 144 Hz, vsync off + 60 fps limiter): River Village 59.88 fps avg (wall), 1% low 43.6, worst 66.2 ms; Dune Sea 59.92 fps avg, 1% low 43.0, worst 39.3 ms. Shots in `qa/laptop/v040b/` (JPEG copies also at firebreak_shots/v040b/ on the box).
+
 # CHECKPOINT — Firebreak 0.4.0
 
 Updated: 2026-11-22 (PKT, UTC+5)

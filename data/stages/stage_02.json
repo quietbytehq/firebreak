@@ -10,18 +10,48 @@
   "music": "music_dune_sea",
   "ambience": "ambience_dune",
   "soldier_prefix": "dune_rifleman",
-  "villager_kinds": ["robe_man", "robe_woman"],
-  "shimmer": 0.0036,
-  "dust": {"from": 105.0, "until": 118.0},
+  "villager_kinds": [
+    "robe_man",
+    "robe_woman"
+  ],
+  "shimmer": 0.0008,
+  "dust": {
+    "from": 105.0,
+    "until": 118.0
+  },
   "scroll": [
-    [0, 0],
-    [36, 0],
-    [52, 700],
-    [86, 700],
-    [108, 1400],
-    [128, 1400],
-    [148, 1920],
-    [180, 1920]
+    [
+      0,
+      0
+    ],
+    [
+      36,
+      0
+    ],
+    [
+      52,
+      700
+    ],
+    [
+      86,
+      700
+    ],
+    [
+      108,
+      1400
+    ],
+    [
+      128,
+      1400
+    ],
+    [
+      148,
+      1920
+    ],
+    [
+      180,
+      1920
+    ]
   ],
   "bands": {
     "far": {
@@ -30,8 +60,16 @@
       "hit_chance": 0.55,
       "score_mult": 1.5,
       "zones": [
-        [40, 1600, 620],
-        [2100, 3700, 600]
+        [
+          40,
+          1480,
+          560
+        ],
+        [
+          2180,
+          3700,
+          575
+        ]
       ]
     },
     "mid": {
@@ -40,8 +78,16 @@
       "hit_chance": 0.75,
       "score_mult": 1.2,
       "zones": [
-        [40, 1500, 752],
-        [2100, 3680, 742]
+        [
+          40,
+          1520,
+          740
+        ],
+        [
+          2220,
+          3840,
+          808
+        ]
       ]
     },
     "near": {
@@ -50,82 +96,604 @@
       "hit_chance": 0.9,
       "score_mult": 1.0,
       "zones": [
-        [0, 3840, 920]
+        [
+          0,
+          3840,
+          890
+        ]
       ]
     }
   },
   "ambient": [
     {
       "type": "rifleman",
-      "every": [1.2, 2.05],
+      "every": [
+        1.2,
+        2.05
+      ],
       "from": 3.0,
       "until": 172.0,
       "max_alive": 9,
-      "bands": {"far": 0.32, "mid": 0.44, "near": 0.24}
+      "bands": {
+        "far": 0.32,
+        "mid": 0.44,
+        "near": 0.24
+      }
     },
     {
       "type": "villager",
-      "every": [9.0, 13.0],
+      "every": [
+        9.0,
+        13.0
+      ],
       "from": 8.0,
       "until": 165.0,
       "max_alive": 2,
-      "bands": {"far": 0.4, "mid": 0.6}
+      "bands": {
+        "far": 0.4,
+        "mid": 0.6
+      }
     },
     {
       "type": "food",
-      "every": [16.0, 22.0],
+      "every": [
+        16.0,
+        22.0
+      ],
       "from": 22.0,
       "until": 170.0,
       "max_alive": 1,
-      "kinds": {"dates": 0.35, "bread": 0.3, "waterskin": 0.2, "ration": 0.15}
+      "kinds": {
+        "dates": 0.35,
+        "bread": 0.3,
+        "waterskin": 0.2,
+        "ration": 0.15
+      }
     },
     {
       "type": "powerup",
-      "every": [15.0, 22.0],
+      "every": [
+        15.0,
+        22.0
+      ],
       "from": 26.0,
       "until": 170.0,
       "max_alive": 1,
       "kinds": {
-        "ammo": 0.32, "grenade": 0.16, "rapid": 0.12, "spread": 0.12,
-        "power": 0.08, "airstrike": 0.04, "cash_small": 0.11, "cash_large": 0.05
+        "ammo": 0.32,
+        "grenade": 0.16,
+        "rapid": 0.12,
+        "spread": 0.12,
+        "power": 0.08,
+        "airstrike": 0.04,
+        "cash_small": 0.11,
+        "cash_large": 0.05
       }
     }
   ],
   "waves": [
-    {"t": 2.0, "type": "rifleman", "band": "far", "count": 2, "interval": 0.9},
-    {"t": 6.0, "type": "rifleman", "band": "mid", "count": 3, "interval": 0.75},
-    {"t": 12.0, "type": "camel", "band": "mid"},
-    {"t": 16.0, "type": "villager", "band": "mid", "count": 2, "interval": 1.6},
-    {"t": 22.0, "type": "food", "kind": "dates"},
-    {"t": 28.0, "type": "rifleman", "band": "mid", "count": 2, "interval": 0.9},
-    {"t": 42.0, "type": "rifleman", "band": "mid", "count": 3, "interval": 0.7},
-    {"t": 48.0, "type": "mg", "world_x": 1980, "world_y": 748, "scale": 0.46},
-    {"t": 55.0, "type": "food", "kind": "waterskin"},
-    {"t": 60.0, "type": "rifleman", "band": "far", "count": 2, "interval": 0.85},
-    {"t": 74.0, "type": "technical", "band": "mid"},
-    {"t": 80.0, "type": "powerup", "kind": "ammo"},
-    {"t": 85.0, "type": "rifleman", "band": "mid", "count": 3, "interval": 0.65},
-    {"t": 92.0, "type": "sniper", "world_x": 2920, "world_y": 690, "scale": 0.46},
-    {"t": 100.0, "type": "sniper", "world_x": 3380, "world_y": 700, "scale": 0.46},
-    {"t": 108.0, "type": "camel", "band": "far"},
-    {"t": 112.0, "type": "food", "kind": "bread"},
-    {"t": 118.0, "type": "powerup", "kind": "grenade"},
-    {"t": 125.0, "type": "rifleman", "band": "mid", "count": 3, "interval": 0.7},
-    {"t": 140.0, "type": "convoy", "band": "mid"},
-    {"t": 148.0, "type": "sniper", "world_x": 3620, "world_y": 705, "scale": 0.5},
-    {"t": 155.0, "type": "rifleman", "band": "mid", "count": 4, "interval": 0.55},
-    {"t": 158.0, "type": "rifleman", "band": "near", "count": 2, "interval": 1.0},
-    {"t": 168.0, "type": "technical", "band": "mid"}
+    {
+      "t": 2.0,
+      "type": "rifleman",
+      "band": "far",
+      "count": 2,
+      "interval": 0.9
+    },
+    {
+      "t": 6.0,
+      "type": "rifleman",
+      "band": "mid",
+      "count": 3,
+      "interval": 0.75
+    },
+    {
+      "t": 12.0,
+      "type": "camel",
+      "band": "mid"
+    },
+    {
+      "t": 16.0,
+      "type": "villager",
+      "band": "mid",
+      "count": 2,
+      "interval": 1.6
+    },
+    {
+      "t": 22.0,
+      "type": "food",
+      "kind": "dates"
+    },
+    {
+      "t": 28.0,
+      "type": "rifleman",
+      "band": "mid",
+      "count": 2,
+      "interval": 0.9
+    },
+    {
+      "t": 42.0,
+      "type": "rifleman",
+      "band": "mid",
+      "count": 3,
+      "interval": 0.7
+    },
+    {
+      "t": 48.0,
+      "type": "mg",
+      "world_x": 1980,
+      "world_y": 748,
+      "scale": 0.46
+    },
+    {
+      "t": 55.0,
+      "type": "food",
+      "kind": "waterskin"
+    },
+    {
+      "t": 60.0,
+      "type": "rifleman",
+      "band": "far",
+      "count": 2,
+      "interval": 0.85
+    },
+    {
+      "t": 74.0,
+      "type": "technical",
+      "band": "mid"
+    },
+    {
+      "t": 80.0,
+      "type": "powerup",
+      "kind": "ammo"
+    },
+    {
+      "t": 85.0,
+      "type": "rifleman",
+      "band": "mid",
+      "count": 3,
+      "interval": 0.65
+    },
+    {
+      "t": 92.0,
+      "type": "sniper",
+      "world_x": 2920,
+      "world_y": 690,
+      "scale": 0.46
+    },
+    {
+      "t": 100.0,
+      "type": "sniper",
+      "world_x": 3380,
+      "world_y": 700,
+      "scale": 0.46
+    },
+    {
+      "t": 108.0,
+      "type": "camel",
+      "band": "far"
+    },
+    {
+      "t": 112.0,
+      "type": "food",
+      "kind": "bread"
+    },
+    {
+      "t": 118.0,
+      "type": "powerup",
+      "kind": "grenade"
+    },
+    {
+      "t": 125.0,
+      "type": "rifleman",
+      "band": "mid",
+      "count": 3,
+      "interval": 0.7
+    },
+    {
+      "t": 140.0,
+      "type": "convoy",
+      "band": "mid"
+    },
+    {
+      "t": 148.0,
+      "type": "sniper",
+      "world_x": 3620,
+      "world_y": 705,
+      "scale": 0.5
+    },
+    {
+      "t": 155.0,
+      "type": "rifleman",
+      "band": "mid",
+      "count": 4,
+      "interval": 0.55
+    },
+    {
+      "t": 158.0,
+      "type": "rifleman",
+      "band": "near",
+      "count": 2,
+      "interval": 1.0
+    },
+    {
+      "t": 168.0,
+      "type": "technical",
+      "band": "mid"
+    }
   ],
   "light": {
-    "tint": [1.0, 0.98, 0.88],
-    "haze": [0.95, 0.9, 0.78],
+    "tint": [
+      1.0,
+      0.98,
+      0.88
+    ],
+    "haze": [
+      0.95,
+      0.9,
+      0.78
+    ],
     "haze_far": 0.26,
     "haze_mid": 0.1,
     "haze_near": 0.0
   },
   "truck_avoid": [
-    [2320, 2720],
-    [3000, 3720]
-  ]
+    [
+      2320,
+      2720
+    ],
+    [
+      3000,
+      3720
+    ]
+  ],
+  "ground": {
+    "far": {
+      "spans": [
+        [
+          40,
+          1480
+        ],
+        [
+          2180,
+          3700
+        ]
+      ],
+      "points": [
+        [
+          40,
+          575
+        ],
+        [
+          200,
+          570
+        ],
+        [
+          500,
+          560
+        ],
+        [
+          900,
+          555
+        ],
+        [
+          1200,
+          560
+        ],
+        [
+          1480,
+          570
+        ],
+        [
+          2180,
+          580
+        ],
+        [
+          2500,
+          575
+        ],
+        [
+          2900,
+          568
+        ],
+        [
+          3300,
+          575
+        ],
+        [
+          3700,
+          585
+        ]
+      ]
+    },
+    "mid": {
+      "spans": [
+        [
+          40,
+          1520
+        ],
+        [
+          2220,
+          3840
+        ]
+      ],
+      "points": [
+        [
+          40,
+          690
+        ],
+        [
+          200,
+          680
+        ],
+        [
+          400,
+          675
+        ],
+        [
+          600,
+          700
+        ],
+        [
+          800,
+          730
+        ],
+        [
+          1000,
+          750
+        ],
+        [
+          1200,
+          760
+        ],
+        [
+          1400,
+          770
+        ],
+        [
+          1520,
+          778
+        ],
+        [
+          2220,
+          808
+        ],
+        [
+          2400,
+          810
+        ],
+        [
+          2560,
+          812
+        ],
+        [
+          2720,
+          808
+        ],
+        [
+          2960,
+          800
+        ],
+        [
+          3200,
+          796
+        ],
+        [
+          3400,
+          802
+        ],
+        [
+          3600,
+          808
+        ],
+        [
+          3840,
+          812
+        ]
+      ]
+    },
+    "near": {
+      "spans": [
+        [
+          0,
+          3840
+        ]
+      ],
+      "points": [
+        [
+          0,
+          838
+        ],
+        [
+          200,
+          846
+        ],
+        [
+          400,
+          862
+        ],
+        [
+          600,
+          892
+        ],
+        [
+          800,
+          918
+        ],
+        [
+          1000,
+          928
+        ],
+        [
+          1200,
+          898
+        ],
+        [
+          1400,
+          912
+        ],
+        [
+          1600,
+          924
+        ],
+        [
+          1800,
+          916
+        ],
+        [
+          2000,
+          898
+        ],
+        [
+          2200,
+          890
+        ],
+        [
+          2400,
+          888
+        ],
+        [
+          2600,
+          884
+        ],
+        [
+          2800,
+          898
+        ],
+        [
+          3000,
+          886
+        ],
+        [
+          3200,
+          874
+        ],
+        [
+          3400,
+          870
+        ],
+        [
+          3600,
+          878
+        ],
+        [
+          3840,
+          890
+        ]
+      ]
+    }
+  },
+  "roads": {
+    "track": {
+      "points": [
+        [
+          2220,
+          808
+        ],
+        [
+          2360,
+          806
+        ],
+        [
+          2480,
+          810
+        ],
+        [
+          2620,
+          812
+        ],
+        [
+          2760,
+          808
+        ],
+        [
+          2960,
+          800
+        ],
+        [
+          3160,
+          796
+        ],
+        [
+          3360,
+          802
+        ],
+        [
+          3560,
+          808
+        ],
+        [
+          3840,
+          812
+        ]
+      ]
+    },
+    "sand": {
+      "points": [
+        [
+          40,
+          690
+        ],
+        [
+          200,
+          680
+        ],
+        [
+          400,
+          675
+        ],
+        [
+          600,
+          700
+        ],
+        [
+          800,
+          730
+        ],
+        [
+          1000,
+          750
+        ],
+        [
+          1200,
+          760
+        ],
+        [
+          1400,
+          770
+        ],
+        [
+          1520,
+          778
+        ]
+      ]
+    },
+    "sand_far": {
+      "points": [
+        [
+          2180,
+          580
+        ],
+        [
+          2400,
+          575
+        ],
+        [
+          2700,
+          570
+        ],
+        [
+          3100,
+          568
+        ],
+        [
+          3500,
+          578
+        ],
+        [
+          3700,
+          585
+        ]
+      ]
+    }
+  }
 }

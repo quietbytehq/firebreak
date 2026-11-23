@@ -10,6 +10,39 @@ const LightShader := preload("res://shaders/entity_light.gdshader")
 const HeatShader := preload("res://shaders/heat_shimmer.gdshader")
 const LAYERS := ["far", "mid", "sky", "near", "pickups"]
 const MAX_PARTICLES := 420
+const VIEW_WIDTH := 1920.0
+const VIEW_HEIGHT := 1080.0
+## Bottom edge of the top HUD plates (Rect2(16/760/1524, 12, …, 62)).
+const HUD_TOP_EDGE := 74.0
+## Top edge of the bottom HUD plates.
+const HUD_BOTTOM_EDGE := 940.0
+const CALLOUT_MARGIN := 28.0
+const CALLOUT_OUTLINE := 8.0
+
+## Keeps a baseline-positioned, centred callout fully on screen and out of the
+## top HUD band (the plates are see-through, so drawing under them still shows).
+static func clamp_callout(text: String, pos: Vector2, size: int, font: Font = null) -> Vector2:
+	if font == null:
+		font = ThemeDB.fallback_font
+	var sz := maxi(8, size)
+	var w: float = 0.0
+	var ascent := float(sz)
+	var descent := float(sz) * 0.25
+	if font != null:
+		w = font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, sz).x
+		ascent = font.get_ascent(sz)
+		descent = font.get_descent(sz)
+	var half := w * 0.5 + CALLOUT_OUTLINE
+	var x := clampf(pos.x, CALLOUT_MARGIN + half, VIEW_WIDTH - CALLOUT_MARGIN - half)
+	var y_min := HUD_TOP_EDGE + CALLOUT_MARGIN + ascent + CALLOUT_OUTLINE
+	var y_max := VIEW_HEIGHT - CALLOUT_MARGIN - descent - CALLOUT_OUTLINE
+	# Prefer staying above the bottom HUD when there is room.
+	var above_bottom := HUD_BOTTOM_EDGE - CALLOUT_MARGIN - descent - CALLOUT_OUTLINE
+	if above_bottom > y_min:
+		y_max = minf(y_max, above_bottom)
+	var y := clampf(pos.y, y_min, maxf(y_min, y_max))
+	return Vector2(x, y)
+
 
 var sim
 var bg: Texture2D
@@ -243,7 +276,9 @@ func _process(delta: float) -> void:
 			list[j].life -= delta
 			if list[j].life <= 0.0: list.remove_at(j)
 			else: j += 1
-	for q in popups: q.pos.y -= 70.0 * delta
+	for q in popups:
+		q.pos.y -= 70.0 * delta
+		q.pos = clamp_callout(str(q.text), q.pos, int(q.get("size", 40)))
 	if sim != null and sim.state == "playing" and not sim.paused:
 		streak_gap += delta
 		if streak_gap > STREAK_WINDOW:
@@ -458,9 +493,10 @@ func _draw_fx() -> void:
 		elif age < 0.32:
 			pop = lerpf(1.22, 1.0, (age - 0.18) / 0.14)
 		var sz: int = maxi(12, int(round(float(q.size) * pop)))
+		var at := clamp_callout(str(q.text), q.pos, sz, font)
 		var w := font.get_string_size(q.text, HORIZONTAL_ALIGNMENT_LEFT, -1, sz).x
-		ci.draw_string_outline(font, q.pos - Vector2(w * 0.5, 0), q.text, HORIZONTAL_ALIGNMENT_LEFT, -1, sz, 8, Color(0, 0, 0, 0.8 * a))
-		ci.draw_string(font, q.pos - Vector2(w * 0.5, 0), q.text, HORIZONTAL_ALIGNMENT_LEFT, -1, sz, Color(q.col, a))
+		ci.draw_string_outline(font, at - Vector2(w * 0.5, 0), q.text, HORIZONTAL_ALIGNMENT_LEFT, -1, sz, 8, Color(0, 0, 0, 0.8 * a))
+		ci.draw_string(font, at - Vector2(w * 0.5, 0), q.text, HORIZONTAL_ALIGNMENT_LEFT, -1, sz, Color(q.col, a))
 	_draw_title_card(ci, font)
 	if screen_flash > 0.0:
 		ci.draw_rect(Rect2(-80, -80, 2080, 1240), Color(1, 0.85, 0.6, 0.45 * screen_flash))

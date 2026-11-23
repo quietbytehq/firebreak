@@ -96,4 +96,19 @@ static func validate(d: Dictionary) -> Array:
 		if float(k[1]) > max_x + 0.01:
 			problems.append("scroll beyond panorama")
 		prev_t = float(k[0]); prev_x = float(k[1])
+	var ground: Dictionary = d.get("ground", {})
+	for b in BANDS:
+		if not ground.has(b):
+			problems.append("missing ground for " + b)
+			continue
+		var pts: Array = ground[b].get("points", [])
+		var prevx := -1.0
+		if pts.size() < 2:
+			problems.append("ground polyline too short " + b)
+		for pt in pts:
+			if float(pt[0]) < prevx:
+				problems.append("ground points not sorted " + b)
+			if float(pt[1]) < 200.0 or float(pt[1]) > 1080.0:
+				problems.append("ground y out of range " + b)
+			prevx = float(pt[0])
 	return problems
