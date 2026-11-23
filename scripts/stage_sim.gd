@@ -147,6 +147,24 @@ func band_info(band: String) -> Dictionary:
 func band_scale(band: String) -> float:
 	return float(band_info(band).get("scale", 1.0))
 
+func grounded_offenders(out: Array = []) -> int:
+	var n := 0
+	for e in entities:
+		var off := Ground.feet_off(stage, e)
+		if off < 0.0:
+			continue
+		var slack := Ground.feet_slack(e)
+		if off > slack:
+			n += 1
+			if out.size() < 24:
+				out.append({
+					"id": e.get("id", 0), "type": e.type, "band": e.get("band", ""),
+					"state": e.get("state", ""), "pose": e.get("pose", ""),
+					"x": e.x, "y": e.y, "ground_y": e.get("ground_y", 0.0),
+					"off": off, "time": time
+				})
+	return n
+
 func enemies_remaining() -> int:
 	return maxi(0, quota - kills)
 

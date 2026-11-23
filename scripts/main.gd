@@ -4,6 +4,7 @@ extends Node
 
 const StageSim := preload("res://scripts/stage_sim.gd")
 const StageData := preload("res://scripts/stage_data.gd")
+const Ground := preload("res://scripts/stage_ground.gd")
 const StageView := preload("res://scripts/stage_view.gd")
 const Hud := preload("res://scripts/hud.gd")
 const InputSetup := preload("res://scripts/input_setup.gd")
@@ -79,6 +80,8 @@ var qa_shots_done := {}
 var qa_finished := false
 var qa_skip_frames := 0
 var qa_fire_capture: Array = []   # [path] captured on the next frame
+var qa_ground_hits: Array = []
+var qa_ground_frames := 0
 var kill_streak_times: Array = []  # sim.time of recent kills, for catchphrases
 var was_critical := false          # health dropped below 20% this stage
 var said_one_more := false
@@ -1084,6 +1087,15 @@ func _qa_tick(delta: float) -> void:
 		if qa_clock >= st and not qa_shots_done.has(st):
 			qa_shots_done[st] = true
 			_qa_capture(out.path_join("%s-%03ds.png" % [tag, int(st)]))
+	if sim != null:
+		var hits: Array = []
+		if sim.grounded_offenders(hits) > 0:
+			qa_ground_frames += 1
+			if qa_ground_hits.size() < 24:
+				for h in hits:
+					qa_ground_hits.append(h)
+					if qa_ground_hits.size() >= 24:
+						break
 	if qa_clock >= float(qa.get("seconds", 30.0)):
 		_qa_finish(out)
 	elif sim.state != "playing":
@@ -1161,10 +1173,16 @@ func _qa_finish(out: String) -> void:
 			var b := str(clampi(int(round(f * 1000.0)), 0, 60))
 			hist[b] = int(hist.get(b, 0)) + 1
 		report["raw_ms_histogram"] = hist
+	report["ground_off_frames"] = qa_ground_frames
+	report["ground_offenders"] = qa_ground_hits
 	var f := FileAccess.open(out.path_join("%s-performance.json" % str(qa.get("tag", "gameplay"))), FileAccess.WRITE)
 	if f: f.store_string(JSON.stringify(report, " ")); f.close()
 	print("QA ", JSON.stringify(report))
-	get_tree().quit()
+	if qa_ground_frames > 0:
+		push_error("QA ground contact failed: %d frames, first %s" % [qa_ground_frames, str(qa_ground_hits[0] if qa_ground_hits else {})])
+		get_tree().quit(1)
+	else:
+		get_tree().quit()
 
 # ------------------------------------------------------------------ store
 const STORE_STATS := [["Damage", "damage", 5.0], ["Fire rate", "fire_rate", 18.0], ["Magazine", "mag", 100.0]]

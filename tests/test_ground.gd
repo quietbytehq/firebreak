@@ -31,6 +31,10 @@ func run() -> void:
 	_camels_on_sand()
 	_snipers_stay_planted()
 	_near_body_visible()
+	_death_scale_matches_living()
+	_death_stays_on_ground()
+	for n in [1, 2]:
+		_sixty_second_contact(n)
 	print("Ground: ", checks, " checks, ", failures, " failures")
 	quit(0 if failures == 0 else 1)
 
@@ -187,3 +191,120 @@ func _near_body_visible() -> void:
 		var top: float = e.y - e.size.y * e.scale
 		check(top < sim.HUD_BAND_TOP - 120.0, "stage %d near soldier body shows above the HUD (top %.0f, feet %.0f)" % [stage_n, top, e.y])
 		check(Ground.on_ground(sim.stage, "near", e.x), "stage %d near soldier is on a near span" % stage_n)
+
+func _death_scale_matches_living() -> void:
+	SpriteArt.preload_all()
+	for stage_n in [1, 2]:
+		var sim = fresh(stage_n)
+		for band in ["far", "mid", "near"]:
+			var p: Vector2 = sim.pick_point(band, 140.0, 0.4)
+			if p.x < 0.0:
+				p = sim.pick_point(band, 80.0)
+			if p.x < 0.0:
+				check(false, "stage %d %s has no ground point for death-scale" % [stage_n, band])
+				continue
+			for kneel in [false, true]:
+				var e: Dictionary = sim.spawn("rifleman", band, {"world_x": p.x})
+				if e.is_empty():
+					check(false, "stage %d %s rifleman failed to spawn" % [stage_n, band])
+					continue
+				if kneel:
+					e.pose = "kneel"; e.size = Vector2(150, 250); e.variant = 3
+				e.state = "aim"; e.rise = 1.0; e.muzzle = 0.0
+				var k_live := SpriteArt.soldier_draw_k(e)
+				var target := SpriteArt.TARGET_H.kneel if kneel else SpriteArt.TARGET_H.rifleman
+				check(absf(k_live * _live_fig(e, kneel) - float(e.scale) * target) <= 1.5,
+					"stage %d %s %s living height tracks TARGET_H (k=%.4f)" % [stage_n, band, "kneel" if kneel else "stand", k_live])
+				e.state = "dying"; e.timer = 0.6; e.fall_rot = 0.2
+				var k_die := SpriteArt.soldier_draw_k(e)
+				check(absf(k_live - k_die) <= 0.0001,
+					"stage %d %s %s death scale matches living (live=%.4f die=%.4f)" % [stage_n, band, "kneel" if kneel else "stand", k_live, k_die])
+				# The bug used the short stage-1 side-view refs, which oversized dune skins.
+				if str(e.get("skin", "")) != "":
+					var bad := float(e.scale) * target / SpriteArt.fig_h("rifleman_kneel" if kneel else "rifleman_aim")
+					check(absf(k_die - bad) > 0.05,
+						"stage %d %s %s must not use the unsinned side-view death scale (k=%.4f bad=%.4f)" % [stage_n, band, "kneel" if kneel else "stand", k_die, bad])
+				sim.entities.erase(e)
+
+func _live_fig(e: Dictionary, kneel: bool) -> float:
+	var name := "rifleman_kneel_front" if kneel else "rifleman_front_aim"
+	var skin := str(e.get("skin", ""))
+	if skin != "" and SpriteArt.tex(skin + name.substr(8)) != null:
+		name = skin + name.substr(8)
+	return SpriteArt.fig_h(name)
+
+func _death_stays_on_ground() -> void:
+	# Log y vs ground_y for a mid kneeling Dune Sea militiaman across the
+	# shot and the death, the case in s2early-016s.jpg.
+	var sim = fresh(2)
+	var p: Vector2 = sim.pick_point("mid", 140.0, 0.45)
+	check(p.x >= 0.0, "Dune Sea mid spawn for death log")
+	var e: Dictionary = sim.spawn("rifleman", "mid", {"world_x": p.x})
+	e.pose = "kneel"; e.size = Vector2(150, 250); e.variant = 3
+	e.state = "aim"; e.rise = 1.0
+	var gy0 := Ground.ground_y(sim.stage, "mid", e.x)
+	var lines: Array = []
+	for i in 12:
+		sim.step(1.0 / 60.0)
+		# Re-find e (step shouldn't drop an aiming rifleman this fast)
+		if e not in sim.entities:
+			break
+		lines.append("t=%.3f state=%s y=%.2f ground_y=%.2f off=%.2f k=%.4f" % [
+			sim.time, e.state, e.y, Ground.ground_y(sim.stage, "mid", e.x),
+			Ground.feet_off(sim.stage, e), SpriteArt.soldier_draw_k(e)])
+	var y_before := float(e.y)
+	sim.damage_entity(e, 99.0, Vector2(e.x - sim.camera_x, e.y - 80.0))
+	check(e.state == "dying", "mid kneel rifleman enters dying after a fatal hit")
+	var max_off := 0.0
+	for i in 36:
+		sim.step(1.0 / 60.0)
+		if e not in sim.entities:
+			break
+		var off := Ground.feet_off(sim.stage, e)
+		max_off = maxf(max_off, off)
+		lines.append("t=%.3f state=%s y=%.2f ground_y=%.2f off=%.2f k=%.4f fall_rot=%.2f" % [
+			sim.time, e.state, e.y, Ground.ground_y(sim.stage, "mid", e.x),
+			off, SpriteArt.soldier_draw_k(e), e.fall_rot])
+		check(absf(e.y - y_before) <= 0.01, "dying mid kneel y must not leave the ground (y=%.2f was %.2f)" % [e.y, y_before])
+	check(max_off <= Ground.feet_slack(e), "dying mid kneel feet stay on the mid ground (max off=%.2f)" % max_off)
+	check(absf(y_before - gy0) <= 1.5, "pre-death y was on mid ground (y=%.2f gy=%.2f)" % [y_before, gy0])
+	print("DEATH LOG mid kneel Dune Sea:
+  " + "
+  ".join(lines))
+
+func _sixty_second_contact(stage_n: int) -> void:
+	var sim = StageSim.new()
+	sim.setup(stage_n, 7)
+	sim.diff.accuracy = 0.0
+	var samples := 0
+	var dying_n := 0
+	var offenders := 0
+	var first := ""
+	for i in 60 * 60:
+		# Periodically drop a ground enemy so dying frames are sampled too.
+		if i % 20 == 0:
+			for e in sim.entities:
+				if e.type in ["rifleman", "mg", "sniper"] and e.state != "dying" and e.get("rise", 1.0) >= 1.0:
+					sim.damage_entity(e, 99.0, Vector2(e.x - sim.camera_x, e.y - 80.0))
+					break
+		sim.step(1.0 / 60.0)
+		var hits: Array = []
+		var n := sim.grounded_offenders(hits)
+		for e in sim.entities:
+			if Ground.feet_off(sim.stage, e) < 0.0:
+				continue
+			samples += 1
+			if e.state == "dying":
+				dying_n += 1
+		if n > 0:
+			offenders += n
+			if first == "" and not hits.is_empty():
+				var h: Dictionary = hits[0]
+				first = "t=%.2f %s id=%s band=%s y=%.1f off=%.1f" % [
+					sim.time, h.type, str(h.id), h.band, h.y, h.off]
+		if sim.state != "playing":
+			break
+	check(samples > 200, "stage %d 60s autoplay sampled grounded feet (%d)" % [stage_n, samples])
+	check(dying_n > 20, "stage %d 60s autoplay sampled dying feet (%d)" % [stage_n, dying_n])
+	check(offenders == 0, "stage %d 60s: every living and dying ground unit stays on the map (%d offenders: %s)" % [stage_n, offenders, first])
+

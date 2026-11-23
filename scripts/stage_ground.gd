@@ -104,3 +104,32 @@ static func road_for(type: String, band: String = "mid") -> String:
 	if type == "camel":
 		return "sand_far" if band == "far" else "sand"
 	return ""
+
+## Vertical error between this entity's feet and their contact line, or -1
+## if the entity is airborne (heli, falling pickup, descending paratrooper,
+## mid-air death) and should not be tested against the ground map.
+static func feet_off(stage: Dictionary, e: Dictionary) -> float:
+	var tname := str(e.get("type", ""))
+	if tname in ["heli", "food", "powerup"]:
+		return -1.0
+	if tname == "paratrooper" and not e.get("landed", false):
+		return -1.0
+	var y := float(e.get("y", 0.0))
+	var path := str(e.get("path", ""))
+	if path != "":
+		var ry := road_y(stage, path, float(e.x))
+		if ry < 0.0:
+			return -1.0
+		return absf(y - ry)
+	if e.get("planted", false):
+		return absf(y - float(e.get("ground_y", y)))
+	var gy := ground_y(stage, str(e.get("band", "mid")), float(e.x))
+	if gy < 0.0:
+		return -1.0
+	return absf(y - gy)
+
+## Allowed feet error in pixels. Camels bob a few pixels on their stride.
+static func feet_slack(e: Dictionary) -> float:
+	if str(e.get("type", "")) == "camel":
+		return 3.0 * float(e.get("scale", 1.0)) + 2.0
+	return 5.0

@@ -155,7 +155,9 @@ static func _soldier_frame(e: Dictionary) -> String:
 	var kneel: bool = e.get("pose", "") == "kneel"
 	var name := "rifleman_front_aim"
 	if e.state == "dying":
-		name = "rifleman_hit" if e.timer > 0.45 and not kneel else "rifleman_fall"
+		# dune_rifleman_fall is the kneel pose, so standing deaths stay on the
+		# hit / aim body and slump around the feet instead of popping to a kneel.
+		name = "rifleman_kneel_front" if kneel else "rifleman_hit"
 	elif kneel:
 		name = "rifleman_kneel_front_flash" if e.muzzle > 0.0 else "rifleman_kneel_front"
 	elif e.muzzle > 0.0:
@@ -165,6 +167,10 @@ static func _soldier_frame(e: Dictionary) -> String:
 static func _soldier_k(e: Dictionary, kneel: bool) -> float:
 	var ref := _skinned(e, "rifleman_kneel_front" if kneel else "rifleman_front_aim")
 	return scale_for(e, ref, TARGET_H.kneel if kneel else TARGET_H.rifleman)
+
+## Public wrapper so tests and the death path share the living pose scale.
+static func soldier_draw_k(e: Dictionary) -> float:
+	return _soldier_k(e, str(e.get("pose", "")) == "kneel")
 
 ## Screen position of the barrel tip for any enemy (used for flashes, the
 ## warning ring and the start of the shot toward the player).
@@ -210,10 +216,14 @@ static func soldier(ci: CanvasItem, e: Dictionary, pos: Vector2, t: float) -> vo
 	var frame := _soldier_frame(e)
 	var mod := flash_mod(e)
 	if e.state == "dying":
-		# Death frames are the side-view falls; sized from the side reference.
-		var kd := scale_for(e, "rifleman_kneel" if kneel else "rifleman_aim", TARGET_H.kneel if kneel else TARGET_H.rifleman)
+		# Keep the same on-screen height as the living pose and slump around
+		# the feet. Sizing from the stage-1 side-view refs (rifleman_aim /
+		# rifleman_kneel) blew the taller dune skins up 2-4x, so a mid
+		# militiaman looked like a near one floating over the dunes.
+		var kd := _soldier_k(e, kneel)
 		var fade: float = clampf(e.timer / 0.5, 0.0, 1.0)
-		draw(ci, frame, pos, kd, e.facing, Color(mod.r, mod.g, mod.b, fade))
+		var rot: float = float(e.get("fall_rot", 0.0)) * 1.1 * (1.0 if float(e.facing) >= 0.0 else -1.0)
+		draw(ci, frame, pos, kd, e.facing, Color(mod.r, mod.g, mod.b, fade), rot)
 		return
 	var k := _soldier_k(e, kneel)
 	var f := front_flip(e)
