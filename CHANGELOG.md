@@ -3,6 +3,25 @@
 All notable changes to Firebreak are listed here. Version numbers follow the
 game's public releases.
 
+## 0.5.0 — 24 November 2026
+
+- Stage 3, Coral Coast, is playable. A Caribbean bay at golden hour: an open
+  beach, a pastel town with a long wooden pier, and a harbour. After Dune Sea
+  the travel map offers Coral Coast next; clearing it previews Iron Harbour as
+  coming soon.
+- New enemies: gang riflemen, pier gunners, weaving speedboats and a beach jeep
+  with a bed gunner. Townspeople walk the sand and must not be shot.
+- The gunboat is a stop-the-scroll arena boss. The camera holds on the harbour
+  from 2:20, and the stage ends only when the gunboat is destroyed (or you fall).
+  Meeting the kill quota or running past three minutes does not clear the stage
+  while the gunboat is still afloat.
+- Stage 3 is about 31% harder than Dune Sea: quota 111, faster and more accurate
+  fire, more civilians in the crossfire, and rarer ammo drops.
+- Stage music is "Caribbean Steel Drums 2" by Tozan (CC0). Bay ambience and
+  vehicle loops are also CC0; credits are in NOTICE. No ElevenLabs audio.
+- The 0.4.1 name-at-start and automatic high-score save still apply, including a
+  per-stage tab for Coral Coast.
+
 ## 0.4.1 — 24 November 2026
 
 - After you press Start, the game asks for your name once, before the mission.

@@ -4,7 +4,7 @@ extends RefCounted
 
 const CAMPAIGN_PATH := "res://data/campaign.json"
 const STAGE_COUNT := 12
-const KNOWN_TYPES := ["rifleman", "mg", "paratrooper", "villager", "food", "powerup", "truck", "heli", "camel", "technical", "sniper", "convoy"]
+const KNOWN_TYPES := ["rifleman", "mg", "paratrooper", "villager", "food", "powerup", "truck", "heli", "camel", "technical", "sniper", "convoy", "speedboat", "jeep", "pier_gunner", "gunboat"]
 const BANDS := ["far", "mid", "near"]
 
 static func load_json(path: String) -> Variant:

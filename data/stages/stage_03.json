@@ -1,0 +1,611 @@
+{
+  "id": "coral_coast",
+  "number": 3,
+  "name": "Coral Coast",
+  "subtitle": "A Caribbean bay at golden hour",
+  "background": "res://assets/backgrounds/coral_coast.jpg",
+  "world_width": 3840,
+  "duration": 180,
+  "enemy_quota": 101,
+  "music": "music_coral_coast",
+  "ambience": "ambience_coral",
+  "soldier_prefix": "coral_rifleman",
+  "villager_kinds": [
+    "town_man",
+    "town_woman"
+  ],
+  "shimmer": 0.0,
+  "light": {
+    "tint": [
+      0.92,
+      0.8,
+      0.68
+    ],
+    "lift": 0.04
+  },
+  "arena": {
+    "type": "gunboat",
+    "t": 140.0,
+    "hold_x": 1920
+  },
+  "truck_avoid": [
+    [
+      280,
+      540
+    ]
+  ],
+  "scroll": [
+    [
+      0,
+      0
+    ],
+    [
+      36,
+      0
+    ],
+    [
+      52,
+      640
+    ],
+    [
+      86,
+      640
+    ],
+    [
+      108,
+      1400
+    ],
+    [
+      128,
+      1400
+    ],
+    [
+      140,
+      1920
+    ],
+    [
+      180,
+      1920
+    ]
+  ],
+  "bands": {
+    "far": {
+      "scale": 0.28,
+      "damage": 3,
+      "hit_chance": 0.55,
+      "score_mult": 0.8,
+      "zones": [
+        [
+          40,
+          560,
+          528
+        ],
+        [
+          2200,
+          3200,
+          545
+        ]
+      ]
+    },
+    "mid": {
+      "scale": 0.44,
+      "damage": 5,
+      "hit_chance": 0.78,
+      "score_mult": 1.2,
+      "zones": [
+        [
+          0,
+          1320,
+          760
+        ]
+      ]
+    },
+    "near": {
+      "scale": 0.85,
+      "damage": 8,
+      "hit_chance": 0.88,
+      "score_mult": 1.5,
+      "zones": [
+        [
+          0,
+          3840,
+          824
+        ]
+      ]
+    }
+  },
+  "ground": {
+    "near": {
+      "points": [
+        [
+          0,
+          822
+        ],
+        [
+          400,
+          820
+        ],
+        [
+          800,
+          818
+        ],
+        [
+          1200,
+          820
+        ],
+        [
+          1600,
+          822
+        ],
+        [
+          2000,
+          824
+        ],
+        [
+          2400,
+          826
+        ],
+        [
+          2800,
+          828
+        ],
+        [
+          3200,
+          826
+        ],
+        [
+          3840,
+          824
+        ]
+      ],
+      "spans": [
+        [
+          0,
+          3840
+        ]
+      ]
+    },
+    "mid": {
+      "points": [
+        [
+          0,
+          720
+        ],
+        [
+          400,
+          730
+        ],
+        [
+          800,
+          755
+        ],
+        [
+          1100,
+          770
+        ],
+        [
+          1320,
+          785
+        ]
+      ],
+      "spans": [
+        [
+          0,
+          1320
+        ]
+      ]
+    },
+    "far": {
+      "points": [
+        [
+          40,
+          520
+        ],
+        [
+          400,
+          526
+        ],
+        [
+          900,
+          532
+        ],
+        [
+          2050,
+          535
+        ],
+        [
+          2500,
+          542
+        ],
+        [
+          2900,
+          550
+        ],
+        [
+          3200,
+          555
+        ]
+      ],
+      "spans": [
+        [
+          40,
+          560
+        ],
+        [
+          2200,
+          3200
+        ]
+      ]
+    }
+  },
+  "roads": {
+    "track": {
+      "points": [
+        [
+          80,
+          735
+        ],
+        [
+          400,
+          745
+        ],
+        [
+          800,
+          765
+        ],
+        [
+          1200,
+          775
+        ],
+        [
+          1600,
+          785
+        ],
+        [
+          1900,
+          800
+        ]
+      ]
+    },
+    "water": {
+      "points": [
+        [
+          200,
+          680
+        ],
+        [
+          600,
+          670
+        ],
+        [
+          1000,
+          690
+        ],
+        [
+          1400,
+          650
+        ],
+        [
+          1800,
+          640
+        ],
+        [
+          2200,
+          635
+        ],
+        [
+          2600,
+          640
+        ],
+        [
+          2900,
+          648
+        ],
+        [
+          3100,
+          652
+        ],
+        [
+          3300,
+          655
+        ],
+        [
+          3600,
+          652
+        ],
+        [
+          3840,
+          650
+        ]
+      ]
+    },
+    "water_far": {
+      "points": [
+        [
+          400,
+          505
+        ],
+        [
+          1000,
+          500
+        ],
+        [
+          1600,
+          498
+        ],
+        [
+          2200,
+          500
+        ],
+        [
+          2800,
+          508
+        ],
+        [
+          3300,
+          520
+        ],
+        [
+          3600,
+          525
+        ],
+        [
+          3840,
+          528
+        ]
+      ]
+    },
+    "pier": {
+      "points": [
+        [
+          1520,
+          680
+        ],
+        [
+          1700,
+          710
+        ],
+        [
+          1900,
+          745
+        ],
+        [
+          2100,
+          775
+        ],
+        [
+          2300,
+          805
+        ],
+        [
+          2480,
+          818
+        ]
+      ]
+    }
+  },
+  "ambient": [
+    {
+      "type": "rifleman",
+      "from": 3.0,
+      "until": 999.0,
+      "every": [
+        1.0,
+        1.7
+      ],
+      "max_alive": 9,
+      "bands": {
+        "far": 0.32,
+        "mid": 0.48,
+        "near": 0.2
+      }
+    },
+    {
+      "type": "villager",
+      "from": 8.0,
+      "until": 170.0,
+      "every": [
+        6.0,
+        10.0
+      ],
+      "max_alive": 4,
+      "bands": {
+        "far": 0.35,
+        "mid": 0.65
+      }
+    },
+    {
+      "type": "food",
+      "from": 14.0,
+      "until": 165.0,
+      "every": [
+        16.0,
+        22.0
+      ],
+      "max_alive": 2,
+      "kinds": {
+        "mango": 1.0,
+        "coconut": 1.0,
+        "water": 0.8,
+        "bread": 0.8
+      }
+    },
+    {
+      "type": "powerup",
+      "from": 22.0,
+      "until": 150.0,
+      "every": [
+        20.0,
+        28.0
+      ],
+      "max_alive": 1,
+      "kinds": {
+        "grenade": 0.35,
+        "rapid": 0.2,
+        "spread": 0.15,
+        "cash_small": 0.18,
+        "ammo": 0.12
+      }
+    }
+  ],
+  "waves": [
+    {
+      "t": 2.0,
+      "type": "rifleman",
+      "band": "far",
+      "count": 2,
+      "interval": 0.7
+    },
+    {
+      "t": 6.0,
+      "type": "rifleman",
+      "band": "mid",
+      "count": 2,
+      "interval": 0.6
+    },
+    {
+      "t": 12.0,
+      "type": "speedboat",
+      "band": "mid"
+    },
+    {
+      "t": 16.0,
+      "type": "villager",
+      "band": "mid",
+      "count": 2,
+      "interval": 0.4
+    },
+    {
+      "t": 20.0,
+      "type": "food",
+      "kind": "mango"
+    },
+    {
+      "t": 28.0,
+      "type": "rifleman",
+      "band": "mid",
+      "count": 3,
+      "interval": 0.55
+    },
+    {
+      "t": 36.0,
+      "type": "rifleman",
+      "band": "far",
+      "count": 2,
+      "interval": 0.65
+    },
+    {
+      "t": 48.0,
+      "type": "pier_gunner",
+      "band": "mid",
+      "world_x": 2280,
+      "world_y": 800,
+      "scale": 0.5
+    },
+    {
+      "t": 56.0,
+      "type": "jeep",
+      "band": "mid"
+    },
+    {
+      "t": 64.0,
+      "type": "villager",
+      "band": "mid",
+      "count": 2,
+      "interval": 0.45
+    },
+    {
+      "t": 70.0,
+      "type": "food",
+      "kind": "coconut"
+    },
+    {
+      "t": 78.0,
+      "type": "rifleman",
+      "band": "mid",
+      "count": 3,
+      "interval": 0.5
+    },
+    {
+      "t": 86.0,
+      "type": "rifleman",
+      "band": "near",
+      "count": 2,
+      "interval": 0.7
+    },
+    {
+      "t": 96.0,
+      "type": "speedboat",
+      "band": "mid"
+    },
+    {
+      "t": 100.0,
+      "type": "pier_gunner",
+      "band": "mid",
+      "world_x": 1860,
+      "world_y": 738,
+      "scale": 0.46
+    },
+    {
+      "t": 110.0,
+      "type": "rifleman",
+      "band": "mid",
+      "count": 3,
+      "interval": 0.5
+    },
+    {
+      "t": 118.0,
+      "type": "food",
+      "kind": "bread"
+    },
+    {
+      "t": 122.0,
+      "type": "powerup",
+      "kind": "grenade"
+    },
+    {
+      "t": 128.0,
+      "type": "rifleman",
+      "band": "far",
+      "count": 2,
+      "interval": 0.6
+    },
+    {
+      "t": 136.0,
+      "type": "rifleman",
+      "band": "near",
+      "count": 2,
+      "interval": 0.65
+    },
+    {
+      "t": 140.0,
+      "type": "gunboat",
+      "band": "mid",
+      "scale": 0.75
+    },
+    {
+      "t": 148.0,
+      "type": "rifleman",
+      "band": "mid",
+      "count": 3,
+      "interval": 0.45
+    },
+    {
+      "t": 155.0,
+      "type": "powerup",
+      "kind": "ammo"
+    },
+    {
+      "t": 160.0,
+      "type": "speedboat",
+      "band": "mid"
+    },
+    {
+      "t": 168.0,
+      "type": "rifleman",
+      "band": "mid",
+      "count": 2,
+      "interval": 0.55
+    }
+  ]
+}

@@ -70,6 +70,32 @@ apart from that.
 The Freesound items were taken from each listing's HQ preview (a full original
 download on that site needs an account). Durations match the listings.
 
+
+STAGE 3 MUSIC AND EFFECTS (CC0)
+These files are in the public domain under CC0 1.0
+(https://creativecommons.org/publicdomain/zero/1.0/). Each source page was
+checked before the file was included. They were loudness-normalised for the
+game and converted to Ogg Vorbis; the recordings themselves are unchanged
+apart from that.
+
+- assets/audio/music_coral_coast.ogg — "Caribbean Steel Drums 2" by Tozan,
+  from Midi Pack 1, https://opengameart.org/content/midi-pack-1-24-new-tunes, CC0.
+- assets/audio/ambience_coral.ogg — a mix of "Gentle Ocean Waves Loop" by
+  kkenny101, https://freesound.org/people/kkenny101/sounds/852826/, CC0, and
+  "Seagull Beach Ambience Loop" by kkenny101,
+  https://freesound.org/people/kkenny101/sounds/853455/, CC0.
+- assets/audio/speedboat_loop.ogg — "Speedboat Loop.wav" by morganpurkis,
+  https://freesound.org/people/morganpurkis/sounds/394287/, CC0.
+- assets/audio/jeep_idle.ogg — "G15-12-Old Jeep Idling" by craigsmith,
+  https://freesound.org/people/craigsmith/sounds/438107/, CC0.
+- assets/audio/gunboat_engine.ogg — "ferry_boat_engine_loop.wav" by
+  suonidigenova, https://freesound.org/people/suonidigenova/sounds/55050/, CC0.
+- assets/audio/pier_creak.ogg — "Creaking pier" by morosopher,
+  https://freesound.org/people/morosopher/sounds/191497/, CC0.
+
+The Freesound items were taken from each listing's HQ preview (a full original
+download on that site needs an account). Durations match the listings.
+
 TYPEFACE
 The compact display font is Barlow Condensed, Copyright 2017 The Barlow Project
 Authors (https://github.com/jpt/barlow), licensed under the SIL Open Font License

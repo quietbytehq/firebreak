@@ -99,10 +99,12 @@ static func dist_to_road(stage: Dictionary, name: String, x: float, y: float) ->
 
 ## Default road used by a moving type, or "" if none.
 static func road_for(type: String, band: String = "mid") -> String:
-	if type in ["truck", "technical", "convoy"]:
+	if type in ["truck", "technical", "convoy", "jeep"]:
 		return "track"
 	if type == "camel":
 		return "sand_far" if band == "far" else "sand"
+	if type in ["speedboat", "gunboat"]:
+		return "water_far" if band == "far" else "water"
 	return ""
 
 ## Vertical error between this entity's feet and their contact line, or -1
@@ -130,6 +132,9 @@ static func feet_off(stage: Dictionary, e: Dictionary) -> float:
 
 ## Allowed feet error in pixels. Camels bob a few pixels on their stride.
 static func feet_slack(e: Dictionary) -> float:
-	if str(e.get("type", "")) == "camel":
+	var tname := str(e.get("type", ""))
+	if tname == "camel":
 		return 3.0 * float(e.get("scale", 1.0)) + 2.0
+	if tname in ["speedboat", "gunboat"]:
+		return 16.0
 	return 5.0

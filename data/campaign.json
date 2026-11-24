@@ -1,7 +1,7 @@
 {
   "title": "Firebreak",
-  "version": "0.4.0",
-  "note": "Twelve stages are planned. Stages 1 and 2 are playable (0.4.0); later environments follow.",
+  "version": "0.5.0",
+  "note": "Twelve stages are planned. Stages 1 to 3 are playable (0.5.0); later environments follow.",
   "difficulty": {
     "accuracy": {
       "base": 0.4,
@@ -63,8 +63,8 @@
       "number": 3,
       "id": "coral_coast",
       "name": "Coral Coast",
-      "file": "",
-      "playable": false,
+      "file": "res://data/stages/stage_03.json",
+      "playable": true,
       "brief": "A quiet bay at golden hour. Gangs on the water, civilians on the shore.",
       "map": [
         0.535,

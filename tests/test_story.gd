@@ -28,11 +28,11 @@ func run() -> void:
 		check(str(s.get("brief", "")) != "", "stage %d has a one-line brief" % (i + 1))
 		var m: Array = s.get("map", [])
 		check(m.size() == 2 and float(m[0]) > 0.0 and float(m[0]) < 1.0 and float(m[1]) > 0.0 and float(m[1]) < 1.0, "stage %d has a map pin" % (i + 1))
-		if i <= 1:
+		if i <= 2:
 			check(bool(s.get("playable", false)), "stage %d is playable" % (i + 1))
 		else:
 			check(not bool(s.get("playable", false)), "stage %d is not playable yet" % (i + 1))
-	check(str(StageData.campaign().get("version", "")) == "0.4.0", "campaign version is 0.4.0")
+	check(str(StageData.campaign().get("version", "")) == "0.5.0", "campaign version is 0.5.0")
 	for path in ["res://assets/ui/briefing_bg.jpg", "res://assets/ui/travel_map.jpg",
 			"res://assets/ui/hud/plate.png", "res://assets/ui/hud/icon_score.png",
 			"res://assets/ui/hud/icon_cash.png", "res://assets/ui/hud/icon_clock.png",
@@ -68,7 +68,11 @@ func run() -> void:
 	mscr.setup(2, false)
 	check(mscr.current_number() == 2, "after stage 2 the current pin is Dune Sea")
 	check(str(mscr.next_entry().get("name", "")) == "Coral Coast", "next stage after Dune Sea is Coral Coast")
-	check(mscr.hint_text().contains("CORAL COAST") and mscr.hint_text().contains("COMING SOON"), "map says Next: Coral Coast — coming soon")
+	check(mscr.hint_text().contains("CORAL COAST") and not mscr.hint_text().contains("COMING SOON"), "after stage 2 the map offers Coral Coast as the next playable stage")
+	mscr.setup(3, false)
+	check(mscr.current_number() == 3, "after stage 3 the current pin is Coral Coast")
+	check(str(mscr.next_entry().get("name", "")) == "Iron Harbour", "next stage after Coral Coast is Iron Harbour")
+	check(mscr.hint_text().contains("IRON HARBOUR") and mscr.hint_text().contains("COMING SOON"), "map says Next: Iron Harbour — coming soon")
 	mscr.setup(0, true)
 	check(mscr.preview and mscr.hint_text().contains("EMBER RING"), "preview map names the Ember Ring route")
 	# Main scene wiring: a single START button; first play opens the briefing.

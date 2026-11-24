@@ -1,6 +1,6 @@
-# Firebreak 0.4.1 (Linux)
+# Firebreak 0.5.0 (Linux)
 
-An Operation Wolf-style gallery shooter by QuietByte. Stage 1, River Village.
+An Operation Wolf-style gallery shooter by QuietByte. Stages 1 to 3: River Village, Dune Sea and Coral Coast.
 
 Run `./play.sh` in this folder. Godot is not required. OpenGL 3.3 graphics required.
 

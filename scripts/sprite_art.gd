@@ -26,12 +26,13 @@ const VILLAGER_NATIVE := -1.0
 const VILLAGER_NATIVE_KIND := {
 	"farmer": -1.0, "woman": -1.0, "elder": -1.0,
 	"robe_man": 1.0, "robe_woman": 1.0,
+	"town_man": 1.0, "town_woman": 1.0,
 }
 
 static func villager_native(e: Dictionary) -> float:
 	return float(VILLAGER_NATIVE_KIND.get(str(e.get("kind", "farmer")), VILLAGER_NATIVE))
 ## Hitbox height each reference frame is scaled to (matches StageSim.SIZES).
-const TARGET_H := {"rifleman": 360.0, "kneel": 250.0, "villager": 340.0, "mg": 240.0, "paratrooper": 350.0, "sniper": 240.0, "camel": 360.0}
+const TARGET_H := {"rifleman": 360.0, "kneel": 250.0, "villager": 340.0, "mg": 240.0, "paratrooper": 350.0, "sniper": 240.0, "camel": 360.0, "pier_gunner": 250.0}
 ## On-screen height of the whole descending paratrooper (canopy to boots) at scale 1.
 const PARA_TOTAL_H := 712.0
 ## Every frame an enemy uses while aiming or firing: all face the player.
@@ -39,15 +40,19 @@ const FRONT_FRAMES := ["rifleman_front_aim", "rifleman_front_fire", "rifleman_tq
 	"rifleman_kneel_front", "rifleman_kneel_front_flash", "mg_front", "mg_front_flash",
 	"paratrooper_front", "paratrooper_front_flash",
 	"dune_rifleman_front_aim", "dune_rifleman_front_fire", "dune_rifleman_tq_aim", "dune_rifleman_tq_fire",
-	"dune_rifleman_kneel_front", "dune_rifleman_kneel_front_flash", "dune_sniper", "dune_sniper_flash"]
+	"dune_rifleman_kneel_front", "dune_rifleman_kneel_front_flash", "dune_sniper", "dune_sniper_flash",
+	"coral_rifleman_front_aim", "coral_rifleman_front_fire", "coral_rifleman_tq_aim", "coral_rifleman_tq_fire",
+	"coral_rifleman_kneel_front", "coral_rifleman_kneel_front_flash", "coast_pier_gunner"]
 const PICKUP_ITEM := {
 	"rice": "food_rice", "fruit": "food_crate", "canteen": "food_canteen", "ration": "food_medkit",
 	"dates": "food_dates", "bread": "food_bread", "waterskin": "food_waterskin",
+	"mango": "food_mango", "coconut": "food_coconut", "water": "food_water",
 	"ammo": "power_ammo", "grenade": "power_grenade", "rapid": "power_weapon", "spread": "power_weapon",
 	"power": "power_weapon", "airstrike": "power_weapon", "cash": "power_cash", "cash_small": "power_cash", "cash_large": "power_cash",
 }
 const PICKUP_LABEL := {
-	"rice": "RICE", "fruit": "FRUIT", "canteen": "WATER", "ration": "MEDKIT", "dates": "DATES", "bread": "BREAD", "waterskin": "WATER", "ammo": "AMMO", "grenade": "GRENADES",
+	"rice": "RICE", "fruit": "FRUIT", "canteen": "WATER", "ration": "MEDKIT", "dates": "DATES", "bread": "BREAD", "waterskin": "WATER",
+	"mango": "MANGO", "coconut": "COCONUT", "water": "WATER", "ammo": "AMMO", "grenade": "GRENADES",
 	"rapid": "RAPID", "spread": "SPREAD", "power": "POWER", "airstrike": "AIR STRIKE",
 	"cash": "$150", "cash_small": "$150", "cash_large": "$400",
 }
@@ -192,8 +197,15 @@ static func muzzle_point(e: Dictionary, pos: Vector2) -> Vector2:
 			return pos + Vector2(8.0 * ks * front_flip(e), -170.0 * ks)
 		"camel":
 			return pos + Vector2(40.0 * e.scale * e.facing, -280.0 * e.scale)
-		"technical", "convoy":
+		"technical", "convoy", "jeep":
 			return pos + Vector2(-80.0 * e.scale * e.facing, -200.0 * e.scale)
+		"speedboat":
+			return pos + Vector2(70.0 * e.scale * e.facing, -110.0 * e.scale)
+		"gunboat":
+			return pos + Vector2(140.0 * e.scale * e.facing, -160.0 * e.scale)
+		"pier_gunner":
+			var kp: float = scale_for(e, "coast_pier_gunner", TARGET_H.pier_gunner) if tex("coast_pier_gunner") != null else float(e.scale)
+			return pos + Vector2(40.0 * kp * front_flip(e), -150.0 * kp)
 		"heli":
 			var kh: float = e.scale
 			return pos + Vector2(MUZZLE.heli.x * kh * e.facing, MUZZLE.heli.y * kh)
@@ -279,11 +291,13 @@ static func mg_nest(ci: CanvasItem, e: Dictionary, pos: Vector2, t: float) -> vo
 static func _villager_frame(kind: String, pose: String) -> String:
 	if kind.begins_with("robe_"):
 		return "dune_%s_%s" % [kind, pose]
+	if kind.begins_with("town_"):
+		return "%s_%s" % [kind, pose]
 	return "villager_%s_%s" % [kind, pose]
 
 static func villager(ci: CanvasItem, e: Dictionary, pos: Vector2, t: float) -> void:
 	var kind: String = str(e.get("kind", "farmer"))
-	if not (kind in ["farmer", "woman", "elder", "robe_man", "robe_woman"]):
+	if not (kind in ["farmer", "woman", "elder", "robe_man", "robe_woman", "town_man", "town_woman"]):
 		kind = "farmer"
 	var ref := _villager_frame(kind, "walk_01")
 	if tex(ref) == null:
@@ -389,3 +403,27 @@ static func _vehicle_sprite(ci: CanvasItem, e: Dictionary, pos: Vector2, t: floa
 	draw(ci, name, pos + Vector2(0, bounce), k, e.facing, flash_mod(e))
 	if e.muzzle > 0.0:
 		muzzle_fx(ci, muzzle_point(e, pos), k, e.facing, true, e.id, e.muzzle)
+
+static func jeep(ci: CanvasItem, e: Dictionary, pos: Vector2, t: float) -> void:
+	_vehicle_sprite(ci, e, pos, t, "coast_jeep")
+
+static func speedboat(ci: CanvasItem, e: Dictionary, pos: Vector2, t: float) -> void:
+	_vehicle_sprite(ci, e, pos, t, "coast_speedboat")
+
+static func gunboat(ci: CanvasItem, e: Dictionary, pos: Vector2, t: float) -> void:
+	_vehicle_sprite(ci, e, pos, t, "coast_gunboat")
+
+static func pier_gunner(ci: CanvasItem, e: Dictionary, pos: Vector2, t: float) -> void:
+	var frame := "coast_pier_gunner"
+	if tex(frame) == null:
+		frame = "coral_rifleman_kneel_front"
+	if tex(frame) == null:
+		mg_nest(ci, e, pos, t)
+		return
+	var k := scale_for(e, frame, TARGET_H.pier_gunner)
+	if e.muzzle > 0.0 and tex("coral_rifleman_kneel_front_flash") != null:
+		frame = "coral_rifleman_kneel_front_flash"
+	shadow(ci, pos, 120.0 * k, 0.28 * e.alpha)
+	draw(ci, frame, pos, k, front_flip(e), flash_mod(e))
+	if e.state == "aim" and e.timer < 0.8:
+		warn_ring(ci, muzzle_point(e, pos), clampf(1.0 - e.timer / 0.8, 0.0, 1.0), t, k)

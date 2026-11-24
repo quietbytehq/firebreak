@@ -1,3 +1,21 @@
+# CHECKPOINT — Firebreak 0.5.0
+
+Updated: 2026-11-24 (PKT, UTC+5)
+
+## v0.5.0 round — Stage 3 Coral Coast (golden hour, arena gunboat)
+- Stage 3 is playable. Golden-hour Caribbean bay panorama (v2, continuous, 3840×1080), no heat shimmer. Quota 111 in 180 s, about 31% harder than Dune Sea. The sandbag parapet is kept.
+- New enemies: coral riflemen (soldier_prefix), pier gunners (3 HP, planted on pier planks), weaving speedboats (max 2, water path), a beach jeep with a bed gunner (max 1, coast track). Townsman / townswoman civilians, same penalty. Pickups: mango, coconut, water, bread; one scripted ammo crate late.
+- The gunboat is a full stop-the-scroll arena boss from t=140 at camera x=1920. Quota and the 180 s clock do not clear the stage while it lives; time may run past 180. Destroying the hull starts a short wreck, then the stage clears with reason `boss`. Fail if the player dies.
+- Per-frame `Ground.feet_off` uses sand, water, the coast road and pier contact lines. Facing is set per sprite type (rifle barrels painted left; town walk cycles painted facing right). Callouts stay on screen. Deaths keep the living scale.
+- Audio is CC0 only (no ElevenLabs). Credits in NOTICE: Caribbean Steel Drums 2 (Tozan), waves and seagulls (kkenny101), speedboat loop (morganpurkis), jeep idle (craigsmith), ferry engine (suonidigenova), pier creak (morosopher). Music is loudnormed to about −16 LUFS / −1.5 dBTP and loop-crossfaded.
+- After stage 2 the travel map offers Coral Coast (no “coming soon”). After stage 3 it previews Iron Harbour as coming soon.
+- Version 0.5.0 in `project.godot`, `snap/snapcraft.yaml` (`.deb` name updated), CHANGELOG, README, `tools/README-player.md`, `data/campaign.json` and `.github/RELEASE_v0.5.0.md`.
+- Tests: 25 suites, 1,758 checks, 0 failures (`./tools/test.sh`). Headless smoke of stage 3 including the gunboat cleared with reason `boss` (camera held at 1920).
+- Shots: `/workspace/firebreak_shots/v050_stage3/` — start, mid, pier, boss, result (PNG + JPG + `_preview.jpg`). Captured on the laptop at 1692×952 (the window could not be forced to 1920×1080 under this session's Wayland/Intel Mesa fallback; nvidia-drm did not attach). Median frame time was 60 fps on start, mid, pier and boss.
+- Git: do not move tags `v0.3.7` (`5a1922b`), `v0.4.0` (`5b4b534`) or `v0.4.1` (name-at-start). Commit and tag `v0.5.0` locally; the owner pushes.
+- Snap `stable` is 0.4.0 (revision 3) until the owner promotes a later revision. 0.4.1 may still be unpushed when this ships; 0.5.0 includes that name-at-start work.
+
+---
 # CHECKPOINT — Firebreak 0.4.1
 
 Updated: 2026-11-24 (PKT, UTC+5)

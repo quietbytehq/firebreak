@@ -331,10 +331,21 @@ func _on_sim_event(name: String, d: Dictionary) -> void:
 		"heli_down":
 			audio.play_first(["helicopter_crash", "explosion"], 0.0)
 			audio.voice("rayan_that_all_you_got", 20.0)
+		"gunboat_down":
+			audio.play_first(["explosion", "airstrike_explosion"], -2.0)
+			audio.voice("rayan_that_all_you_got", 20.0)
 		"spawn":
 			if d.entity.type == "paratrooper": audio.play("parachute_open", -8.0)
 			elif d.entity.type in ["truck", "technical", "convoy"]:
 				audio.play_first(["truck_dune", "truck_engine"], -6.0)
+			elif d.entity.type == "jeep":
+				audio.play("jeep_idle", -6.0)
+			elif d.entity.type == "speedboat":
+				audio.play("speedboat_loop", -8.0)
+			elif d.entity.type == "gunboat":
+				audio.play("gunboat_engine", -6.0)
+			elif d.entity.type == "pier_gunner":
+				audio.play("pier_creak", -12.0)
 			elif d.entity.type == "camel":
 				audio.play("camel", -8.0)
 			elif d.entity.type == "heli":
@@ -350,17 +361,32 @@ func _on_sim_event(name: String, d: Dictionary) -> void:
 func _update_loops() -> void:
 	var heli_near := false
 	var truck_near := false
+	var jeep_near := false
+	var boat_near := false
+	var gunboat_near := false
 	for e in sim.entities:
 		if e.type == "heli" and e.state != "crash" and e.get("sx", -999.0) > -300.0 and e.get("sx", 9999.0) < 2220.0:
 			heli_near = true
+		var sx: float = e.x - sim.camera_x
 		if e.type in ["technical", "convoy", "truck"] and e.state != "dying":
-			var sx: float = e.x - sim.camera_x
 			if sx > -200.0 and sx < 2120.0:
 				truck_near = true
+		if e.type == "jeep" and e.state != "dying" and sx > -200.0 and sx < 2120.0:
+			jeep_near = true
+		if e.type == "speedboat" and e.state != "dying" and sx > -200.0 and sx < 2120.0:
+			boat_near = true
+		if e.type == "gunboat" and e.state != "dying" and sx > -200.0 and sx < 2120.0:
+			gunboat_near = true
 	if heli_near: audio.loop_on("helicopter_rotor", -6.0)
 	else: audio.loop_off("helicopter_rotor")
 	if truck_near: audio.loop_on("truck_dune", -10.0)
 	else: audio.loop_off("truck_dune")
+	if jeep_near: audio.loop_on("jeep_idle", -10.0)
+	else: audio.loop_off("jeep_idle")
+	if boat_near: audio.loop_on("speedboat_loop", -8.0)
+	else: audio.loop_off("speedboat_loop")
+	if gunboat_near: audio.loop_on("gunboat_engine", -8.0)
+	else: audio.loop_off("gunboat_engine")
 	if sim.has_method("dust_amount") and sim.dust_amount() > 0.15:
 		audio.loop_on("wind_gust", -8.0)
 	else:
@@ -909,7 +935,13 @@ func show_result() -> void:
 	box.position = Vector2(640, 0); box.size = Vector2(1220, 1080)
 	_label(box, "STAGE CLEAR" if cleared else "MISSION FAILED", 110, Color(1, 0.8, 0.4) if cleared else Color(1, 0.4, 0.3))
 	var reason := ""
-	if cleared: reason = "All enemy forces cleared" if sim.end_reason == "quota" else "You held the line until the timer ran out"
+	if cleared:
+		if sim.end_reason == "quota":
+			reason = "All enemy forces cleared"
+		elif sim.end_reason == "boss":
+			reason = "The harbour gunboat is sunk"
+		else:
+			reason = "You held the line until the timer ran out"
 	_label(box, reason, 30)
 	var acc := 100.0 * float(sim.stats.hits) / maxf(1.0, float(sim.stats.shots))
 	_label(box, "Enemies down %d / %d    Accuracy %d%%    Villagers hit %d" % [sim.kills, sim.quota, int(acc), sim.stats.villagers_hit], 30)

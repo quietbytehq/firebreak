@@ -3,14 +3,14 @@
 <img src="assets/logo/firebreak-256.png" alt="Firebreak icon" width="128" height="128">
 
 An Operation Wolf-style gallery shooter for Linux by QuietByte. Hold your position as the
-battlefield pans slowly across a jungle river village at dusk and then a high-noon desert:
-shoot riflemen, machine-gun nests, camel scouts and convoys, spare the civilians, and shoot
-falling food and supplies.
+battlefield pans slowly across a jungle river village at dusk, a high-noon desert, and a
+Caribbean bay at golden hour: shoot riflemen, machine-gun nests, camel scouts, convoys,
+speedboats and a harbour gunboat, spare the civilians, and shoot falling food and supplies.
 
-**Version 0.4.1 — early development build.** Stages 1 and 2 of a planned twelve (River Village
-and Dune Sea), with painted character sprites, an enemy helicopter (stage 1), a technical and
-convoy (stage 2), grenades and air strikes, a Rayan title screen, music, sound effects and
-voice lines. Enemies face and fire at you (0.2.1). 0.3.0: ink
+**Version 0.5.0 — early development build.** Stages 1 to 3 of a planned twelve (River Village,
+Dune Sea and Coral Coast), with painted character sprites, an enemy helicopter (stage 1), a
+technical and convoy (stage 2), a gunboat arena boss (stage 3), grenades and air strikes, a
+Rayan title screen, music, sound effects and voice lines. Enemies face and fire at you (0.2.1). 0.3.0: ink
 outlines on every character, the helicopter and pickups; 19 original weapons in a 3-slot
 loadout (pistol, primary, special) with their own magazines and fire sounds; cash and a Store.
 0.3.1: a first-person view of the selected weapon held in Rayan's arms (sway, recoil, muzzle
@@ -24,7 +24,7 @@ scores added up across a run.
 
 ## Play
 
-Download Linux packages from [GitHub Releases](https://github.com/quietbytehq/firebreak/releases): the `Firebreak-0.4.1-linux-x86_64.tar.gz` archive (extract it and run `Firebreak/play.sh`), a `.deb`, and an AppImage. Confirm the files against `SHA256SUMS-0.4.1`. Godot is not required to play the exported build. OpenGL 3.3-compatible graphics are required. The archive launcher selects native Wayland on a Wayland desktop.
+Download Linux packages from [GitHub Releases](https://github.com/quietbytehq/firebreak/releases): the `Firebreak-0.5.0-linux-x86_64.tar.gz` archive (extract it and run `Firebreak/play.sh`), a `.deb`, and an AppImage. Confirm the files against `SHA256SUMS-0.5.0`. Godot is not required to play the exported build. OpenGL 3.3-compatible graphics are required. The archive launcher selects native Wayland on a Wayland desktop.
 
 A Snap Store package named `firebreak-game` is set up in this repository. Once it is published you can install it with `snap install firebreak-game`. A Windows zip may also be attached to the GitHub release for testing; it has not been run on Windows and is not supported.
 
@@ -118,14 +118,15 @@ eleven new Rayan catchphrases that unlock as you clear stages.
 
 0.3.5: Rayan is blended into the mission-failed and stage-clear screens (feathered cut-out, grading and a left vignette) instead of sitting in a hard rectangle. Bullet tracers are gone; the barrel now throws a bigger flash, sparks and a puff of smoke on every shot. Rocket and grenade trails are a little softer.
 
+0.5.0: Stage 3, Coral Coast, is playable (golden-hour Caribbean bay, gang riflemen, pier gunners, weaving speedboats, a beach jeep, and a gunboat arena boss). After Dune Sea the travel map continues into Coral Coast; clearing it previews Iron Harbour as coming soon. Stage 3 music and bay effects are third-party CC0 recordings (see NOTICE).
 0.4.1: The player name is asked once after Start, before the mission, and prefilled with the last name used. High scores are saved automatically under that name: a top ten for the whole run, plus a top ten for each stage, shown as tabs on the title screen. The overall run score is written when a run ends, not after a mid-campaign stage clear. The result screen no longer asks for a name. The optional global board still uses the same name.
 0.4.0: Stage 2, Dune Sea, is playable (high noon, shemagh militia, snipers, camel scouts, a technical and a convoy mid-boss). After River Village the travel map continues into Dune Sea; clearing it previews Coral Coast as coming soon. Heat shimmer and a short dust storm. Stage 2 music and desert effects are third-party CC0 recordings (see NOTICE). The Godot app icon is the same sub-256 kB palette PNG as the store icon.
 0.3.7: One START button (the briefing plays the first time, and can be rewatched with F1 or from pause). Near enemies stand above the bottom HUD. A spoken “FIREBREAK!” calls over the title music once per launch. The title shows this computer’s high scores and a GLOBAL SCORES link that opens the public board. The briefing panel fades into the map. The app icon is a flaming gold F, with a quieter Rayan bust and a generic Kalash-style rifle behind it, readable at small sizes. Linux packages and a Snap Store pipeline (`firebreak-game`) are included.
 0.3.6: A cinematic title theme plays from launch. The opening briefing and a travel map for the Ember Ring campaign are in the game. The top HUD uses military plates, icons and the Barlow Condensed typeface. Stage 2 is still not playable.
 
-## Known limitations (0.4.1)
+## Known limitations (0.5.0)
 
-- Only stages 1 and 2 are playable; stages 3–12 are planned.
+- Only stages 1 to 3 are playable; stages 4–12 are planned.
 - The stage 1 supply truck is still drawn in code. Stage 2 vehicles use painted sprites. The ElevenLabs plan behind the older audio is not yet confirmed
   (see `NOTICE`).
 - Tested on Linux x86-64 with Intel Mesa graphics only. No physical gamepad was tested.

@@ -153,7 +153,7 @@ func _on_event(name: String, d: Dictionary) -> void:
 			var e: Dictionary = d.entity
 			if e.type in ["food", "powerup"]:
 				sparkle(d.pos, Color(0.6, 1, 0.5) if e.type == "food" else Color(1, 0.85, 0.3))
-			elif e.type in ["mg", "truck", "heli", "technical", "convoy", "sniper"] and not d.get("gunner", false):
+			elif e.type in ["mg", "truck", "heli", "technical", "convoy", "sniper", "jeep", "speedboat", "pier_gunner", "gunboat"] and not d.get("gunner", false):
 				sparks(d.pos, 6)
 			else:
 				dust(d.pos, 4, Color(0.5, 0.45, 0.35))
@@ -164,7 +164,7 @@ func _on_event(name: String, d: Dictionary) -> void:
 			var from := SpriteArt.muzzle_point(e, Vector2(e.x - sim.camera_x, e.y))
 			var dur := 0.14 + 0.1 * (1.0 - clampf(float(e.scale), 0.0, 1.0))
 			incoming.append({"from": from, "to": d.get("to", Vector2(960, 880)), "life": dur, "max": dur,
-				"hit": d.hit, "mg": e.type in ["mg", "heli"], "side": float(d.get("side", 0.0)),
+				"hit": d.hit, "mg": e.type in ["mg", "heli", "jeep", "speedboat", "gunboat", "pier_gunner"], "side": float(d.get("side", 0.0)),
 				"band": str(e.get("band", ""))})
 		"player_hit":
 			hurt = minf(1.0, hurt + 0.45)
@@ -219,6 +219,15 @@ func _on_kill(d: Dictionary) -> void:
 		banner("TECHNICAL DOWN", pos + Vector2(0, -90), Color(1.0, 0.75, 0.3), 46, 1.5)
 	elif e.type == "camel":
 		banner("SCOUT DOWN", pos + Vector2(0, -90), Color(1.0, 0.82, 0.35), 40, 1.3)
+	elif e.type == "jeep":
+		banner("JEEP DOWN", pos + Vector2(0, -90), Color(1.0, 0.75, 0.3), 46, 1.5)
+	elif e.type == "speedboat":
+		banner("BOAT DOWN", pos + Vector2(0, -90), Color(1.0, 0.75, 0.3), 46, 1.5)
+	elif e.type == "pier_gunner":
+		banner("PIER SILENCED", pos + Vector2(0, -90), Color(1.0, 0.82, 0.35), 46, 1.5)
+	elif e.type == "gunboat":
+		banner("GUNBOAT DOWN!", pos + Vector2(0, -90), Color(1.0, 0.7, 0.3), 52, 1.8)
+		shake = maxf(shake, 16.0)
 	streak_gap = 0.0
 	streak += 1
 	if streak == 3:
@@ -331,7 +340,7 @@ func _update_incoming(delta: float) -> void:
 
 func _emit_vehicle_smoke(delta: float) -> void:
 	for e in sim.entities:
-		if not (e.type in ["heli", "technical", "convoy"]): continue
+		if not (e.type in ["heli", "technical", "convoy", "jeep", "gunboat"]): continue
 		var pos := Vector2(e.x - sim.camera_x, e.y)
 		if e.state == "crash":
 			if randf() < 0.5: _add({"p": pos + Vector2(randf_range(-40, 40), randf_range(-20, 20)), "v": Vector2(randf_range(-40, 40), randf_range(-120, -40)), "life": 1.2, "max": 1.2, "size": randf_range(28, 44), "col": Color(0.17, 0.15, 0.13, 0.5), "grow": 36.0, "drag": 1.0, "grav": -30.0})
@@ -414,6 +423,10 @@ func _draw_layer(ci: Node2D, layer: String) -> void:
 			"food", "powerup": SpriteArt.pickup(ci, e, pos, t)
 			"technical": SpriteArt.technical(ci, e, pos, t)
 			"convoy": SpriteArt.convoy(ci, e, pos, t)
+			"jeep": SpriteArt.jeep(ci, e, pos, t)
+			"speedboat": SpriteArt.speedboat(ci, e, pos, t)
+			"gunboat": SpriteArt.gunboat(ci, e, pos, t)
+			"pier_gunner": SpriteArt.pier_gunner(ci, e, pos, t)
 			"truck":
 				Art.tint = Color(1, 1, 1); Art.haze = 0.0
 				Art.begin(ci, pos, e.scale, e.facing, 0.0, e.flash, e.alpha)

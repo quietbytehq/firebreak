@@ -10,19 +10,20 @@ const Weapons := preload("res://scripts/weapons.gd")
 const Ground := preload("res://scripts/stage_ground.gd")
 const VIEW_W := 1920.0
 const VIEW_H := 1080.0
-const ENEMY_TYPES := ["rifleman", "mg", "paratrooper", "truck", "heli", "camel", "technical", "sniper", "convoy"]
+const ENEMY_TYPES := ["rifleman", "mg", "paratrooper", "truck", "heli", "camel", "technical", "sniper", "convoy", "speedboat", "jeep", "pier_gunner", "gunboat"]
 const SIZES := {
 	"rifleman": Vector2(130, 360), "paratrooper": Vector2(130, 350), "mg": Vector2(200, 240),
 	"villager": Vector2(120, 340), "truck": Vector2(560, 300), "food": Vector2(96, 96), "powerup": Vector2(110, 110),
 	"heli": Vector2(650, 256), "camel": Vector2(420, 360), "technical": Vector2(620, 280), "sniper": Vector2(280, 240), "convoy": Vector2(640, 300),
+	"speedboat": Vector2(360, 140), "jeep": Vector2(420, 200), "pier_gunner": Vector2(150, 250), "gunboat": Vector2(620, 280),
 }
-const BASE_HP := {"rifleman": 1.0, "paratrooper": 1.0, "mg": 3.0, "truck": 14.0, "heli": 16.0, "villager": 1.0, "food": 1.0, "powerup": 1.0, "camel": 1.0, "technical": 11.0, "sniper": 2.0, "convoy": 17.0}
-const BASE_SCORE := {"rifleman": 100, "paratrooper": 200, "mg": 400, "truck": 1500, "heli": 2500, "food": 50, "powerup": 50, "camel": 200, "technical": 1800, "sniper": 500, "convoy": 2000}
+const BASE_HP := {"rifleman": 1.0, "paratrooper": 1.0, "mg": 3.0, "truck": 14.0, "heli": 16.0, "villager": 1.0, "food": 1.0, "powerup": 1.0, "camel": 1.0, "technical": 11.0, "sniper": 2.0, "convoy": 17.0, "speedboat": 8.0, "jeep": 11.0, "pier_gunner": 3.0, "gunboat": 22.0}
+const BASE_SCORE := {"rifleman": 100, "paratrooper": 200, "mg": 400, "truck": 1500, "heli": 2500, "food": 50, "powerup": 50, "camel": 200, "technical": 1800, "sniper": 500, "convoy": 2000, "speedboat": 800, "jeep": 1800, "pier_gunner": 400, "gunboat": 2500}
 const GUNNER_SCORE := 300
 const GUNNER_HP := 2.0
 const HELI_SCALE := 0.75
 const AIM_TIME := {"far": 1.7, "mid": 1.35, "near": 1.1}
-const FOOD_HEAL := {"rice": 15.0, "fruit": 10.0, "canteen": 8.0, "ration": 25.0, "dates": 12.0, "bread": 10.0, "waterskin": 8.0}
+const FOOD_HEAL := {"rice": 15.0, "fruit": 10.0, "canteen": 8.0, "ration": 25.0, "dates": 12.0, "bread": 10.0, "waterskin": 8.0, "mango": 12.0, "coconut": 12.0, "water": 8.0}
 const POWERUP_KINDS := ["ammo", "grenade", "rapid", "spread", "power", "airstrike"]
 ## Adults only. Child villagers are never spawned (their art is not loaded either).
 const VILLAGER_KINDS := ["farmer", "woman", "elder"]
@@ -31,7 +32,7 @@ const VILLAGER_PENALTY_SCORE := 500
 ## Bonus added on a killing headshot (already a multiple of 10, and applied
 ## after the band multiplier so the total score stays a multiple of 10).
 const HEADSHOT_BONUS := 50
-const HEADSHOT_TYPES := ["rifleman", "paratrooper", "mg", "camel", "sniper"]
+const HEADSHOT_TYPES := ["rifleman", "paratrooper", "mg", "camel", "sniper", "pier_gunner"]
 ## RAPID power-up multiplies the carried weapon's fire rate.
 const RAPID_MULT := 1.6
 const SWITCH_TIME := 0.18   # seconds after a weapon swap before it can fire
@@ -69,6 +70,10 @@ var grenades_in_flight: Array = []
 
 var state := "playing"   # playing | cleared | failed
 var end_reason := ""
+## Coral Coast harbour arena: the stage does not clear on quota or time
+## while the gunboat is still to be destroyed.
+var arena_done := false
+var arena_sink := 0.0
 var paused := false
 var score := 0
 var clear_bonus := 0
@@ -129,6 +134,7 @@ func setup(number: int = 1, seed: int = 1, data: Dictionary = {}, profile: Dicti
 	quota = maxi(1, int(round(float(stage.get("enemy_quota", 55)) * float(diff.get("quota", 1.0)))))
 	time = 0.0; camera_x = 0.0; entities.clear(); pending.clear(); grenades_in_flight.clear()
 	next_id = 1; wave_index = 0; state = "playing"; end_reason = ""; paused = false
+	arena_done = false; arena_sink = 0.0
 	score = 0; clear_bonus = 0; health = max_health
 	airstrikes = START_AIRSTRIKES; strike = {}
 	apply_profile(profile if not profile.is_empty() else Weapons.default_profile())
@@ -400,7 +406,37 @@ func spawn(type: String, band: String = "mid", opts: Dictionary = {}) -> Diction
 				e.facing = cdir
 				e.vx = cdir * rng.randf_range(95.0, 140.0) * e.scale
 				e.shots_left = 1; e.timer = _aim_time(e) * 0.85
+			"jeep":
+				e.state = "drive"; e.x = camera_x + VIEW_W + 360.0; e.vx = -140.0; e.facing = -1.0
+				e.target_x = camera_x - 400.0
+				e.gunner_alive = true; e.gunner_hp = GUNNER_HP; e.burst = 0.0; e.tick = 0.0; e.aim = 0.8
+			"speedboat":
+				e.state = "ride"
+				var sdir := -1.0 if e.x > camera_x + VIEW_W * 0.5 else 1.0
+				e.facing = sdir
+				e.vx = sdir * rng.randf_range(150.0, 210.0) * e.scale
+				e.shots_left = 2; e.timer = _aim_time(e) * 0.7
+				e.gunner_alive = true; e.gunner_hp = GUNNER_HP; e.burst = 0.0; e.tick = 0.0; e.aim = 0.9
+			"pier_gunner":
+				e.state = "aim"; e.timer = 2.0 * float(diff.telegraph) + 0.6
+				e.pose = "kneel"
+			"gunboat":
+				e.state = "hold"; e.vx = 0.0; e.facing = -1.0
+				e.gunner_alive = true; e.gunner_hp = GUNNER_HP; e.burst = 0.0; e.tick = 0.0
+				e.aim = 1.2 * float(diff.get("telegraph", 1.0))
 		_place_on_path(e)
+		if type == "gunboat":
+			var hold := camera_x + VIEW_W * 0.70
+			var path_name := str(e.get("path", "water"))
+			var b := Ground.road_bounds(stage, path_name)
+			if b.x >= 0.0:
+				e.x = clampf(hold, b.x + 80.0, b.y - 80.0)
+			else:
+				e.x = hold
+			e.y = Ground.road_y(stage, path_name, e.x) if path_name != "" else e.y
+			e.ground_y = e.y
+			e.facing = -1.0
+			e.vx = 0.0
 	if type == "rifleman":
 		e.skin = str(stage.get("soldier_prefix", ""))
 	if type == "villager":
@@ -456,8 +492,11 @@ func _place_on_path(e: Dictionary) -> void:
 	if b.x < 0.0:
 		return
 	e.path = name
-	var off := 360.0 if e.type == "technical" else (200.0 if e.type == "camel" else 320.0)
-	if e.vx < 0.0:
+	var off := 360.0 if e.type in ["technical", "jeep"] else (220.0 if e.type in ["camel", "speedboat"] else 320.0)
+	if e.type == "gunboat":
+		e.x = clampf(camera_x + VIEW_W * 0.70, b.x + 80.0, b.y - 80.0)
+		e.facing = -1.0
+	elif e.vx < 0.0:
 		e.x = clampf(camera_x + VIEW_W + off, b.x, b.y)
 		e.facing = -1.0
 	else:
@@ -467,7 +506,7 @@ func _place_on_path(e: Dictionary) -> void:
 	e.ground_y = e.y
 	if e.type in ["truck", "convoy"]:
 		e.target_x = clampf(float(e.get("target_x", e.x)), b.x, b.y)
-	elif e.type == "technical":
+	elif e.type in ["technical", "jeep"]:
 		e.target_x = b.x - 40.0
 
 func _follow_path(e: Dictionary, dt: float) -> void:
@@ -512,7 +551,7 @@ func _spawn_from_wave(w: Dictionary) -> void:
 	for k in ["world_x", "world_y", "scale", "kind", "frac", "from", "hp"]:
 		if w.has(k): opts[k] = w[k]
 	var typ := str(w.type)
-	var caps := {"camel": 2, "technical": 1, "sniper": 2}
+	var caps := {"camel": 2, "technical": 1, "sniper": 2, "speedboat": 2, "jeep": 1, "pier_gunner": 2, "gunboat": 1}
 	if caps.has(typ) and count_alive(typ) >= int(caps[typ]):
 		return
 	spawn(typ, str(w.get("band", "mid")), opts)
@@ -554,10 +593,25 @@ func _update_spawns() -> void:
 			spawn("powerup", "sky", {"kind": "ammo"})
 
 # ---------------------------------------------------------------- update
+func has_arena() -> bool:
+	var a: Dictionary = stage.get("arena", {})
+	return not a.is_empty() and str(a.get("type", "")) != ""
+
+func arena_boss_alive() -> bool:
+	if arena_done:
+		return false
+	for e in entities:
+		if e.type == "gunboat" and e.state != "dying":
+			return true
+	return false
+
 func step(dt: float) -> void:
 	if paused or state != "playing":
 		return
-	time = minf(time + dt, duration)
+	if has_arena() and not arena_done:
+		time += dt
+	else:
+		time = minf(time + dt, duration)
 	camera_x = camera_at(time)
 	fire_cooldown = maxf(0.0, fire_cooldown - dt)
 	rapid_timer = maxf(0.0, rapid_timer - dt)
@@ -579,9 +633,17 @@ func step(dt: float) -> void:
 		_update_entity(e, dt)
 	_update_grenades(dt)
 	_update_strike(dt)
+	if arena_sink > 0.0:
+		arena_sink = maxf(0.0, arena_sink - dt)
+		if arena_sink <= 0.0 and state == "playing":
+			arena_done = true
+			_finish("cleared", "boss")
+			return
 	if state == "playing":
 		if health <= 0.0:
 			_finish("failed", "health")
+		elif has_arena() and not arena_done:
+			pass
 		elif kills >= quota:
 			_finish("cleared", "quota")
 		elif time >= duration:
@@ -615,7 +677,7 @@ func _update_entity(e: Dictionary, dt: float) -> void:
 	if e.type == "heli":
 		_update_heli(e, dt); return
 	var half_w: float = e.size.x * e.scale * 0.5
-	if e.x + half_w < camera_x - 60.0 or (e.type == "villager" and (e.x - half_w > camera_x + VIEW_W + 60.0)):
+	if e.type != "gunboat" and (e.x + half_w < camera_x - 60.0 or (e.type == "villager" and (e.x - half_w > camera_x + VIEW_W + 60.0))):
 		entities.erase(e); return
 	match e.type:
 		"rifleman": _update_rifleman(e, dt)
@@ -625,6 +687,10 @@ func _update_entity(e: Dictionary, dt: float) -> void:
 		"truck", "convoy": _update_truck(e, dt)
 		"technical": _update_technical(e, dt)
 		"camel": _update_camel(e, dt)
+		"jeep": _update_jeep(e, dt)
+		"speedboat": _update_speedboat(e, dt)
+		"pier_gunner": _update_sniper(e, dt)
+		"gunboat": _update_gunboat(e, dt)
 		"villager": _update_villager(e, dt)
 		"food", "powerup": _update_pickup(e, dt)
 
@@ -707,6 +773,49 @@ func _update_technical(e: Dictionary, dt: float) -> void:
 	_update_vehicle_gunner(e, dt)
 	if _path_ended(e) or e.x < camera_x - 480.0:
 		e.escaped = true; entities.erase(e)
+
+func _update_jeep(e: Dictionary, dt: float) -> void:
+	_follow_path(e, dt)
+	_update_vehicle_gunner(e, dt)
+	if _path_ended(e) or e.x < camera_x - 480.0:
+		e.escaped = true; entities.erase(e)
+
+func _update_speedboat(e: Dictionary, dt: float) -> void:
+	_follow_path(e, dt)
+	e.path_x = e.x
+	var weave := sin(e.age * TAU / 2.8) * 110.0
+	var name := str(e.get("path", ""))
+	if name != "":
+		var b := Ground.road_bounds(stage, name)
+		e.x = clampf(e.path_x + weave, b.x, b.y)
+	else:
+		e.x = e.path_x + weave
+	e.y = float(e.get("ground_y", e.y)) + sin(e.age * TAU / 1.6) * 8.0 * e.scale
+	if e.get("gunner_alive", false):
+		_update_vehicle_gunner(e, dt)
+	elif e.state == "ride":
+		e.timer -= dt
+		if e.timer <= 0.0 and e.shots_left > 0:
+			_enemy_fire(e, 1.0)
+			e.shots_left -= 1
+			e.timer = _aim_time(e)
+	if _path_ended(e) or e.x + e.size.x * e.scale * 0.5 < camera_x - 80.0 or e.x - e.size.x * e.scale * 0.5 > camera_x + VIEW_W + 80.0:
+		e.escaped = true; entities.erase(e)
+
+func _update_gunboat(e: Dictionary, dt: float) -> void:
+	var name := str(e.get("path", "water"))
+	var hold := camera_x + VIEW_W * 0.70
+	var weave := sin(e.age * TAU / 4.0) * 55.0
+	var b := Ground.road_bounds(stage, name)
+	e.x = hold + weave
+	if b.x >= 0.0:
+		e.x = clampf(e.x, b.x + 40.0, b.y - 40.0)
+	e.facing = -1.0
+	var gy := Ground.road_y(stage, name, e.x)
+	if gy > 0.0:
+		e.ground_y = gy
+		e.y = gy + sin(e.age * 1.8) * 5.0 * e.scale
+	_update_vehicle_gunner(e, dt)
 
 func _update_vehicle_gunner(e: Dictionary, dt: float) -> void:
 	if not e.get("gunner_alive", false):
@@ -793,9 +902,15 @@ func _update_heli(e: Dictionary, dt: float) -> void:
 ## Door gunner hit area in screen space (the open doorway of the painted heli).
 func gunner_rect(e: Dictionary) -> Rect2:
 	var s: float = e.scale
-	if e.type in ["technical", "convoy"]:
+	if e.type in ["technical", "convoy", "jeep", "speedboat", "gunboat"]:
 		var w := 90.0 * s; var h := 90.0 * s
+		if e.type == "gunboat":
+			w = 110.0 * s; h = 90.0 * s
 		var ox: float = (-e.size.x * s * 0.28) if e.facing < 0.0 else (e.size.x * s * 0.12)
+		if e.type == "speedboat":
+			ox = (e.size.x * s * 0.22) * (1.0 if e.facing > 0.0 else -1.0)
+		if e.type == "gunboat":
+			ox = (e.size.x * s * 0.32) * (1.0 if e.facing > 0.0 else -1.0)
 		return Rect2(e.x - camera_x + ox - w * 0.5, e.y - h - 20.0 * s, w, h)
 	var x0 := 20.0 * s; var x1 := 95.0 * s
 	var r := Rect2(e.x - camera_x + (x0 if e.facing > 0 else -x1), e.y - 10.0 * s, x1 - x0, 105.0 * s)
@@ -826,7 +941,7 @@ func _update_pickup(e: Dictionary, dt: float) -> void:
 
 func _enemy_fire(e: Dictionary, chance_mult: float, damage_override: float = -1.0) -> void:
 	var info := band_info(e.band)
-	if e.type in ["mg", "truck", "technical", "convoy", "sniper"]:
+	if e.type in ["mg", "truck", "technical", "convoy", "sniper", "jeep", "speedboat", "pier_gunner", "gunboat"]:
 		info = band_info("mid") if e.scale < 0.75 else band_info("near")
 	elif e.type == "heli":
 		info = band_info("mid")
@@ -844,7 +959,7 @@ func _enemy_fire(e: Dictionary, chance_mult: float, damage_override: float = -1.
 ## Inside the dead zone near the centre the front pose already points straight
 ## at the camera, so the last facing is kept (no flicker while the camera scrolls).
 const FACE_DEADZONE := 80.0
-const FACING_TYPES := ["rifleman", "paratrooper", "mg", "sniper"]
+const FACING_TYPES := ["rifleman", "paratrooper", "mg", "sniper", "pier_gunner"]
 
 func face_player(e: Dictionary) -> void:
 	if not (e.type in FACING_TYPES) or e.state == "dying": return
@@ -906,9 +1021,9 @@ func hitbox(e: Dictionary) -> Rect2:
 	match e.type:
 		"food", "powerup":
 			return Rect2(e.x - w * 0.5, e.y - h * 0.5, w, h)
-		"mg", "sniper":
+		"mg", "sniper", "pier_gunner":
 			return Rect2(e.x - w * 0.4, e.y - h, w * 0.8, h * 0.62)
-		"truck", "technical", "convoy":
+		"truck", "technical", "convoy", "jeep", "speedboat", "gunboat":
 			return Rect2(e.x - w * 0.5, e.y - h, w, h * 0.92)
 		"heli":
 			# Centre-anchored; the fuselage, not the rotor disc or tail boom tip.
@@ -1001,7 +1116,7 @@ func damage_entity(e: Dictionary, amount: float, screen_pos: Vector2, blast: boo
 	if not is_hittable(e): return
 	e.flash = 1.0
 	# A bullet in the doorway hits only the door gunner; a blast hits him and the hull.
-	if e.get("gunner_alive", false) and e.type in ["heli", "technical", "convoy"] and (blast or gunner_rect(e).grow(2.0).has_point(screen_pos)):
+	if e.get("gunner_alive", false) and e.type in ["heli", "technical", "convoy", "jeep", "speedboat", "gunboat"] and (blast or gunner_rect(e).grow(2.0).has_point(screen_pos)):
 		e.gunner_hp -= amount
 		event.emit("hit", {"entity": e, "pos": screen_pos, "gunner": true})
 		if e.gunner_hp <= 0.0:
@@ -1057,8 +1172,11 @@ func damage_entity(e: Dictionary, amount: float, screen_pos: Vector2, blast: boo
 			_add_score(award, screen_pos)
 			add_cash(cash_for(e), screen_pos, "kill")
 			event.emit("kill", {"entity": e, "pos": screen_pos, "headshot": head})
-			if e.type in ["truck", "mg", "technical", "convoy", "sniper"]:
+			if e.type in ["truck", "mg", "technical", "convoy", "sniper", "jeep", "speedboat", "pier_gunner", "gunboat"]:
 				event.emit("explosion", {"pos": Vector2(e.x - camera_x, e.y - e.size.y * e.scale * 0.4), "radius": 160.0 * e.scale + 60.0, "harmless": true})
+			if e.type == "gunboat":
+				arena_sink = 1.5
+				event.emit("gunboat_down", {"entity": e, "pos": screen_pos})
 
 func _add_score(pts: int, pos: Vector2) -> void:
 	score += pts
@@ -1191,7 +1309,7 @@ func airstrike_impact() -> Array:
 		var r := hitbox(e)
 		var c := r.get_center() - Vector2(camera_x, 0.0)
 		if c.x < -40.0 or c.x > VIEW_W + 40.0: continue
-		if e.get("gunner_alive", false) and e.type in ["heli", "technical", "convoy"]:
+		if e.get("gunner_alive", false) and e.type in ["heli", "technical", "convoy", "jeep", "speedboat", "gunboat"]:
 			e.gunner_alive = false
 		damage_entity(e, 999.0, c)
 		points.append(c)
