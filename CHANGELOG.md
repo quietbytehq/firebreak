@@ -3,6 +3,18 @@
 All notable changes to Firebreak are listed here. Version numbers follow the
 game's public releases.
 
+## 0.4.1 — 24 November 2026
+
+- After you press Start, the game asks for your name once, before the mission.
+  The box is filled with the last name you used, so you can usually just press
+  Enter. A Change name option on the title menu lets you edit it later.
+- The result screen no longer asks for a name. Qualifying stage scores are saved
+  automatically under the name you chose. The overall run table is written only
+  when a run ends (you fail, finish the last stage, or leave for the title).
+  The optional global top 100 uses the same name and still never blocks.
+- The title screen shows a tabbed local board (the run top ten, plus a top ten
+  for each playable stage) and a Change name control above it.
+
 ## 0.4.0 — 22 November 2026
 
 - Stage 2, Dune Sea, is playable. High noon over dunes, an oasis and a mud-brick

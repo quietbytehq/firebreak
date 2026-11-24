@@ -1,15 +1,17 @@
 # HANDOFF — Firebreak
 
-Operation Wolf-style gallery shooter by QuietByte. Godot 4.7.2 / GDScript. Version 0.4.0 =
+Operation Wolf-style gallery shooter by QuietByte. Godot 4.7.2 / GDScript. Version 0.4.1 =
 stages 1 "River Village" and 2 "Dune Sea" (12 stages planned), painted sprites with sticker
 outlines, helicopter (stage 1), technical and convoy (stage 2), 19 original weapons in a
 3-slot loadout, cash economy + Store, grenades/launchers, air strike (spares civilians),
-Rayan title screen, music/SFX/voice, optional global top 100. Read `docs/DESIGN.md` first.
+Rayan title screen, music/SFX/voice, optional global top 100. The player name is asked
+once after Start, before the mission; high scores (run and per-stage) are saved under
+that name automatically. Read `docs/DESIGN.md` first.
 
 ## Run
 - Tests: `./tools/test.sh` (uses `godot` on PATH or `$GODOT`; on this PC `GODOT=~/.local/bin/godot`).
 - Build: `GODOT=~/.local/bin/godot ./tools/build-linux.sh` → `build/linux/Firebreak.x86_64` and `build/Firebreak/`.
-- Packages: `./packaging/build_linux.sh 0.4.0` → `dist/` (tar.gz, .deb; AppImage if appimagetool is present). `./tools/package-release.sh` exports and packs. `./tools/build-snap.sh` packs `firebreak-game` from the .deb (does not upload).
+- Packages: `./packaging/build_linux.sh 0.4.1` → `dist/` (tar.gz, .deb; AppImage if appimagetool is present). `./tools/package-release.sh` exports and packs. `./tools/build-snap.sh` packs `firebreak-game` from the .deb (does not upload).
 - Play: `./play.sh` (runs the exported build). Editor: `~/.local/bin/godot -e --path .`.
 
 ## Layout
@@ -26,7 +28,7 @@ Rayan title screen, music/SFX/voice, optional global top 100. Read `docs/DESIGN.
 - `scripts/hud.gd` HUD + crosshair + weapon bar (`slot_rect/slot_at`, icons from
   `assets/ui/weapons/<id>.png`), cash panel and cash pop-ups. `scripts/main.gd` menus, input, audio cues, QA autopilot.
 - `scripts/input_setup.gd` InputMap defaults + remaps (user://controls.cfg).
-- `scripts/scores.gd` top ten (user://scores.json) + settings (user://settings.cfg, including the online opt-out).
+- `scripts/scores.gd` overall run top ten and a per-stage top ten (user://scores.json, `{runs, stages}`) + settings (user://settings.cfg, including `player_name` and the online opt-out).
 - `scripts/online.gd` non-blocking POST of a qualifying campaign score to firebreak.quietbytehq.uk.
 - `leaderboard/` Cloudflare Worker + D1 (see `leaderboard/deploy.sh`). Not part of the Godot export.
 - `scripts/audio.gd` loads `assets/audio/<name>.ogg|wav|mp3` or `audio/` next to the executable;
@@ -121,8 +123,11 @@ then regenerates `scripts/sprite_meta.gd`. Re-bake from un-outlined masters only
   once. START, “Play again” and the Store “Start mission” button begin a new run. “Restart stage” from
   pause keeps earlier stages in the total. `continue_run_to()` is ready for later stages.
 - Clear bonus: `int(health)*20 + 10*int(round(seconds_left*2.5)) + int(round(accuracy*200))*10`.
-- Qualifying scores (≥ 2,000) can be posted after name entry; Tab keeps the score on this computer only.
-  The post never blocks the game. Send only name, score, mode `campaign`, version and last stage reached.
+- The player name is asked once after Start (prefilled with the last used name; Change name is on
+  the title menu). Qualifying run and per-stage scores are saved automatically under that name.
+  Qualifying campaign totals (≥ 2,000) can also be posted to the global top 100 if online is on
+  (Tab toggles this on the name box). The post never blocks the game. Send only name, score, mode
+  `campaign`, version and last stage reached.
 - Snap plug: `network`.
 - Publish (owner): create `quietbytehq/firebreak`, `git push`, then `cd leaderboard && npx wrangler login && ./deploy.sh`.
   The admin URL is written to `~/.config/firebreak-scores-admin.txt` (not in the repo). Do not look up
@@ -132,7 +137,8 @@ then regenerates `scripts/sprite_meta.gd`. Re-bake from un-outlined masters only
   still need the owner’s Cloudflare/GitHub steps.
 
 ## Open items for the owner
-- 0.4.0 is deployed on the laptop (22 Nov 2026, about 22:59 PKT / Asia/Karachi) and is not pushed. Stage 2 Dune Sea (noon) is playable. 21 suites, 1463 checks, 0 failures; export 132 MB. 30 s Stage 2 autoplay 59.95 fps avg (wall clock), smoothed 1% low 55.4, 0.9% smoothed frames > 18 ms. Icon v2 is the 70,652-byte 256-colour PNG in `assets/logo/firebreak-512.png` and `assets/ui/icon.png` (under the Snap Store 256 kB limit). Stage 2 audio is CC0 (see NOTICE). Replaced 0.3.7 files are in `_to_delete/replaced_v037b/`. GitHub `origin/main` and tag `v0.3.7` stay at `5a1922b`; that tag must not be moved. The owner pushes `main` and, when ready, creates and pushes annotated tag `v0.4.0`. Live Cloudflare deploy still needs the owner; do not look up firebreak.quietbytehq.uk until after the first deploy. Fake scores remain possible because the code is public. Stages 3–12 and the Honour Gate ceremony are still to come.
+- 0.4.1 is committed locally (24 Nov 2026, PKT / Asia/Karachi): name-at-start, automatic run and per-stage high scores, no name prompt on the result screen. Tests: 24 suites, 1,677 checks, 0 failures. Do not move tags `v0.3.7` or `v0.4.0`. The owner pushes `main` and annotated tag `v0.4.1`. Live Cloudflare deploy of the scoreboard still needs the owner. Fake scores remain possible because the code is public. Stage 3 Coral Coast is in concept; stages 3–12 and the Honour Gate ceremony are still to come.
+- 0.4.0 is built on the box as of 22 Nov 2026, evening PKT / Asia/Karachi, and is not yet pushed. Stage 2 Dune Sea (noon) is playable. GitHub `origin/main` and tag `v0.3.7` stay at `5a1922b`; that tag must not be moved. Icon v2 (F + Rayan + rifle) is already in `5a1922b`; `assets/logo/firebreak-512.png` and `assets/ui/icon.png` are the same 70,652-byte 256-colour PNG (under the Snap Store 256 kB limit). Stage 2 audio is CC0 (see NOTICE). Laptop deploy, tests, export and the local commit follow in this same round. The owner pushes `main` and, when ready, creates and pushes annotated tag `v0.4.0`. Live Cloudflare deploy still needs the owner; do not look up firebreak.quietbytehq.uk until after the first deploy. Fake scores remain possible because the code is public. Stages 3–12 and the Honour Gate ceremony are still to come.
 - 0.3.7 is deployed on the laptop (22 Nov 2026, about 12:26 PKT / Asia/Karachi): 20 suites, 1394 checks, 0 failures on the laptop and the development copy; export rebuilt (113 MB). 30 s autoplay 59.98 fps avg (wall clock), 1% low 50.6, 2.0% > 18 ms; captures in `qa/laptop/v037/` and `firebreak_shots/v037/`. Replaced 0.3.6 files and the 0.3.6 build are in `_to_delete/replaced_v036/`; transfer parts and the QA jail in `_to_delete/v037_transfer/`. Title call used 83 ElevenLabs speech credits (one take, Andrew — Fifties Announcer). A flaming-F app icon and Nudge-style Linux/.deb/AppImage/snap/CI packaging were added after that playtest; the old scenic icon and Last-Pocket-style snapcraft.yaml are in `_to_delete/replaced_v037_icon/`. The repo stays on `main` (not pushed from here). The owner registers the snap name `firebreak-game`, sets `SNAPCRAFT_STORE_CREDENTIALS`, and pushes `main` plus the `v0.3.7` tag. Live Cloudflare deploy still needs the owner; do not look up firebreak.quietbytehq.uk until after the first deploy. Fake scores remain possible because the code is public. Stages 2–12 and the Honour Gate ceremony are still to come.
 - 0.3.6 is deployed on the laptop (22 Nov 2026, about 11:54 PKT / Asia/Karachi): 20 suites, 1373 checks, 0 failures on the laptop and the development copy; export rebuilt (113 MB). 30 s autoplay 60.04 fps avg (wall clock), 1% low 49.4, 2.2% > 18 ms; captures in `qa/laptop/v036/` and `firebreak_shots/v036/`. Replaced 0.3.5 files are in `_to_delete/replaced_v035/`; transfer parts and the QA jail in `_to_delete/v036_transfer/`. Title theme used 720 ElevenLabs Music credits (one 48 s take). The repo stays on `main` (not pushed from here). Live Cloudflare deploy still needs the owner; do not look up firebreak.quietbytehq.uk until after the first deploy. Fake scores remain possible because the code is public. The Ember Ring briefing and travel map are now in the game; stages 2–12 and the Honour Gate ceremony are still to come.
 - 0.3.5 is deployed on the laptop (22 Nov 2026, about 11:18 PKT / Asia/Karachi): 19 suites, 1280 checks, 0 failures on the laptop and the development copy; export rebuilt (109 MB). 30 s autoplay 60.00 fps avg (wall clock), 1% low 46.5, 2.2% > 18 ms; captures in `qa/laptop/v035/`. Replaced 0.3.4 files and the 0.3.4 build are in `_to_delete/replaced_v034/`; transfer parts and the QA jail in `_to_delete/v035_transfer/`. The repo stays on `main` (not pushed from here). Live Cloudflare deploy still needs the owner; do not look up firebreak.quietbytehq.uk until after the first deploy. Fake scores remain possible because the code is public. The Ember Ring story draft is in `story/` and is not yet in the game.

@@ -33,6 +33,20 @@ func run() -> void:
 	var l := Scores.load_settings()
 	check(not bool(l.music_on) and int(l.music_track) == 3 and is_equal_approx(float(l.sfx_volume), 0.4), "music on/off, track and effects volume persist")
 	s.music_on = true; s.music_track = 1; Scores.save_settings(s)
+	check(Scores.clean_name("") == "PLAYER" and Scores.clean_name("   ") == "PLAYER", "blank names become PLAYER")
+	check(Scores.clean_name("  Rayan  ") == "Rayan", "names are trimmed")
+	check(Scores.clean_name("ABCDEFGHIJKLMNOP") == "ABCDEFGHIJKL", "names cap at 12 characters")
+	check(Scores.clean_name("A" + String.chr(7) + "B") == "AB", "control characters are stripped")
+	check(str(Scores.load_settings().get("player_name", "")) == "PLAYER", "player name defaults to PLAYER")
+	s.player_name = Scores.clean_name("  ACE  "); Scores.save_settings(s)
+	check(str(Scores.load_settings().player_name) == "ACE", "player name persists")
+	check(Scores.add_stage_score("ACE", 3000, 1) == 1, "a stage-1 score ranks first")
+	check(Scores.add_stage_score("BOB", 2000, 1) == 2, "a lower stage-1 score ranks second")
+	check(Scores.add_stage_score("ACE", 4500, 2) == 1, "stage-2 scores are stored separately")
+	check(int(Scores.load_stage_scores(1)[0].score) == 3000 and str(Scores.load_stage_scores(1)[0].name) == "ACE", "stage-1 best is kept")
+	check(int(Scores.load_stage_scores(2)[0].score) == 4500, "stage-2 best is kept")
+	check(int(Scores.load_scores()[0].score) == 5000, "the run table is unchanged by stage scores")
+	check(Scores.qualifies_stage(2500, 1), "a mid stage-1 score still qualifies")
 	# Main scene.
 	var main = load("res://scenes/main.tscn").instantiate()
 	if main == null or main.get_script() == null or not main.get_script().can_instantiate():
@@ -84,6 +98,13 @@ func run() -> void:
 	await create_timer(2.5).timeout
 	await frames(2)
 	check(main.mode == "result", "result screen after the stage ends")
+	var result_src := FileAccess.get_file_as_string("res://scripts/main.gd")
+	check("Enter your name" not in result_src, "the result screen no longer asks for a name")
+	var has_edit := false
+	if main.menu_root:
+		for n in main.menu_root.find_children("*", "LineEdit", true, false):
+			has_edit = true
+	check(not has_edit, "the result screen has no name field")
 	main.show_controls("title")
 	await frames(2)
 	check(main.mode == "controls", "controls screen opens")

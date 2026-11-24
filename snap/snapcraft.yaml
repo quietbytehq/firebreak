@@ -1,7 +1,7 @@
 name: firebreak-game
 title: Firebreak
 base: core24
-version: "0.4.0"
+version: "0.4.1"
 summary: Operation Wolf-style gallery shooter — jungle village and high-noon desert
 description: |
   Firebreak is an Operation Wolf-style gallery shooter by QuietByte. Aim with
@@ -11,7 +11,7 @@ description: |
   supplies for health, ammunition, grenades and weapon upgrades. Call in air
   strikes. Stage 1 has an enemy helicopter; stage 2 has a technical and a
   convoy mid-boss.
-  Version 0.4.0 is an early development build (stages 1 and 2 of a planned twelve)
+  Version 0.4.1 is an early development build (stages 1 and 2 of a planned twelve)
   with a global top 100 at firebreak.quietbytehq.uk.
   Mouse, keyboard and mapped gamepad controls. Linux x86-64, OpenGL 3.3
   required.
@@ -40,7 +40,7 @@ apps:
 parts:
   firebreak-game:
     plugin: dump
-    source: dist/firebreak_0.4.0_amd64.deb
+    source: dist/firebreak_0.4.1_amd64.deb
     override-build: |
       craftctl default
       sed -i 's|^Icon=.*|Icon=${SNAP}/usr/share/icons/hicolor/512x512/apps/firebreak.png|' \

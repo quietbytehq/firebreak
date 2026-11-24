@@ -62,10 +62,13 @@ var rebinding := ""
 var return_mode := "title"
 var stage_number := 1
 var run_score := 0          # campaign total for the current run (all finished stages)
+var run_score_saved := false
 var run_stages := 1         # last stage reached in this run
 var run_live := false       # a run is in progress
 var run_banked := false     # current stage score has been added to run_score
 var online_hint: Label
+var name_prompt_kind := ""
+var player_name_edit: LineEdit
 var theme: Theme
 var title_t := 0.0
 var last_mouse := Vector2(-1, -1)
@@ -93,6 +96,8 @@ func _ready() -> void:
 	InputSetup.ensure()
 	settings = Scores.load_settings()
 	_parse_qa_args()
+	if qa.has("demo_scores"):
+		_seed_demo_scores()
 	profile = Weapons.load_profile()
 	if qa.has("cash"): profile.cash = int(qa.cash)
 	if qa.has("loadout"):
@@ -148,6 +153,7 @@ func begin_run() -> void:
 	run_stages = 1
 	run_live = true
 	run_banked = false
+	run_score_saved = false
 
 ## Keeps the campaign total and starts another stage (used when later stages ship, and in tests).
 func continue_run_to(number: int) -> void:
@@ -387,7 +393,7 @@ func _process(delta: float) -> void:
 		var low := clampf(1.0 - sim.health / (sim.max_health * 0.35), 0.0, 1.0) if in_game and sim.health > 0.0 else 0.0
 		fx_rect.material.set_shader_parameter("low_health", low)
 		fx_rect.material.set_shader_parameter("pulse", 0.5 + 0.5 * sin(title_t * 7.5))
-	if qa.has("run") or qa.has("title") or qa.has("briefing") or qa.has("map"):
+	if qa.has("run") or qa.has("title") or qa.has("briefing") or qa.has("map") or qa.has("name_prompt"):
 		_qa_tick(delta)
 	elif qa.has("store"):
 		qa_phase_t += delta; _qa_store_tick()
@@ -443,9 +449,25 @@ func _unhandled_input(event: InputEvent) -> void:
 		briefing.advance(); get_viewport().set_input_as_handled(); return
 	if mode == "travel_map" and _is_press(event):
 		_on_travel_map_finished(); get_viewport().set_input_as_handled(); return
+	if mode == "player_name":
+		if event.is_action_pressed("ui_cancel") and name_prompt_kind in ["menu", "change"]:
+			show_title(true); get_viewport().set_input_as_handled(); return
+		# Enter is handled by the LineEdit; a gamepad face button confirms the prefilled name.
+		if event is InputEventJoypadButton and event.pressed:
+			confirm_player_name(player_name_edit.text if player_name_edit else "")
+			get_viewport().set_input_as_handled(); return
+		if event.is_action_pressed("ui_accept") and not (event is InputEventKey):
+			confirm_player_name(player_name_edit.text if player_name_edit else "")
+			get_viewport().set_input_as_handled(); return
 	if mode == "title":
-		if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT and title_screen.global_hit(event.position):
-			open_global_scores(); get_viewport().set_input_as_handled(); return
+		if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+			if title_screen.name_hit(event.position):
+				show_name_prompt("change"); get_viewport().set_input_as_handled(); return
+			var tab: String = title_screen.tab_hit(event.position)
+			if tab != "":
+				title_screen.select_tab(tab); get_viewport().set_input_as_handled(); return
+			if title_screen.global_hit(event.position):
+				open_global_scores(); get_viewport().set_input_as_handled(); return
 		if event is InputEventKey and event.pressed and not event.echo and event.physical_keycode == KEY_F1:
 			show_briefing("story"); get_viewport().set_input_as_handled(); return
 		if not title_menu_open and _is_press(event):
@@ -564,6 +586,73 @@ func _focus_first(box: Control) -> void:
 			c.call_deferred("grab_focus"); return
 
 func start_mission() -> void:
+	# QA runs skip the name box and keep the saved (or default) name.
+	if qa.has("run"):
+		_apply_player_name(Scores.player_name())
+		_begin_mission()
+		return
+	show_name_prompt("start")
+
+## Asks for the player name once at the start of a run, or from the title
+## "Change name" button. The box is prefilled with the last used name.
+func show_name_prompt(kind: String = "start") -> void:
+	name_prompt_kind = kind
+	mode = "player_name"
+	_clear_menu()
+	title_menu_open = false
+	if briefing: briefing.visible = false
+	if travel_map: travel_map.visible = false
+	hud.visible = false
+	view.visible = false
+	title_screen.visible = true
+	title_screen.press_start = false
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	var box := _new_menu(0.0)
+	box.alignment = BoxContainer.ALIGNMENT_BEGIN
+	box.position = Vector2(110, 500); box.size = Vector2(540, 560)
+	box.add_theme_constant_override("separation", 8)
+	_label(box, "PLAYER NAME", 40, Color(1, 0.82, 0.45))
+	_label(box, "This name is used for every high score this run.", 22, Color(0.95, 0.88, 0.75, 0.9))
+	player_name_edit = LineEdit.new()
+	player_name_edit.text = Scores.player_name()
+	player_name_edit.max_length = Scores.NAME_MAX
+	player_name_edit.custom_minimum_size = Vector2(520, 64)
+	player_name_edit.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	player_name_edit.alignment = HORIZONTAL_ALIGNMENT_CENTER
+	player_name_edit.text_submitted.connect(func(txt): confirm_player_name(txt))
+	player_name_edit.gui_input.connect(_on_name_gui_input)
+	box.add_child(player_name_edit)
+	online_hint = _label(box, "", 20, Color(1, 0.85, 0.35))
+	_refresh_online_hint()
+	_button(box, "Continue", func(): confirm_player_name(player_name_edit.text if player_name_edit else ""))
+	if kind in ["menu", "change"]:
+		_button(box, "Back", func(): show_title(true))
+	_label(box, "Type a name, then press Enter or a gamepad button.", 20, Color(0.95, 0.88, 0.75, 0.85))
+	player_name_edit.call_deferred("grab_focus")
+	player_name_edit.call_deferred("select_all")
+
+func confirm_player_name(text: String = "") -> void:
+	if mode != "player_name" and text == "":
+		return
+	if text == "" and player_name_edit:
+		text = player_name_edit.text
+	_apply_player_name(text)
+	var kind := name_prompt_kind
+	name_prompt_kind = ""
+	player_name_edit = null
+	if mode != "player_name":
+		if title_screen:
+			title_screen.refresh_scores()
+		return
+	if kind in ["menu", "change"]:
+		show_title(true)
+	else:
+		_begin_mission()
+
+func _apply_player_name(text: String) -> void:
+	settings.player_name = Scores.save_player_name(text)
+
+func _begin_mission() -> void:
 	if qa.has("run") or bool(settings.get("seen_briefing", false)):
 		begin_run()
 		start_stage(1)
@@ -691,6 +780,7 @@ func open_title_menu() -> void:
 	box.position = Vector2(110, 500); box.size = Vector2(540, 560)
 	box.add_theme_constant_override("separation", 8)
 	_button(box, "START", start_mission)
+	_button(box, "Change name", func(): show_name_prompt("change"))
 	_button(box, "Store", func(): show_store("title"))
 	_button(box, "Controls", func(): show_controls("title"))
 	_button(box, "Fullscreen (F11)", toggle_fullscreen)
@@ -758,6 +848,53 @@ func _save_profile() -> void:
 	if qa.has("run") or qa.has("store"): return   # QA runs never touch the player's save
 	Weapons.save_profile(profile)
 
+## Saves a qualifying stage score under the name chosen at the start.
+## The overall run table is written only when the run ends (fail, last stage,
+## or quit to the title). Never asks for a name here. Returns a short status, or "".
+func _record_scores() -> String:
+	if qa.has("run") or sim == null:
+		return ""
+	if sim.get_meta("scores_recorded", false):
+		return str(sim.get_meta("score_note", ""))
+	var player := Scores.player_name()
+	var stage_score := int(sim.score)
+	var notes: Array = []
+	var stage_rank := Scores.add_stage_score(player, stage_score, stage_number)
+	if stage_rank > 0:
+		var sn := str(StageData.stage_entry(stage_number).get("name", "Stage %d" % stage_number))
+		notes.append("%s best saved as %s (#%d)" % [sn, player, stage_rank])
+	var ending: bool = sim.state != "cleared" or StageData.next_playable(stage_number) <= 0
+	if ending:
+		var before := run_score_saved
+		_record_run_score()
+		if run_score_saved and not before and Scores.qualifies(run_score):
+			notes.append("Run score saved as %s" % player)
+		if bool(settings.get("online", true)) and run_score >= Online.MIN_SCORE:
+			notes.append("Posted to the global top 100")
+	var note := "    ".join(notes)
+	sim.set_meta("scores_recorded", true)
+	sim.set_meta("score_note", note)
+	if title_screen:
+		title_screen.refresh_scores()
+	return note
+
+func _record_run_score() -> void:
+	if qa.has("run"):
+		return
+	if run_score_saved:
+		return
+	var name := Scores.player_name()
+	Scores.add_score(name, run_score, run_stages)
+	run_score_saved = true
+	if bool(settings.get("online", true)) and run_score >= Online.MIN_SCORE:
+		Online.submit(self, Scores.player_name(), run_score, run_stages)
+	if title_screen:
+		title_screen.refresh_scores()
+
+func _quit_run_to_title() -> void:
+	_record_run_score()
+	show_title(true)
+
 func show_result() -> void:
 	mode = "result"; hud.visible = false; qa_phase_t = 0.0
 	_bank_stage()
@@ -782,37 +919,18 @@ func show_result() -> void:
 	if sim.cash_lost > 0: cash_line += "    Civilian penalties -%s" % Hud.money(sim.cash_lost)
 	cash_line += "    Wallet %s" % Hud.money(int(profile.cash))
 	_label(box, cash_line, 30, Color(0.6, 1, 0.55))
-	if Scores.qualifies(run_score) and not qa.has("run"):
-		_label(box, "New top-ten score! Enter your name:", 30, Color(1, 0.85, 0.4))
-		var name_edit := LineEdit.new(); name_edit.text = "PLAYER"; name_edit.max_length = 12
-		name_edit.custom_minimum_size = Vector2(520, 64); name_edit.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-		name_edit.alignment = HORIZONTAL_ALIGNMENT_CENTER
-		box.add_child(name_edit)
-		online_hint = _label(box, "", 22, Color(1, 0.85, 0.35))
-		if run_score >= Online.MIN_SCORE:
-			_refresh_online_hint()
-			name_edit.gui_input.connect(_on_name_gui_input)
-		else:
-			online_hint.text = "This score stays on this computer."
-		var save := func():
-			if bool(settings.get("online", true)) and run_score >= Online.MIN_SCORE:
-				Online.submit(self, name_edit.text, run_score, run_stages)
-			Scores.add_score(name_edit.text, run_score, run_stages)
-			_after_clear_continue()
-		name_edit.text_submitted.connect(func(_t): save.call())
-		_button(box, "Save score", save)
-		name_edit.call_deferred("grab_focus")
-		name_edit.call_deferred("select_all")
+	var note := _record_scores()
+	if note != "":
+		_label(box, note, 26, Color(1, 0.85, 0.4))
+	if cleared:
+		_button(box, "Continue", _after_clear_continue)
+		_button(box, "Play again", func(): _record_run_score(); begin_run(); start_stage(stage_number))
+		_button(box, "Title screen", func(): _quit_run_to_title())
 	else:
-		if cleared:
-			_button(box, "Continue", _after_clear_continue)
-			_button(box, "Play again", func(): begin_run(); start_stage(stage_number))
-			_button(box, "Title screen", func(): show_title(true))
-		else:
-			_button(box, "Play again", func(): begin_run(); start_stage(stage_number))
-			_button(box, "Store", func(): show_store("result"))
-			_button(box, "Title screen", func(): show_title(true))
-		_focus_first(box)
+		_button(box, "Play again", func(): _record_run_score(); begin_run(); start_stage(stage_number))
+		_button(box, "Store", func(): show_store("result"))
+		_button(box, "Title screen", func(): _quit_run_to_title())
+	_focus_first(box)
 	if cleared:
 		var nxt := StageData.next_playable(stage_number)
 		if nxt > 0:
@@ -840,11 +958,24 @@ func show_scores(back: String) -> void:
 	return_mode = back; mode = "scores"; title_screen.visible = true; title_screen.press_start = false; view.visible = false; hud.visible = false
 	var box := _new_menu(0.6)
 	_label(box, "TOP SCORES", 90, Color(1, 0.78, 0.4))
+	_label(box, "RUN", 36, Color(1, 0.82, 0.45))
 	var list := Scores.load_scores()
-	if list.is_empty(): _label(box, "No scores yet. Go set one.", 32)
+	if list.is_empty():
+		_label(box, "No run scores yet.", 28)
 	for i in list.size():
 		var s: Dictionary = list[i]
-		_label(box, "%2d.  %-12s  %8d   %s" % [i + 1, str(s.name), int(s.score), str(s.get("date", ""))], 32)
+		_label(box, "%2d.  %-12s  %8d   %s" % [i + 1, str(s.name), int(s.score), str(s.get("date", ""))], 28)
+	for stage in StageData.campaign().get("stages", []):
+		if not bool(stage.get("playable", false)):
+			continue
+		var num := int(stage.get("number", 0))
+		_label(box, str(stage.get("name", "Stage %d" % num)).to_upper(), 36, Color(1, 0.82, 0.45))
+		var slist := Scores.load_stage_scores(num)
+		if slist.is_empty():
+			_label(box, "No scores yet.", 26)
+		for i in slist.size():
+			var s2: Dictionary = slist[i]
+			_label(box, "%2d.  %-12s  %8d   %s" % [i + 1, str(s2.name), int(s2.score), str(s2.get("date", ""))], 26)
 	_button(box, "Back", _back)
 	_focus_first(box)
 
@@ -921,6 +1052,18 @@ func _choose_vsync() -> void:
 		vsync_note = "%.0f Hz display: vsync as configured" % hz
 
 # ------------------------------------------------------------------ QA autopilot
+func _seed_demo_scores() -> void:
+	Scores.add_score("RAYAN", 15400, 2)
+	Scores.add_score("ACE", 12100, 2)
+	Scores.add_score("AMIRA", 9800, 1)
+	Scores.add_stage_score("RAYAN", 8200, 1)
+	Scores.add_stage_score("ACE", 6100, 1)
+	Scores.add_stage_score("RAYAN", 7300, 2)
+	settings.player_name = "RAYAN"
+	Scores.save_settings(settings)
+	if title_screen:
+		title_screen.refresh_scores()
+
 func _parse_qa_args() -> void:
 	for arg in OS.get_cmdline_user_args():
 		if arg == "--qa-run": qa.run = true
@@ -947,6 +1090,8 @@ func _parse_qa_args() -> void:
 		elif arg.begins_with("--qa-slot-at="): qa.slot_at = Array(arg.get_slice("=", 1).split(",")).map(func(x): return float(x))
 		elif arg.begins_with("--qa-reload-at="): qa.reload_at = float(arg.get_slice("=", 1))
 		elif arg == "--qa-aim-head": qa.aim_head = true
+		elif arg == "--qa-name": qa.name_prompt = true
+		elif arg == "--qa-demo-scores": qa.demo_scores = true
 		elif arg.begins_with("--qa-fail-at="): qa.fail_at = float(arg.get_slice("=", 1))
 
 func _qa_autopilot(dt: float) -> void:
@@ -1022,6 +1167,16 @@ func _qa_tick(delta: float) -> void:
 			else:
 				_on_travel_map_finished(); qa_phase_t = 0.0
 		return
+	if qa.has("name_prompt") and not qa.has("run"):
+		if mode == "title" and qa_phase_t > 0.6:
+			show_name_prompt("start")
+		if mode == "player_name":
+			if qa_phase_t > 2.2 and not qa_shots_done.has("name"):
+				qa_shots_done["name"] = true
+				_qa_capture(out.path_join(tag + "-name.png"))
+			if qa_phase_t > 2.8:
+				_qa_finish(out)
+			return
 	if mode == "title":
 		if qa_phase_t > 3.0 and not qa_shots_done.has("title"):
 			qa_shots_done["title"] = true; _qa_capture(out.path_join(tag + "-title.png"))
@@ -1253,7 +1408,7 @@ func show_store(back: String = "title") -> void:
 		go.pressed.connect(func(): audio.play("ui_select"); _save_profile(); continue_run_to(nxt))
 	else:
 		go.text = "Start mission"
-		go.pressed.connect(func(): audio.play("ui_select"); _save_profile(); begin_run(); start_stage(1))
+		go.pressed.connect(func(): audio.play("ui_select"); _save_profile(); start_mission())
 	nav.add_child(go)
 	if sel_btn: sel_btn.call_deferred("grab_focus")
 

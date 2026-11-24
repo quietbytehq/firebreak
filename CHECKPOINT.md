@@ -1,14 +1,21 @@
-# CHECKPOINT — Firebreak 0.4.0 (ground, roads, callouts)
+# CHECKPOINT — Firebreak 0.4.1
 
-Laptop, 23 Nov 2026, afternoon Asia/Karachi. Version stays 0.4.0 (nothing pushed or tagged). Replaced files in `_to_delete/replaced_v040b/`.
+Updated: 2026-11-24 (PKT, UTC+5)
 
-- Callouts stay out of the top HUD and fully on screen (PACKAGE, TRUCK WRECKED). Hit flash capped so desert camo does not blow out to white.
-- Ground maps per band, digitized from the panoramas. Near enemies stand on the sandbag line; mid/far skip the river and the oasis. Paratroopers only fly while descending.
-- Vehicles (truck, technical, convoy) follow a road polyline; camels follow sand tracks. They face their direction of travel and do not cross water.
-- Dune Sea robe civilians use a right-facing native (stage 1 villagers stay left-facing). Heat shimmer is a weak horizon-only warp, not a whole-screen wobble.
-- `tools/test.sh` and `tools/build-linux.sh` jail XDG_CONFIG/CACHE/STATE and TMPDIR. `~/.config/godot/editor_settings-4.7.tres` mtime stayed 22 Nov 2026, 22:51:37 Asia/Karachi.
-- Tests: 1,523 checks, 0 failures. 30 s autoplay (exported build, seed 7, 144 Hz, vsync off + 60 fps limiter): River Village 59.88 fps avg (wall), 1% low 43.6, worst 66.2 ms; Dune Sea 59.92 fps avg, 1% low 43.0, worst 39.3 ms. Shots in `qa/laptop/v040b/` (JPEG copies also at firebreak_shots/v040b/ on the box).
+## v0.4.1 round — name at start, per-stage high scores
+- After Start, the game asks for the player name once, before the briefing or stage. The box is prefilled with the last used name from `user://settings.cfg` (`player_name`). Enter or a gamepad button confirms. "Change name" is on the title menu and as a clickable control above the scoreboard.
+- The result screen no longer asks for a name. Qualifying per-stage scores are saved automatically under that name. The overall run table is written only when a run ends (fail, last stage, or quit to the title). The optional global post uses the same name and still never blocks.
+- `user://scores.json` is now `{runs, stages}`; a bare array from 0.4.0 still loads as the run table. `Scores.player_name()` / `save_player_name()` hold the saved name, defaulting to PLAYER.
+- The title shows tabbed local tables (RUN and each playable stage's top ten). The Top Scores menu lists both tables in full.
+- Version 0.4.1 in `project.godot`, `snap/snapcraft.yaml` (`.deb` name updated), CHANGELOG, README, `tools/README-player.md` and `.github/RELEASE_v0.4.1.md`. Campaign JSON stays at 0.4.0 (still two playable stages).
+- Tests: 24 suites, 1,677 checks, 0 failures on the development copy.
+- Git: do not move tags `v0.3.7` (`5a1922b`) or `v0.4.0` (`5b4b534`). Commit and tag `v0.4.1` locally; the owner pushes.
+- Shots: `/workspace/firebreak_shots/v050/` (`v050-title.png`, `v050-title-menu.png`, `v050-name.png`, all 1920×1080, md5-checked from the laptop). Laptop copies (gitignored) are in `qa/laptop/v050/`. Replaced files also went to `_to_delete/replaced_v050_name/` and `_to_delete/replaced_v041/`.
+- `docs/Firebreak-How-to-Play.pdf` is in the tree (merged from GitHub into `86786da`).
+- Snap `stable` is still 0.4.0 (revision 3) until the owner promotes 0.4.1.
+- A separate worker may be making Stage 3 Coral Coast concept art in `/workspace/firebreak_concepts/stage3/`; do not touch that folder.
 
+---
 # CHECKPOINT — Firebreak 0.4.0
 
 Updated: 2026-11-22 (PKT, UTC+5)
@@ -24,12 +31,7 @@ Updated: 2026-11-22 (PKT, UTC+5)
 - Icon v2 already shipped in 0.3.7 at `assets/logo/firebreak-512.png` (70,652 bytes, palette). `assets/ui/icon.png` now uses that same file so the Godot icon is also under 256 kB.
 - Git: do not move tag `v0.3.7` (`5a1922b`). Local commit of 0.4.0 is not pushed. The owner tags `v0.4.0`.
 - Shots: `/workspace/firebreak_shots/v040/`. Replaced laptop files go to `_to_delete/replaced_v037b/` (never deleted).
-- Laptop tests (22 Nov 2026, about 22:52 PKT / Asia/Karachi): 21 suites, **1463 checks, 0 failures**. Jailed under `_to_delete/v040_transfer/qa_home/` (TMPDIR and XDG_*). The real `~/.config/godot/editor_settings-4.7.tres` was not written by this test or the later rebuilds; its mtime was already 22 Nov 2026, 22:51 (it had been 21 Nov 2026, 18:02 at the 0.3.7 checkpoint).
-- Export rebuilt (`build/Firebreak/Firebreak.x86_64`, 132 MB) in the same jail.
-- 30 s Stage 2 autoplay on the exported build with the noon panorama and heat shimmer visible (seed 7, 144 Hz, vsync off + 60 fps limiter, window 1920×952): 59.95 fps avg (wall clock), smoothed 1% low 55.4, 0.9% smoothed frames > 18 ms; raw 1% low 43.6, 3.5% raw frames > 18 ms, worst 34.4 ms; 22 kills, 0 villagers, score 2,990, quota 85. JSON: `qa/laptop/v040/s2fps2-performance.json`.
-- A first panorama bug (the heat-shimmer sprite sat behind an opaque `_draw` fill) was found in early shots and fixed (`bg_sprite.z_index = 0`) before this fps run.
-- Shots: `qa/laptop/v040/` and `/workspace/firebreak_shots/v040/` (busy oasis, technical, convoy wreck, travel map after stage 1 and after stage 2).
-- Replaced 0.3.7 files are in `_to_delete/replaced_v037b/`; transfer parts in `_to_delete/v040_transfer/`. Not pushed. Tag `v0.3.7` is untouched at `5a1922b`. The owner tags and pushes `v0.4.0`.
+- QA results (tests, fps, commit hash) are filled in after the laptop run in this same round.
 
 ---
 # CHECKPOINT — Firebreak 0.3.7

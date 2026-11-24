@@ -6,6 +6,7 @@ extends Node2D
 
 const LogoShader := preload("res://shaders/logo_fill.gdshader")
 const Scores := preload("res://scripts/scores.gd")
+const StageData := preload("res://scripts/stage_data.gd")
 const UiStyleScript := preload("res://scripts/ui_style.gd")
 const LOGO_POS := Vector2(86, 228)
 const LOGO_SIZE := 190
@@ -24,7 +25,11 @@ var subtitle := "CUT THE EMBER RING"
 var ui_font: Font
 var ui_font_bold: Font
 var local_scores: Array = []
+var stage_bests: Array = []
+var player_label := "PLAYER"
+var score_tab := "run"
 const SCORES_RECT := Rect2(1410, 590, 490, 430)
+const NAME_RECT := Rect2(1410, 528, 490, 52)
 const GLOBAL_RECT := Rect2(1430, 958, 450, 48)
 const GLOBAL_URL := "https://firebreak.quietbytehq.uk"
 
@@ -56,32 +61,105 @@ func _ready() -> void:
 
 func refresh_scores() -> void:
 	local_scores = Scores.load_scores()
+	player_label = Scores.player_name()
+	stage_bests = []
+	for s in StageData.campaign().get("stages", []):
+		if not bool(s.get("playable", false)):
+			continue
+		var n := int(s.get("number", 0))
+		var list := Scores.load_stage_scores(n)
+		var best: Dictionary = list[0] if not list.is_empty() else {}
+		stage_bests.append({"number": n, "name": str(s.get("name", "Stage %d" % n)), "best": best})
+	if score_tab != "run" and not tab_defs().any(func(d): return str(d.id) == score_tab):
+		score_tab = "run"
 	queue_redraw()
+
+func tab_defs() -> Array:
+	var out: Array = [{"id": "run", "title": "RUN"}]
+	for s in StageData.campaign().get("stages", []):
+		if bool(s.get("playable", false)):
+			out.append({"id": str(int(s.get("number", 0))), "title": str(s.get("name", ""))})
+	return out
+
+func select_tab(id: String) -> void:
+	for d in tab_defs():
+		if str(d.id) == id:
+			score_tab = id
+			queue_redraw()
+			return
+
+func current_scores() -> Array:
+	if score_tab == "run":
+		return local_scores
+	return Scores.load_stage_scores(int(score_tab))
+
+func name_hit(pos: Vector2) -> bool:
+	return NAME_RECT.has_point(pos)
+
+func tab_hit(pos: Vector2) -> String:
+	var defs := tab_defs()
+	if defs.is_empty():
+		return ""
+	var r := SCORES_RECT
+	var y := r.position.y + 42
+	var x := r.position.x + 12
+	var w := (r.size.x - 24.0) / float(defs.size())
+	for i in defs.size():
+		var tr := Rect2(x + w * i, y - 18, w, 26)
+		if tr.has_point(pos):
+			return str(defs[i].id)
+	return ""
 
 func global_hit(pos: Vector2) -> bool:
 	return GLOBAL_RECT.has_point(pos)
 
+func _draw_section_head(pos: Vector2, width: float, text: String) -> void:
+	draw_string_outline(ui_font_bold, pos, text, HORIZONTAL_ALIGNMENT_LEFT, width, 20, 5, Color(0, 0, 0, 0.85))
+	draw_string(ui_font_bold, pos, text, HORIZONTAL_ALIGNMENT_LEFT, width, 20, Color(1, 0.78, 0.42))
+
+func _draw_score_line(pos: Vector2, line: String, col: Color, size: int = 20) -> void:
+	draw_string_outline(ui_font, pos, line, HORIZONTAL_ALIGNMENT_LEFT, -1, size, 5, Color(0, 0, 0, 0.85))
+	draw_string(ui_font, pos, line, HORIZONTAL_ALIGNMENT_LEFT, -1, size, col)
+
 func _draw_local_scores() -> void:
+	# Player name / Change name, just above the scores plate.
+	var nr := NAME_RECT
+	draw_rect(nr, Color(0.35, 0.18, 0.06, 0.88))
+	draw_rect(nr, Color(1, 0.75, 0.4, 0.7), false, 2.0)
+	var nl := "PLAYER  " + player_label + "    ·    CHANGE NAME"
+	draw_string_outline(ui_font_bold, Vector2(nr.position.x, nr.position.y + 36), nl, HORIZONTAL_ALIGNMENT_CENTER, nr.size.x, 22, 5, Color(0, 0, 0, 0.85))
+	draw_string(ui_font_bold, Vector2(nr.position.x, nr.position.y + 36), nl, HORIZONTAL_ALIGNMENT_CENTER, nr.size.x, 22, Color(1, 0.88, 0.5))
 	var r := SCORES_RECT
 	draw_rect(r, Color(0.04, 0.03, 0.02, 0.62))
 	draw_rect(r, Color(1, 0.75, 0.4, 0.4), false, 2.0)
 	var head := "LOCAL HIGH SCORES"
-	draw_string_outline(ui_font_bold, Vector2(r.position.x, r.position.y + 36), head, HORIZONTAL_ALIGNMENT_CENTER, r.size.x, 28, 6, Color(0, 0, 0, 0.85))
-	draw_string(ui_font_bold, Vector2(r.position.x, r.position.y + 36), head, HORIZONTAL_ALIGNMENT_CENTER, r.size.x, 28, Color(1, 0.82, 0.48))
-	var y := r.position.y + 70
-	if local_scores.is_empty():
-		var empty := "No scores yet"
-		draw_string_outline(ui_font, Vector2(r.position.x, y + 20), empty, HORIZONTAL_ALIGNMENT_CENTER, r.size.x, 24, 5, Color(0, 0, 0, 0.85))
-		draw_string(ui_font, Vector2(r.position.x, y + 20), empty, HORIZONTAL_ALIGNMENT_CENTER, r.size.x, 24, Color(0.95, 0.88, 0.75, 0.85))
+	draw_string_outline(ui_font_bold, Vector2(r.position.x, r.position.y + 28), head, HORIZONTAL_ALIGNMENT_CENTER, r.size.x, 24, 6, Color(0, 0, 0, 0.85))
+	draw_string(ui_font_bold, Vector2(r.position.x, r.position.y + 28), head, HORIZONTAL_ALIGNMENT_CENTER, r.size.x, 24, Color(1, 0.82, 0.48))
+	var defs := tab_defs()
+	var y := r.position.y + 42
+	var x := r.position.x + 12
+	var tw := (r.size.x - 24.0) / float(maxi(defs.size(), 1))
+	for i in defs.size():
+		var d: Dictionary = defs[i]
+		var on := str(d.id) == score_tab
+		var col := Color(1, 0.9, 0.55) if on else Color(0.95, 0.88, 0.75, 0.8)
+		var tx := x + tw * i
+		if on:
+			draw_rect(Rect2(tx, y - 16, tw - 4, 22), Color(1, 0.75, 0.4, 0.22))
+		draw_string_outline(ui_font_bold, Vector2(tx, y + 2), str(d.title), HORIZONTAL_ALIGNMENT_CENTER, tw - 4, 16, 4, Color(0, 0, 0, 0.85))
+		draw_string(ui_font_bold, Vector2(tx, y + 2), str(d.title), HORIZONTAL_ALIGNMENT_CENTER, tw - 4, 16, col)
+	y += 28
+	var rows := current_scores()
+	if rows.is_empty():
+		_draw_score_line(Vector2(r.position.x + 24, y + 8), "No scores yet", Color(0.95, 0.88, 0.75, 0.85))
 	else:
-		var n := mini(local_scores.size(), 8)
+		var n := mini(rows.size(), 10)
 		for i in n:
-			var s: Dictionary = local_scores[i]
-			var line := "%2d   %-12s   %s" % [i + 1, str(s.get("name", "PLAYER")), _fmt_score(int(s.get("score", 0)))]
+			var s: Dictionary = rows[i]
+			var line := "%2d  %-12s  %s" % [i + 1, str(s.get("name", "PLAYER")), _fmt_score(int(s.get("score", 0)))]
 			var col := Color(1, 0.9, 0.55) if i == 0 else Color(1, 0.93, 0.82)
-			draw_string_outline(ui_font, Vector2(r.position.x + 24, y), line, HORIZONTAL_ALIGNMENT_LEFT, -1, 22, 5, Color(0, 0, 0, 0.85))
-			draw_string(ui_font, Vector2(r.position.x + 24, y), line, HORIZONTAL_ALIGNMENT_LEFT, -1, 22, col)
-			y += 30
+			_draw_score_line(Vector2(r.position.x + 24, y), line, col)
+			y += 24
 	var g := GLOBAL_RECT
 	var pulse := 0.75 + 0.25 * sin(t * 3.0)
 	draw_rect(g, Color(0.35, 0.18, 0.06, 0.88))

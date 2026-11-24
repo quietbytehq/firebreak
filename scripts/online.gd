@@ -1,7 +1,7 @@
 class_name Online
 extends RefCounted
 ## Posts a qualifying campaign score to the global top 100 at firebreak.quietbytehq.uk.
-## Only the typed name, the score, the mode, the game version and the last stage
+## Only the stored player name, the score, the mode, the game version and the last stage
 ## reached are sent. It never blocks the game: if there is no internet the post
 ## is just dropped.
 

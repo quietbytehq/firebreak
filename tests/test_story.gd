@@ -1,5 +1,5 @@
 extends SceneTree
-## 0.4.0 story screens, one START button, local scores and the title call.
+## Story screens, one START button, name-at-start, local scores and the title call.
 const StageData := preload("res://scripts/stage_data.gd")
 const Scores := preload("res://scripts/scores.gd")
 const UiStyle := preload("res://scripts/ui_style.gd")
@@ -92,10 +92,16 @@ func run() -> void:
 	var labels: Array = []
 	collect_button_text(main.menu_root, labels)
 	check("START" in labels, "the only start option is labelled START")
+	check("Change name" in labels, "the title menu can change the player name")
 	check(not ("Story" in labels) and not ("Start mission" in labels), "Story and Start mission are not title buttons")
 	main.start_mission()
 	await frames(3)
-	check(main.mode == "briefing" and main.briefing.visible, "first start opens the briefing")
+	check(main.mode == "player_name" and main.player_name_edit != null, "start asks for the player name before the mission")
+	check(str(main.player_name_edit.text) == "PLAYER", "the name box starts with the default name")
+	main.confirm_player_name("RAYAN")
+	await frames(3)
+	check(str(main.settings.player_name) == "RAYAN", "the confirmed name is saved")
+	check(main.mode == "briefing" and main.briefing.visible, "first start opens the briefing after the name")
 	main.briefing.skip()
 	main._on_briefing_finished()
 	await frames(4)
@@ -105,8 +111,11 @@ func run() -> void:
 	main.show_title(true)
 	await frames(2)
 	main.start_mission()
+	await frames(3)
+	check(main.mode == "player_name", "later starts still confirm the name once")
+	main.confirm_player_name("RAYAN")
 	await frames(4)
-	check(main.mode == "playing", "later starts skip the briefing")
+	check(main.mode == "playing", "later starts skip the briefing after the name")
 	main.show_briefing("story")
 	await frames(2)
 	check(main.mode == "briefing", "F1 / show_briefing(story) opens the briefing")
@@ -121,6 +130,8 @@ func run() -> void:
 	# Rewatch from pause returns to the pause menu, not the map.
 	main.settings.seen_briefing = true
 	main.start_mission()
+	await frames(3)
+	main.confirm_player_name("RAYAN")
 	await frames(4)
 	check(main.mode == "playing", "can start a stage to test the pause rewatch")
 	main.pause_game()

@@ -7,7 +7,7 @@ config_version=5
 
 config/name="Firebreak"
 config/description="An Operation Wolf-style gallery shooter."
-config/version="0.4.0"
+config/version="0.4.1"
 config/use_custom_user_dir=true
 config/custom_user_dir_name="QuietByte/Firebreak"
 config/icon="res://assets/ui/icon.png"
