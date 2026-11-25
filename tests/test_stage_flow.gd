@@ -18,12 +18,20 @@ func bot_step(sim, skill: float) -> void:
 		if p.x < 0 or p.x > 1920: continue
 		var safe := true
 		# A careful player also keeps the weapon's bullet spread off civilians.
+		# Civilians now turn at the land edge instead of fading into the water,
+		# so they stay in the lane longer; keep a wide berth.
 		var sp: float = float(sim.weapon().get("spread", 0.0)) + 2.0
 		for off in ([Vector2(-46, 10), Vector2.ZERO, Vector2(46, 10)] if sim.spread_timer > 0.0 else [Vector2.ZERO]):
 			for k in 9:
 				var ring: Vector2 = Vector2.ZERO if k == 0 else Vector2.from_angle(TAU * k / 8.0) * sp
 				var under: Dictionary = sim.entity_at(p + off + ring)
 				if not under.is_empty() and under.type == "villager": safe = false
+		for v in sim.entities:
+			if v.type != "villager" or not sim.is_hittable(v):
+				continue
+			var vp: Vector2 = sim.hitbox(v).get_center() - Vector2(sim.camera_x, 0)
+			if vp.distance_to(p) < 160.0:
+				safe = false
 		if safe:
 			sim.fire(p); return
 

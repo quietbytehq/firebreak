@@ -66,6 +66,8 @@ var run_score_saved := false
 var run_stages := 1         # last stage reached in this run
 var run_live := false       # a run is in progress
 var run_banked := false     # current stage score has been added to run_score
+const RUN_CONTINUES := 3
+var run_continues := 3      # diamonds left this run; spent on a failed-stage retry
 var online_hint: Label
 var name_prompt_kind := ""
 var player_name_edit: LineEdit
@@ -154,6 +156,7 @@ func begin_run() -> void:
 	run_live = true
 	run_banked = false
 	run_score_saved = false
+	run_continues = RUN_CONTINUES
 
 ## Keeps the campaign total and starts another stage (used when later stages ship, and in tests).
 func continue_run_to(number: int) -> void:
@@ -187,6 +190,7 @@ func start_stage(number: int) -> void:
 	view.fp = fp
 	view.visible = true; title_screen.visible = false
 	hud.sim = sim; hud.stage_name = str(sim.stage.get("name", "")); hud.run_base = run_score if not run_banked else 0; hud.visible = true
+	hud.continues = run_continues; hud.continues_max = RUN_CONTINUES
 	title_bg.visible = false
 	_clear_menu()
 	mode = "playing"; end_delay = 0.0; fire_grace = 0.25; bar_press = false
@@ -921,19 +925,40 @@ func _quit_run_to_title() -> void:
 	_record_run_score()
 	show_title(true)
 
-func show_result() -> void:
-	mode = "result"; hud.visible = false; qa_phase_t = 0.0
+func can_use_continue() -> bool:
+	return sim != null and sim.state == "failed" and run_continues > 0
+
+## Spends one continue diamond and restarts the current stage. The failed
+## attempt is discarded; earlier cleared stages keep their run score. The run
+## high score is not written until the diamonds run out or the player gives up.
+func use_continue() -> bool:
+	if not can_use_continue():
+		return false
+	run_continues -= 1
+	start_stage(stage_number)
+	return true
+
+func _finalize_failed_run() -> void:
 	_bank_stage()
 	bank_run_score()
+	_record_scores()
+
+func show_result() -> void:
+	mode = "result"; hud.visible = false; qa_phase_t = 0.0
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	var cleared: bool = sim.state == "cleared"
+	var offer: bool = can_use_continue()
+	if not offer:
+		_bank_stage()
+		bank_run_score()
 	var box := _new_menu(0.6)
 	var portrait := ResultPortrait.new()
 	portrait.fail = not cleared
 	menu_root.add_child(portrait)
 	menu_root.move_child(portrait, 1)
 	box.position = Vector2(640, 0); box.size = Vector2(1220, 1080)
-	_label(box, "STAGE CLEAR" if cleared else "MISSION FAILED", 110, Color(1, 0.8, 0.4) if cleared else Color(1, 0.4, 0.3))
+	var title := "STAGE CLEAR" if cleared else ("MISSION FAILED" if offer else "GAME OVER")
+	_label(box, title, 110, Color(1, 0.8, 0.4) if cleared else Color(1, 0.4, 0.3))
 	var reason := ""
 	if cleared:
 		if sim.end_reason == "quota":
@@ -942,24 +967,37 @@ func show_result() -> void:
 			reason = "The harbour gunboat is sunk"
 		else:
 			reason = "You held the line until the timer ran out"
+	elif sim.end_reason == "civilians":
+		reason = "Too many civilians were hit"
+	elif sim.end_reason == "health":
+		reason = "You were overrun"
 	_label(box, reason, 30)
 	var acc := 100.0 * float(sim.stats.hits) / maxf(1.0, float(sim.stats.shots))
 	_label(box, "Enemies down %d / %d    Accuracy %d%%    Villagers hit %d" % [sim.kills, sim.quota, int(acc), sim.stats.villagers_hit], 30)
 	if cleared: _label(box, "Clear bonus %d" % sim.clear_bonus, 30)
-	_label(box, "SCORE %d" % run_score, 60, Color(1, 1, 1))
+	var shown: int = run_score if (run_banked or offer) else run_score + sim.score
+	if offer:
+		shown = run_score + sim.score
+	_label(box, "SCORE %d" % shown, 60, Color(1, 1, 1))
 	var cash_line := "Cash earned %s" % Hud.money(sim.cash_earned)
 	if sim.cash_lost > 0: cash_line += "    Civilian penalties -%s" % Hud.money(sim.cash_lost)
 	cash_line += "    Wallet %s" % Hud.money(int(profile.cash))
 	_label(box, cash_line, 30, Color(0.6, 1, 0.55))
-	var note := _record_scores()
-	if note != "":
-		_label(box, note, 26, Color(1, 0.85, 0.4))
+	if not offer:
+		var note := _record_scores()
+		if note != "":
+			_label(box, note, 26, Color(1, 0.85, 0.4))
 	if cleared:
 		_button(box, "Continue", _after_clear_continue)
 		_button(box, "Play again", func(): _record_run_score(); begin_run(); start_stage(stage_number))
 		_button(box, "Title screen", func(): _quit_run_to_title())
+	elif offer:
+		_label(box, "Continues left: %d" % run_continues, 28, Color(0.55, 0.92, 1.0))
+		_button(box, "Continue", func(): audio.play("ui_select"); use_continue())
+		_button(box, "Give up", func(): _finalize_failed_run(); _quit_run_to_title())
+		_button(box, "Title screen", func(): _finalize_failed_run(); _quit_run_to_title())
 	else:
-		_button(box, "Play again", func(): _record_run_score(); begin_run(); start_stage(stage_number))
+		_button(box, "Play again", func(): begin_run(); start_stage(stage_number))
 		_button(box, "Store", func(): show_store("result"))
 		_button(box, "Title screen", func(): _quit_run_to_title())
 	_focus_first(box)

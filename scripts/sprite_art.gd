@@ -120,6 +120,23 @@ static func draw_rising(ci: CanvasItem, name: String, pos: Vector2, k: float, fa
 	ci.draw_texture_rect_region(t, Rect2(-m[2], -cut, m[0], cut), Rect2(0, 0, m[0], cut), mod)
 	ci.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
+## Splash ring at the waterline. `pos` is the water surface under the figure.
+static func ripple(ci: CanvasItem, pos: Vector2, scale: float, alpha: float, t: float, id: int) -> void:
+	var pulse := 0.5 + 0.5 * sin(t * 4.2 + float(id))
+	var rx := (42.0 + 10.0 * pulse) * scale
+	var ry := (10.0 + 3.0 * pulse) * scale
+	var col := Color(0.75, 0.92, 0.95, 0.55 * alpha)
+	for i in 2:
+		var k := 1.0 + float(i) * 0.28
+		ci.draw_arc(pos, rx * k, 0.0, TAU, 28, Color(col, col.a * (1.0 - float(i) * 0.35)), 2.0 + (1.0 - float(i)))
+	ci.draw_set_transform(pos, 0.0, Vector2(1.0, 0.28))
+	ci.draw_arc(Vector2.ZERO, rx, 0.0, TAU, 28, Color(0.55, 0.78, 0.85, 0.35 * alpha), 3.0)
+	ci.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+
+## True when this figure should be drawn waist-deep, clipped at the waterline.
+static func is_wading(e: Dictionary) -> bool:
+	return bool(e.get("wading", false)) and e.state != "dying"
+
 static func flash_mod(e: Dictionary) -> Color:
 	# Lift toward a warm highlight. A 1.6 multiplier (peak 2.6) clipped desert
 	# camo — and even darker uniforms — to a flat white, which read as a bug.
@@ -188,7 +205,11 @@ static func muzzle_point(e: Dictionary, pos: Vector2) -> Vector2:
 			var kneel: bool = e.get("pose", "") == "kneel"
 			var k := _soldier_k(e, kneel)
 			var mz: Vector2 = MUZZLE.kneel if kneel else (MUZZLE.stand_tq if int(e.variant) % 2 == 1 else MUZZLE.stand)
-			return pos + Vector2(mz.x * k * front_flip(e), mz.y * k)
+			var feet := pos
+			if is_wading(e):
+				var frame := _soldier_frame(e)
+				feet = pos + Vector2(0.0, float(e.get("submerge", 0.48)) * k * fig_h(frame))
+			return feet + Vector2(mz.x * k * front_flip(e), mz.y * k)
 		"mg":
 			var km := scale_for(e, "mg_front", TARGET_H.mg)
 			return pos + Vector2(MUZZLE.mg.x * km * front_flip(e), MUZZLE.mg.y * km)
@@ -239,11 +260,16 @@ static func soldier(ci: CanvasItem, e: Dictionary, pos: Vector2, t: float) -> vo
 		return
 	var k := _soldier_k(e, kneel)
 	var f := front_flip(e)
-	shadow(ci, pos, 60.0 * k, e.alpha * float(e.rise))
-	if e.state in ["rise", "duck"] or e.rise < 1.0:
-		draw_rising(ci, frame, pos, k, f, mod, e.rise)
+	if is_wading(e):
+		var wet: float = float(e.get("submerge", 0.48))
+		ripple(ci, pos, k, e.alpha, t, int(e.get("id", 0)))
+		draw_rising(ci, frame, pos, k, f, mod, 1.0 - wet)
 	else:
-		draw(ci, frame, pos, k, f, mod)
+		shadow(ci, pos, 60.0 * k, e.alpha * float(e.rise))
+		if e.state in ["rise", "duck"] or e.rise < 1.0:
+			draw_rising(ci, frame, pos, k, f, mod, e.rise)
+		else:
+			draw(ci, frame, pos, k, f, mod)
 	var at := muzzle_point(e, pos)
 	if e.muzzle > 0.0:
 		front_flash(ci, at, 34.0 * float(e.scale) + 6.0, e.alpha, e.id)
@@ -313,8 +339,13 @@ static func villager(ci: CanvasItem, e: Dictionary, pos: Vector2, t: float) -> v
 		frame = _villager_frame(kind, "walk_0%d" % (1 + int(e.age * 6.0 + e.id) % 4))
 		if tex(frame) == null:
 			frame = ref
-	shadow(ci, pos, 50.0 * k, e.alpha)
-	draw(ci, frame, pos, k, villager_flip(e), flash_mod(e))
+	if is_wading(e):
+		var wet: float = float(e.get("submerge", 0.48))
+		ripple(ci, pos, k, e.alpha, t, int(e.get("id", 0)))
+		draw_rising(ci, frame, pos, k, villager_flip(e), flash_mod(e), 1.0 - wet)
+	else:
+		shadow(ci, pos, 50.0 * k, e.alpha)
+		draw(ci, frame, pos, k, villager_flip(e), flash_mod(e))
 
 static func pickup(ci: CanvasItem, e: Dictionary, pos: Vector2, t: float) -> void:
 	var is_food: bool = e.type == "food"
@@ -412,6 +443,18 @@ static func speedboat(ci: CanvasItem, e: Dictionary, pos: Vector2, t: float) -> 
 
 static func gunboat(ci: CanvasItem, e: Dictionary, pos: Vector2, t: float) -> void:
 	_vehicle_sprite(ci, e, pos, t, "coast_gunboat")
+	if e.get("gunner2_alive", false) and e.state != "dying":
+		var s: float = e.scale
+		var ox: float = (e.size.x * s * -0.06) * (1.0 if e.facing > 0.0 else -1.0)
+		var gp := pos + Vector2(ox, -18.0 * s)
+		var frame := "coral_rifleman_aim_front"
+		if tex(frame) == null:
+			frame = "rifleman_aim_front"
+		if tex(frame) != null:
+			var gk := 0.42 * s
+			draw(ci, frame, gp, gk, -1.0 if e.facing < 0.0 else 1.0, flash_mod(e))
+		if e.muzzle > 0.0:
+			front_flash(ci, gp + Vector2(20.0 * s * e.facing, -70.0 * s), 22.0 * s, e.alpha, int(e.get("id", 0)) + 17)
 
 static func pier_gunner(ci: CanvasItem, e: Dictionary, pos: Vector2, t: float) -> void:
 	var frame := "coast_pier_gunner"

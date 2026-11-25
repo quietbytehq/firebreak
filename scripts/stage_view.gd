@@ -171,7 +171,13 @@ func _on_event(name: String, d: Dictionary) -> void:
 			blood = minf(1.0, blood + 0.3 + float(d.amount) * 0.02)
 			shake = maxf(shake, minf(24.0, 9.0 + float(d.amount) * 0.9))
 		"villager_hit":
-			banner("CIVILIAN!  -%d" % sim.VILLAGER_PENALTY_SCORE, d.pos + Vector2(0, -40), Color(1, 0.35, 0.3), 42, 1.6)
+			var n := int(d.get("count", sim.stats.villagers_hit))
+			var lim := int(d.get("limit", sim.CIVILIAN_LIMIT))
+			var msg := "CIVILIAN DOWN  %d/%d" % [n, lim]
+			if n >= lim:
+				msg = "TOO MANY CIVILIANS"
+			banner(msg, Vector2(960, 280), Color(1, 0.28, 0.22), 64, 2.2)
+			banner("-%d" % sim.VILLAGER_PENALTY_SCORE, d.pos + Vector2(0, -40), Color(1, 0.35, 0.3), 36, 1.4)
 		"score":
 			banner("+%d" % d.amount, d.pos + Vector2(0, -20), Color(1, 0.95, 0.55), 36, 1.05)
 		"headshot":

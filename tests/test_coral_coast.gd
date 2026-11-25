@@ -48,9 +48,11 @@ func run() -> void:
 
 	var sim := StageSim.new()
 	check(sim.setup(3, 7), "sim starts Coral Coast")
-	check(sim.quota == 111, "computed quota is 111 (101 x 1.10)")
+	check(sim.quota == 128, "computed quota is 128 (116 x 1.10, rounded)")
 	check(sim.stage_number == 3, "stage number is 3")
 	check(sim.has_arena(), "sim sees the arena")
+	check(sim.diff.fire_rate > StageData.difficulty(3).fire_rate, "Coral Coast fire rate is boosted on top of the campaign curve")
+	check(is_equal_approx(float(sim.diff.fire_rate) / float(StageData.difficulty(3).fire_rate), 1.15), "fire rate boost is +15%")
 
 	var boat: Dictionary = sim.spawn("speedboat", "mid")
 	check(not boat.is_empty(), "speedboat spawns")
@@ -102,8 +104,13 @@ func run() -> void:
 			break
 	check(not gun.is_empty(), "gunboat spawns at the harbour hold")
 	if not gun.is_empty():
-		check(gun.max_hp == 24.0, "gunboat HP is 22 x 1.10, rounded to 24")
+		check(gun.max_hp == 33.0, "gunboat HP is 30 x 1.10, rounded to 33")
 		check(gun.get("gunner_alive", false), "gunboat has a bow gunner")
+		check(gun.get("gunner2_alive", false), "gunboat has a second deck gunner")
+		check(str(gun.get("band", "")) == "mid", "gunboat stays on the mid water path, not the far shore")
+		check(str(gun.get("path", "")) == "water", "gunboat path is the close harbour water")
+		check(gun.y >= 740.0, "gunboat sits in the deep basin (y=%.1f)" % gun.y)
+		check(gun.scale >= 0.9, "gunboat is the larger close scale")
 		check(int(StageSim.BASE_SCORE.gunboat) % 10 == 0, "gunboat score is a multiple of 10")
 		# Time running past the planned 180 s still does not clear while it lives.
 		boss_sim.time = 180.0

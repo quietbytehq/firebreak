@@ -14,9 +14,21 @@ game's public releases.
 - The gunboat is a stop-the-scroll arena boss. The camera holds on the harbour
   from 2:20, and the stage ends only when the gunboat is destroyed (or you fall).
   Meeting the kill quota or running past three minutes does not clear the stage
-  while the gunboat is still afloat.
-- Stage 3 is about 31% harder than Dune Sea: quota 111, faster and more accurate
-  fire, more civilians in the crossfire, and rarer ammo drops.
+  while the gunboat is still afloat. The gunboat is larger and closer, out in
+  the deep harbour basin, with more health and a second deck gunner.
+- Stage 3 is harder than Dune Sea: quota 128, and fire rate and spawn density
+  are raised a further 15% on top of the campaign curve. Ammo drops stay rare,
+  and there are more civilians in the crossfire.
+- Anyone standing in the water is waist-deep: the sprite is clipped at the
+  waterline with a ripple, and they shoot from there. Boat crews stay in their
+  boats. River Village and Dune Sea are audited the same way.
+- Civilians walk only on land, always facing the way they are going. Killing
+  3 civilians fails the stage on every map, with an on-screen "CIVILIAN DOWN"
+  warning after the first and second. The result screen names the reason.
+- Each run has 3 continue diamonds on the HUD. Failing a stage (by dying or by
+  the civilian rule) offers Continue, which spends one diamond and restarts
+  that stage. With none left it is game over, and the run high score is saved
+  as it stands. There is no store or real-money tie-in.
 - Stage music is "Caribbean Steel Drums 2" by Tozan (CC0). Bay ambience and
   vehicle loops are also CC0; credits are in NOTICE. No ElevenLabs audio.
 - The 0.4.1 name-at-start and automatic high-score save still apply, including a

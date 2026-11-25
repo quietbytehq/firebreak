@@ -6,6 +6,8 @@ var crosshair := Vector2(960, 540)
 var stage_name := ""
 var run_base := 0   # campaign total from earlier stages in this run
 var show_crosshair := true
+var continues := 3
+var continues_max := 3
 var t := 0.0
 var font: Font
 var portrait: Texture2D
@@ -123,6 +125,13 @@ func _draw() -> void:
 			var fill_r := Rect2(sr.position, Vector2(sr.size.x * on, sr.size.y))
 			draw_rect(fill_r, Color(0.9, 0.22, 0.14).lerp(Color(1, 0.45, 0.2), float(i) / segs))
 		draw_rect(sr, Color(1, 0.75, 0.4, 0.25), false, 1.0)
+	# Continue diamonds between the score plate and the stage clock.
+	panel(Rect2(410, 12, 236, 62))
+	text("CONTINUES", Vector2(410, 36), 16, Color(1, 0.8, 0.5), HORIZONTAL_ALIGNMENT_CENTER, 236)
+	var max_n: int = maxi(1, continues_max)
+	for i in max_n:
+		var dpos := Vector2(410.0 + 236.0 * (float(i) + 0.5) / float(max_n), 56.0)
+		draw_diamond(dpos, 13.0, i < continues)
 	# Bottom left: Rayan's portrait, health and active weapon effects.
 	panel(Rect2(16, 940, 630, 122))
 	if portrait:
@@ -149,6 +158,17 @@ func _draw() -> void:
 		text("PRIMARY EMPTY — PRESS 1 FOR THE PISTOL OR SHOOT AMMO DROPS", Vector2(960, 900), 26, Color(1, 0.4, 0.3), HORIZONTAL_ALIGNMENT_CENTER, 0)
 	if show_crosshair:
 		draw_crosshair()
+
+func draw_diamond(c: Vector2, r: float, on: bool) -> void:
+	var pts := PackedVector2Array([c + Vector2(0, -r), c + Vector2(r * 0.85, 0), c + Vector2(0, r), c + Vector2(-r * 0.85, 0)])
+	if on:
+		draw_colored_polygon(pts, Color(0.45, 0.92, 1.0, 0.95))
+		pts.append(pts[0])
+		draw_polyline(pts, Color(0.85, 1.0, 1.0, 0.95), 2.0, true)
+	else:
+		draw_colored_polygon(pts, Color(0.12, 0.14, 0.16, 0.75))
+		pts.append(pts[0])
+		draw_polyline(pts, Color(0.5, 0.55, 0.6, 0.7), 2.0, true)
 
 func draw_crosshair() -> void:
 	var c := crosshair

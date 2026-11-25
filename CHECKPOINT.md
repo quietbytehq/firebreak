@@ -1,5 +1,24 @@
 # CHECKPOINT — Firebreak 0.5.0
 
+Updated: 2026-11-25 (PKT, UTC+5)
+
+## v0.5.0 fix round — water, civilians, continues, harder Coral Coast
+- Version stays 0.5.0. The unpublished local tag `v0.5.0` was deleted and recreated on this commit. Do not move `v0.3.7` (`5a1922b`), `v0.4.0` (`5b4b534`) or `v0.4.1` (`4659341`).
+- Water: infantry in a stage water body stand waist-deep (sprite clipped at the waterline, ripple, shooting-from-water pose). Boat crews stay in their boats; pier gunners stay on the planks. Coral Coast mid-bay riflemen can spawn in the water (`water_combat`). River Village and Dune Sea only wade if a figure is actually placed in those gaps.
+- The harbour gunboat no longer hops to the far water line when mid sand is off-screen. It holds on the mid water path in the deep basin (about y=791), scale 0.95, 33 HP, with a second deck gunner.
+- Civilians walk only on land, facing their velocity, and turn at the water or path edge. Tests cover spawn points, paths and facing on all three stages.
+- Killing 3 civilians fails any stage (`end_reason` `civilians`). On-screen warning: `CIVILIAN DOWN 1/3` and `2/3`, then `TOO MANY CIVILIANS`. The result screen says “Too many civilians were hit.”
+- Each run has 3 continue diamonds on the HUD. A failed stage (death or the civilian rule) offers Continue, which spends one diamond and restarts that stage. With none left it is game over and the run score is saved. No store or real-money tie-in.
+- Coral Coast difficulty on top of the previous 0.5.0 tuning: quota 128 (116 × 1.10), fire rate and density ×1.15, more riflemen in the waves.
+- The crate and stray arm were cut off the speedboat sprite. Painted sand on the coconut and mango cutouts was left (a cleanup pass ate the fruit; originals were restored). A thin sand strip remains under the speedboat hull.
+- Tests: 28 suites, 1,849 checks, 0 failures (`./tools/test.sh`). Headless `tools/smoke_v050b.gd`: 3-civilian fail, continue (2 diamonds left), then the gunboat cleared with reason `boss` (camera 1920, gun_y 791, HP 33, quota 128).
+- Shots: `/workspace/firebreak_shots/v050b/` — `civilians_beach`, `civilian_warning`, `continue`, `wading`, `boss` (PNG + JPG + `_preview.jpg`). Captured on the laptop at 1797×1011 (the window could not be forced to 1920×1080; nvidia-drm did not attach, Intel Mesa). Median frame time was 60 fps on beach, wading and boss.
+- Replaced laptop files went to `_to_delete/replaced_v050b/`. Commit as QuietByte; the owner pushes.
+- Snap `stable` is still 0.4.0 (revision 3) until the owner promotes a later revision.
+
+---
+# CHECKPOINT — Firebreak 0.5.0
+
 Updated: 2026-11-24 (PKT, UTC+5)
 
 ## v0.5.0 round — Stage 3 Coral Coast (golden hour, arena gunboat)

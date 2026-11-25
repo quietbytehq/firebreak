@@ -123,6 +123,11 @@ static func feet_off(stage: Dictionary, e: Dictionary) -> float:
 		if ry < 0.0:
 			return -1.0
 		return absf(y - ry)
+	if e.get("wading", false):
+		var wy := water_y(stage, float(e.x), str(e.get("band", "mid")))
+		if wy < 0.0:
+			return -1.0
+		return absf(y - wy)
 	if e.get("planted", false):
 		return absf(y - float(e.get("ground_y", y)))
 	var gy := ground_y(stage, str(e.get("band", "mid")), float(e.x))
@@ -137,4 +142,54 @@ static func feet_slack(e: Dictionary) -> float:
 		return 3.0 * float(e.get("scale", 1.0)) + 2.0
 	if tname in ["speedboat", "gunboat"]:
 		return 16.0
+	if e.get("wading", false):
+		return 10.0
 	return 5.0
+
+## Optional water body. A ground figure is in the water when its x is inside
+## a water span for its band and not on that band's land.
+static func water_section(stage: Dictionary) -> Dictionary:
+	var d = stage.get("water", {})
+	return d if d is Dictionary else {}
+
+static func water_band_section(stage: Dictionary, band: String) -> Dictionary:
+	var bands = water_section(stage).get("bands", {})
+	if bands is Dictionary:
+		var d = bands.get(band, {})
+		return d if d is Dictionary else {}
+	return {}
+
+static func water_spans(stage: Dictionary, band: String = "") -> Array:
+	if band != "":
+		var local := _spans(water_band_section(stage, band))
+		if not local.is_empty():
+			return local
+	return _spans(water_section(stage))
+
+static func water_y(stage: Dictionary, x: float, band: String = "mid") -> float:
+	var local_pts := _points(water_band_section(stage, band))
+	if not local_pts.is_empty():
+		return interp_y(local_pts, x)
+	var pts := _points(water_section(stage))
+	if pts.is_empty():
+		return -1.0
+	return interp_y(pts, x)
+
+static func has_water(stage: Dictionary) -> bool:
+	return not water_spans(stage).is_empty() or not _points(water_section(stage)).is_empty()
+
+## Boats, vehicles, pickups and pier crews are never "wading" infantry.
+const DRY_TYPES := ["speedboat", "gunboat", "heli", "food", "powerup", "truck", "technical", "convoy", "jeep", "camel", "pier_gunner"]
+
+static func in_water(stage: Dictionary, band: String, x: float, type: String = "") -> bool:
+	if type in DRY_TYPES:
+		return false
+	if not in_spans(water_spans(stage, band), x):
+		return false
+	if on_ground(stage, band, x):
+		return false
+	return water_y(stage, x, band) > 0.0
+
+## True when a civilian may stand or walk here: on land, never in water.
+static func on_land(stage: Dictionary, band: String, x: float) -> bool:
+	return on_ground(stage, band, x) and not in_water(stage, band, x, "villager")

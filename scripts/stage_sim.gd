@@ -17,7 +17,7 @@ const SIZES := {
 	"heli": Vector2(650, 256), "camel": Vector2(420, 360), "technical": Vector2(620, 280), "sniper": Vector2(280, 240), "convoy": Vector2(640, 300),
 	"speedboat": Vector2(360, 140), "jeep": Vector2(420, 200), "pier_gunner": Vector2(150, 250), "gunboat": Vector2(620, 280),
 }
-const BASE_HP := {"rifleman": 1.0, "paratrooper": 1.0, "mg": 3.0, "truck": 14.0, "heli": 16.0, "villager": 1.0, "food": 1.0, "powerup": 1.0, "camel": 1.0, "technical": 11.0, "sniper": 2.0, "convoy": 17.0, "speedboat": 8.0, "jeep": 11.0, "pier_gunner": 3.0, "gunboat": 22.0}
+const BASE_HP := {"rifleman": 1.0, "paratrooper": 1.0, "mg": 3.0, "truck": 14.0, "heli": 16.0, "villager": 1.0, "food": 1.0, "powerup": 1.0, "camel": 1.0, "technical": 11.0, "sniper": 2.0, "convoy": 17.0, "speedboat": 8.0, "jeep": 11.0, "pier_gunner": 3.0, "gunboat": 30.0}
 const BASE_SCORE := {"rifleman": 100, "paratrooper": 200, "mg": 400, "truck": 1500, "heli": 2500, "food": 50, "powerup": 50, "camel": 200, "technical": 1800, "sniper": 500, "convoy": 2000, "speedboat": 800, "jeep": 1800, "pier_gunner": 400, "gunboat": 2500}
 const GUNNER_SCORE := 300
 const GUNNER_HP := 2.0
@@ -49,6 +49,13 @@ const AIRSTRIKE_DURATION := 2.6
 const PICKUP_GROUND_Y := 900.0
 ## Bottom HUD (health + weapon bar) starts here; near feet stay above it.
 const HUD_BAND_TOP := 940.0
+## Killing this many civilians fails the stage on every map.
+const CIVILIAN_LIMIT := 3
+## Infantry that can stand waist-deep in water (boats stay on their paths).
+const WADING_TYPES := ["rifleman", "paratrooper"]
+const WADING_SUBMERGE := 0.48
+## Fraction of the view width where the harbour gunboat holds.
+const GUNBOAT_HOLD := 0.82
 
 var stage: Dictionary = {}
 var stage_number := 1
@@ -128,6 +135,11 @@ func setup(number: int = 1, seed: int = 1, data: Dictionary = {}, profile: Dicti
 	if stage.is_empty():
 		return false
 	diff = StageData.difficulty(number)
+	var boost = stage.get("diff_mult", {})
+	if boost is Dictionary:
+		for k in boost:
+			if diff.has(k):
+				diff[k] = float(diff[k]) * float(boost[k])
 	rng.seed = seed
 	fx_rng.seed = seed * 7919 + 13
 	duration = minf(float(stage.get("duration", 180.0)), 180.0)
@@ -319,6 +331,57 @@ func pick_point(band: String, margin: float = 120.0, frac: float = -1.0) -> Vect
 				break
 	return Vector2(x, Ground.ground_y(stage, band, x))
 
+## Water combat point inside the current view, or Vector2(-1, -1).
+func pick_water_point(band: String, margin: float = 140.0, frac: float = -1.0) -> Vector2:
+	if not Ground.has_water(stage):
+		return Vector2(-1, -1)
+	var lo := camera_x + margin
+	var hi := camera_x + VIEW_W - margin
+	var spans := []
+	var total := 0.0
+	for z in Ground.water_spans(stage, band):
+		var a := maxf(lo, float(z[0])); var b := minf(hi, float(z[1]))
+		if b - a > 20.0:
+			spans.append([a, b]); total += b - a
+	if spans.is_empty():
+		return Vector2(-1, -1)
+	var x: float
+	if frac >= 0.0:
+		var want := lerpf(lo, hi, frac)
+		var best = spans[0]; var bd := INF
+		for s in spans:
+			var cx := clampf(want, s[0], s[1])
+			if absf(cx - want) < bd: bd = absf(cx - want); best = s
+		x = clampf(want, best[0], best[1])
+	else:
+		var r := rng.randf() * total
+		x = spans[spans.size() - 1][1]
+		for s in spans:
+			r -= s[1] - s[0]
+			if r <= 0.0:
+				x = rng.randf_range(s[0], s[1])
+				break
+	var y := Ground.water_y(stage, x, band)
+	if y <= 0.0:
+		return Vector2(-1, -1)
+	return Vector2(x, y)
+
+## Land, or sometimes water, for combat infantry. Villagers must use pick_point.
+## Water combat spawns are opt-in per stage so river and oasis gaps stay empty
+## unless a figure is planted there (in which case they wade).
+func pick_combat_point(band: String, margin: float = 140.0, frac: float = -1.0) -> Vector2:
+	if not bool(stage.get("water_combat", false)):
+		return pick_point(band, margin, frac)
+	var land := pick_point(band, margin, frac)
+	var wet := pick_water_point(band, margin, frac)
+	if wet.x < 0.0:
+		return land
+	if land.x < 0.0:
+		return wet
+	if rng.randf() < 0.35:
+		return wet
+	return land
+
 func count_alive(type: String) -> int:
 	var n := 0
 	for e in entities:
@@ -360,10 +423,26 @@ func spawn(type: String, band: String = "mid", opts: Dictionary = {}) -> Diction
 			e.kind = _weighted(rule.get("kinds", {"ammo": 1.0})) if not rule.is_empty() else ("rice" if type == "food" else "ammo")
 	else:
 		if p.x < 0:
-			p = pick_point(band, 140.0, float(opts.get("frac", -1.0)))
+			# Boats, jeeps and other path vehicles are placed on their road,
+			# so they must not hop bands just because no land is in view
+			# (the harbour has no mid sand, which used to shove the gunboat
+			# onto the far water line).
+			if Ground.road_for(type, band) != "":
+				p = Vector2(camera_x + VIEW_W * 0.5, 1.0)
+			elif type == "villager":
+				p = pick_point(band, 140.0, float(opts.get("frac", -1.0)))
+			elif type in WADING_TYPES:
+				p = pick_combat_point(band, 140.0, float(opts.get("frac", -1.0)))
+			else:
+				p = pick_point(band, 140.0, float(opts.get("frac", -1.0)))
 			if p.x < 0:
 				for alt in ["mid", "far", "near"]:
-					p = pick_point(alt)
+					if type == "villager":
+						p = pick_point(alt)
+					elif type in WADING_TYPES:
+						p = pick_combat_point(alt)
+					else:
+						p = pick_point(alt)
 					if p.x >= 0:
 						band = alt; e.band = alt; e.scale = band_scale(alt); break
 			if p.x < 0:
@@ -424,9 +503,12 @@ func spawn(type: String, band: String = "mid", opts: Dictionary = {}) -> Diction
 				e.state = "hold"; e.vx = 0.0; e.facing = -1.0
 				e.gunner_alive = true; e.gunner_hp = GUNNER_HP; e.burst = 0.0; e.tick = 0.0
 				e.aim = 1.2 * float(diff.get("telegraph", 1.0))
+				e.gunner2_alive = true; e.gunner2_hp = GUNNER_HP
+				e.burst2 = 0.0; e.tick2 = 0.0
+				e.aim2 = 1.6 * float(diff.get("telegraph", 1.0))
 		_place_on_path(e)
 		if type == "gunboat":
-			var hold := camera_x + VIEW_W * 0.70
+			var hold := camera_x + VIEW_W * GUNBOAT_HOLD
 			var path_name := str(e.get("path", "water"))
 			var b := Ground.road_bounds(stage, path_name)
 			if b.x >= 0.0:
@@ -447,6 +529,7 @@ func spawn(type: String, band: String = "mid", opts: Dictionary = {}) -> Diction
 	if opts.has("hp"):
 		e.max_hp = maxf(1.0, float(opts.hp))
 	e.hp = e.max_hp
+	_apply_wading(e)
 	next_id += 1
 	entities.append(e)
 	event.emit("spawn", {"entity": e})
@@ -494,7 +577,7 @@ func _place_on_path(e: Dictionary) -> void:
 	e.path = name
 	var off := 360.0 if e.type in ["technical", "jeep"] else (220.0 if e.type in ["camel", "speedboat"] else 320.0)
 	if e.type == "gunboat":
-		e.x = clampf(camera_x + VIEW_W * 0.70, b.x + 80.0, b.y - 80.0)
+		e.x = clampf(camera_x + VIEW_W * GUNBOAT_HOLD, b.x + 80.0, b.y - 80.0)
 		e.facing = -1.0
 	elif e.vx < 0.0:
 		e.x = clampf(camera_x + VIEW_W + off, b.x, b.y)
@@ -650,6 +733,8 @@ func step(dt: float) -> void:
 			_finish("cleared", "time")
 
 func _finish(new_state: String, reason: String) -> void:
+	if state != "playing":
+		return
 	state = new_state; end_reason = reason
 	if new_state == "cleared":
 		var acc := float(stats.hits) / maxf(1.0, float(stats.shots))
@@ -673,6 +758,8 @@ func _update_entity(e: Dictionary, dt: float) -> void:
 		if e.timer <= 0.0: entities.erase(e)
 		return
 	face_player(e)
+	if e.type in WADING_TYPES:
+		_apply_wading(e)
 	# Left behind by the scrolling camera or walked off: remove quietly.
 	if e.type == "heli":
 		_update_heli(e, dt); return
@@ -804,8 +891,8 @@ func _update_speedboat(e: Dictionary, dt: float) -> void:
 
 func _update_gunboat(e: Dictionary, dt: float) -> void:
 	var name := str(e.get("path", "water"))
-	var hold := camera_x + VIEW_W * 0.70
-	var weave := sin(e.age * TAU / 4.0) * 55.0
+	var hold := camera_x + VIEW_W * GUNBOAT_HOLD
+	var weave := sin(e.age * TAU / 4.0) * 40.0
 	var b := Ground.road_bounds(stage, name)
 	e.x = hold + weave
 	if b.x >= 0.0:
@@ -818,20 +905,26 @@ func _update_gunboat(e: Dictionary, dt: float) -> void:
 	_update_vehicle_gunner(e, dt)
 
 func _update_vehicle_gunner(e: Dictionary, dt: float) -> void:
-	if not e.get("gunner_alive", false):
+	_update_one_gunner(e, dt, "gunner_alive", "gunner_hp", "burst", "tick", "aim")
+	if e.type == "gunboat":
+		_update_one_gunner(e, dt, "gunner2_alive", "gunner2_hp", "burst2", "tick2", "aim2")
+
+func _update_one_gunner(e: Dictionary, dt: float, alive_k: String, _hp_k: String, burst_k: String, tick_k: String, aim_k: String) -> void:
+	if not e.get(alive_k, false):
 		return
 	var sx: float = e.x - camera_x
 	if sx < 80.0 or sx > VIEW_W - 80.0:
 		return
-	if e.get("burst", 0.0) > 0.0:
-		e.burst -= dt; e.tick = e.get("tick", 0.0) - dt
-		if e.tick <= 0.0:
-			e.tick = 0.14; _enemy_fire(e, 0.5, 2.2)
+	if float(e.get(burst_k, 0.0)) > 0.0:
+		e[burst_k] = float(e[burst_k]) - dt
+		e[tick_k] = float(e.get(tick_k, 0.0)) - dt
+		if float(e[tick_k]) <= 0.0:
+			e[tick_k] = 0.14; _enemy_fire(e, 0.5, 2.2)
 	else:
-		e.aim = e.get("aim", 1.0) - dt
-		if e.aim <= 0.0:
-			e.burst = 1.1; e.tick = 0.0
-			e.aim = (2.0 + rng.randf()) * float(diff.get("telegraph", 1.0)) / float(diff.get("fire_rate", 1.0))
+		e[aim_k] = float(e.get(aim_k, 1.0)) - dt
+		if float(e[aim_k]) <= 0.0:
+			e[burst_k] = 1.1; e[tick_k] = 0.0
+			e[aim_k] = (2.0 + rng.randf()) * float(diff.get("telegraph", 1.0)) / float(diff.get("fire_rate", 1.0))
 
 func _update_sniper(e: Dictionary, dt: float) -> void:
 	e.timer -= dt
@@ -916,16 +1009,32 @@ func gunner_rect(e: Dictionary) -> Rect2:
 	var r := Rect2(e.x - camera_x + (x0 if e.facing > 0 else -x1), e.y - 10.0 * s, x1 - x0, 105.0 * s)
 	return r
 
+## Second deck gunner, midships, used only on the harbour gunboat.
+func gunner2_rect(e: Dictionary) -> Rect2:
+	var s: float = e.scale
+	var w := 100.0 * s; var h := 90.0 * s
+	var ox: float = (e.size.x * s * -0.06) * (1.0 if e.facing > 0.0 else -1.0)
+	return Rect2(e.x - camera_x + ox - w * 0.5, e.y - h - 16.0 * s, w, h)
+
 func _update_villager(e: Dictionary, dt: float) -> void:
-	e.x += e.vx * dt
+	var nx: float = e.x + e.vx * dt
+	if not Ground.on_land(stage, e.band, nx):
+		# Turn around at the water or the edge of the path; never step off land.
+		e.vx = -e.vx
+		nx = e.x + e.vx * dt
+		if not Ground.on_land(stage, e.band, nx):
+			e.alpha -= dt * 4.0
+			if e.alpha <= 0.0: entities.erase(e)
+			return
+	e.x = nx
 	if absf(e.vx) > 1.0:
 		e.facing = -1.0 if e.vx < 0.0 else 1.0
 	var gy := Ground.ground_y(stage, e.band, e.x)
 	if gy > 0.0:
 		e.y = gy
 		e.ground_y = gy
-	if not Ground.on_ground(stage, e.band, e.x):
-		e.alpha -= dt * 2.0
+	if not Ground.on_land(stage, e.band, e.x):
+		e.alpha -= dt * 4.0
 		if e.alpha <= 0.0: entities.erase(e)
 
 func _update_pickup(e: Dictionary, dt: float) -> void:
@@ -1029,6 +1138,9 @@ func hitbox(e: Dictionary) -> Rect2:
 			# Centre-anchored; the fuselage, not the rotor disc or tail boom tip.
 			return Rect2(e.x - w * 0.42, e.y - h * 0.22, w * 0.84, h * 0.6)
 		_:
+			if e.get("wading", false):
+				var dry: float = 1.0 - float(e.get("submerge", WADING_SUBMERGE))
+				return Rect2(e.x - w * 0.5, e.y - h * dry, w, h * dry)
 			var drop: float = (1.0 - e.rise) * h
 			return Rect2(e.x - w * 0.5, e.y - h + drop, w, h - drop)
 
@@ -1125,6 +1237,15 @@ func damage_entity(e: Dictionary, amount: float, screen_pos: Vector2, blast: boo
 			add_cash(int(Weapons.economy().get("gunner_cash", 0)), screen_pos, "gunner")
 			event.emit("gunner_down", {"entity": e, "pos": screen_pos})
 		if not blast: return
+	if e.get("gunner2_alive", false) and e.type == "gunboat" and (blast or gunner2_rect(e).grow(2.0).has_point(screen_pos)):
+		e.gunner2_hp -= amount
+		event.emit("hit", {"entity": e, "pos": screen_pos, "gunner": true})
+		if e.gunner2_hp <= 0.0:
+			e.gunner2_alive = false; e.burst2 = 0.0
+			_add_score(int(GUNNER_SCORE * float(band_info("mid").get("score_mult", 1.0))), screen_pos)
+			add_cash(int(Weapons.economy().get("gunner_cash", 0)), screen_pos, "gunner")
+			event.emit("gunner_down", {"entity": e, "pos": screen_pos, "which": 2})
+		if not blast: return
 	e.hp -= amount
 	event.emit("hit", {"entity": e, "pos": screen_pos})
 	if e.type == "heli":
@@ -1146,8 +1267,10 @@ func damage_entity(e: Dictionary, amount: float, screen_pos: Vector2, blast: boo
 			stats.villagers_hit += 1
 			score = maxi(0, score - VILLAGER_PENALTY_SCORE)
 			lose_cash(int(Weapons.economy().get("civilian_penalty", 0)), screen_pos, "civilian")
-			event.emit("villager_hit", {"entity": e, "pos": screen_pos})
+			event.emit("villager_hit", {"entity": e, "pos": screen_pos, "count": int(stats.villagers_hit), "limit": CIVILIAN_LIMIT})
 			damage_player(VILLAGER_PENALTY_HEALTH, e)
+			if int(stats.villagers_hit) >= CIVILIAN_LIMIT:
+				_finish("failed", "civilians")
 		"food":
 			stats.food += 1
 			health = minf(max_health, health + float(FOOD_HEAL.get(e.kind, 10.0)))
@@ -1342,3 +1465,30 @@ func dust_amount() -> float:
 	var fade := 1.6
 	var u := minf(time - a, b - time)
 	return clampf(u / fade, 0.0, 1.0)
+
+## Keep a wading figure waist-deep on the waterline, or clear the flag on land.
+func _apply_wading(e: Dictionary) -> void:
+	if not (e.type in WADING_TYPES):
+		e.wading = false
+		return
+	if e.state in ["descend", "crash"]:
+		e.wading = false
+		return
+	var wet := Ground.in_water(stage, str(e.get("band", "mid")), float(e.x), str(e.type))
+	e.wading = wet
+	if not wet:
+		e.submerge = 0.0
+		return
+	var wy := Ground.water_y(stage, float(e.x), str(e.get("band", "mid")))
+	if wy > 0.0:
+		e.ground_y = wy
+		e.y = wy + sin(float(e.get("age", 0.0)) * 2.4) * 3.0 * float(e.scale)
+	e.submerge = WADING_SUBMERGE
+	e.rise = 1.0
+	if str(e.get("pose", "")) == "kneel":
+		e.pose = ""
+		e.size = SIZES.get("rifleman", e.size)
+	if e.type == "rifleman" and e.state == "rise":
+		e.state = "aim"
+		e.timer = _aim_time(e)
+

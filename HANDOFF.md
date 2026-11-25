@@ -7,10 +7,14 @@ gunboat arena boss (stage 3), 19 original weapons in a 3-slot loadout, cash econ
 Store, grenades/launchers, air strike (spares civilians), Rayan title screen,
 music/SFX/voice, optional global top 100. The player name is asked once after Start,
 before the mission; high scores (run and per-stage) are saved under that name
-automatically. Read `docs/DESIGN.md` first.
+automatically. Figures in water stand waist-deep and shoot from there;
+civilians walk only on land. Killing 3 civilians fails the stage. Each run
+has 3 continue diamonds. Read `docs/DESIGN.md` first.
 
 ## Run
 - Tests: `./tools/test.sh` (uses `godot` on PATH or `$GODOT`; on this PC `GODOT=~/.local/bin/godot`).
+  Headless Coral Coast smoke (3-civilian fail, a continue, then the gunboat) is `tools/smoke_v050b.gd`.
+  Screenshots: `FIREBREAK_SHOT_DIR=... $GODOT --path . --script tools/shot_v050b.gd`.
 - Build: `GODOT=~/.local/bin/godot ./tools/build-linux.sh` → `build/linux/Firebreak.x86_64` and `build/Firebreak/`.
 - Packages: `./packaging/build_linux.sh 0.5.0` → `dist/` (tar.gz, .deb; AppImage if appimagetool is present). `./tools/package-release.sh` exports and packs. `./tools/build-snap.sh` packs `firebreak-game` from the .deb (does not upload).
 - Play: `./play.sh` (runs the exported build). Editor: `~/.local/bin/godot -e --path .`.
