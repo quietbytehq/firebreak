@@ -3,6 +3,8 @@ extends SceneTree
 const Dialogue := preload("res://scripts/dialogue.gd")
 const StageSim := preload("res://scripts/stage_sim.gd")
 const StageView := preload("res://scripts/stage_view.gd")
+const StageData := preload("res://scripts/stage_data.gd")
+const UiStyle := preload("res://scripts/ui_style.gd")
 var checks := 0
 var failures := 0
 func check(ok: bool, label: String) -> void:
@@ -17,6 +19,28 @@ func run() -> void:
 	check(d.speaker() == "Rayan" and d.text() != "", "stage 1 opens with a Rayan line")
 	check(Dialogue.PLATE.position.y + Dialogue.PLATE.size.y < 250.0, "radio plate stays above the y=280 banners")
 	check(Dialogue.PLATE.position.y >= 90.0, "radio plate sits below the top HUD")
+	var font = UiStyle.font("bold")
+	check(font != null, "title font loads")
+	for n in [1, 2, 3]:
+		var st := StageData.load_stage(n)
+		var title := StageView.title_card_rect(str(st.get("name", "")), str(st.get("subtitle", "")), font)
+		check(title.size.x > 0.0 and title.size.y > 0.0, "stage %d title card has a rect" % n)
+		check(not Dialogue.PLATE.intersects(title), "stage %d radio plate does not overlap the title card (plate=%s title=%s)" % [n, Dialogue.PLATE, title])
+		check(Dialogue.PLATE.end.x <= title.position.x - 8.0, "stage %d radio plate stays left of the title with a gap (plate_right=%.0f title_left=%.0f)" % [n, Dialogue.PLATE.end.x, title.position.x])
+	# Holding the plate during the title does not burn the opening line's life.
+	var hold := Dialogue.new()
+	hold.load_data()
+	hold.reset(1)
+	var before := hold.text()
+	var life0 := float(hold.current.get("life", 0.0))
+	var sim_hold := StageSim.new()
+	check(sim_hold.setup(1, 3), "hold sim starts")
+	sim_hold.stage.ambient = []; sim_hold.stage.waves = []
+	hold.step(1.0, sim_hold, true)
+	check(hold.text() == before, "held radio keeps the opening line")
+	check(absf(float(hold.current.get("life", 0.0)) - life0) < 0.001, "held radio does not burn line life")
+	hold.step(1.0, sim_hold, false)
+	check(float(hold.current.get("life", 0.0)) < life0, "radio life ticks once the title has gone")
 	var sim := StageSim.new()
 	check(sim.setup(1, 3), "sim starts")
 	sim.stage.ambient = []; sim.stage.waves = []

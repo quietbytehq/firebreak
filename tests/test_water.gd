@@ -29,6 +29,12 @@ func run() -> void:
 	_river_and_dune_audit()
 	_no_dry_feet_on_water()
 	_harbour_near_wades()
+	_far_horizon_wades()
+	check(not SpriteArt.outline_boost({"type": "rifleman", "band": "near", "skin": ""}), "near River Village riflemen use the baked outline only")
+	check(SpriteArt.outline_boost({"type": "rifleman", "band": "mid", "skin": ""}), "mid River Village riflemen get a screen-space outline")
+	check(SpriteArt.outline_boost({"type": "rifleman", "band": "far", "skin": ""}), "far River Village riflemen get a screen-space outline")
+	check(SpriteArt.outline_boost({"type": "mg", "band": "mid", "skin": ""}), "mid River Village MG nests get a screen-space outline")
+	check(not SpriteArt.outline_boost({"type": "rifleman", "band": "far", "skin": "coral_"}), "Coral Coast skins keep their baked outline")
 	print("Water: ", checks, " checks, ", failures, " failures")
 	quit(0 if failures == 0 else 1)
 
@@ -105,7 +111,7 @@ func _no_dry_feet_on_water() -> void:
 		var dry_on_water := 0
 		var sampled := 0
 		var waders := 0
-		for band in ["near", "mid"]:
+		for band in ["near", "mid", "far"]:
 			var x := 20.0
 			while x <= 3820.0:
 				var place := Ground.on_ground(sim.stage, band, x) or Ground.in_water(sim.stage, band, x, "rifleman") or Ground.water_under_or_behind(sim.stage, band, x, "rifleman")
@@ -125,7 +131,7 @@ func _no_dry_feet_on_water() -> void:
 					sim.entities.erase(e)
 				x += 40.0
 		check(sampled > 0, "stage %d has near/mid placement samples" % n)
-		check(dry_on_water == 0, "stage %d: no near/mid rifleman has water under or behind its feet unless wading (%d)" % [n, dry_on_water])
+		check(dry_on_water == 0, "stage %d: no rifleman has water under or behind its feet unless wading (%d)" % [n, dry_on_water])
 		if n == 3:
 			check(waders > 0, "Coral Coast has at least one wading sample on the audit grid")
 	# A Dune Sea near figure on the sand bank in front of the oasis stays dry.
@@ -168,4 +174,30 @@ func _harbour_near_wades() -> void:
 		elif Ground.water_under_or_behind(sim.stage, "near", p.x, "rifleman") == false and p.x >= 1890.0:
 			dry_picks += 1
 	check(dry_picks == 0, "harbour combat picks do not choose a dry near site on the wet parapet (%d)" % dry_picks)
+
+
+func _far_horizon_wades() -> void:
+	# Opening-bay far figures used to stand on the sea (the left far land
+	# span ran out over open water). They must wade, or stand on the harbour
+	# far shore only.
+	var sim = fresh(3)
+	sim.camera_x = 0.0
+	check(not Ground.on_ground(sim.stage, "far", 409.0), "Coral far x=409 is not dry land")
+	check(not Ground.on_ground(sim.stage, "far", 524.0), "Coral far x=524 is not dry land")
+	for x in [409.0, 524.0, 800.0, 1183.0, 1324.0]:
+		check(Ground.water_under_or_behind(sim.stage, "far", x, "rifleman"), "Coral far x=%.0f has water under the feet" % x)
+		var e: Dictionary = sim.spawn("rifleman", "far", {"world_x": x})
+		check(not e.is_empty() and bool(e.get("wading", false)), "a far rifleman at x=%.0f wades" % x)
+		if e.is_empty():
+			continue
+		check(float(e.get("submerge", 0.0)) >= 0.4, "far wader at x=%.0f is waist-deep" % x)
+		var wy := Ground.water_y(sim.stage, x, "far")
+		check(absf(e.y - wy) <= 8.0, "far wader at x=%.0f contacts the far waterline (y=%.1f, water=%.1f)" % [x, e.y, wy])
+		sim.entities.erase(e)
+	# The harbour far shore stays dry land.
+	check(Ground.on_ground(sim.stage, "far", 2500.0), "Coral harbour far shore at x=2500 is land")
+	var dry: Dictionary = sim.spawn("rifleman", "far", {"world_x": 2500.0})
+	check(not dry.is_empty() and not bool(dry.get("wading", false)), "a far rifleman on the harbour shore stays dry")
+	if not dry.is_empty():
+		sim.entities.erase(dry)
 

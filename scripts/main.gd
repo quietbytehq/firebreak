@@ -464,7 +464,8 @@ func _process(delta: float) -> void:
 	if not qa.has("run") and Input.is_action_just_pressed("airstrike"):
 		try_airstrike()
 	if dialogue:
-		dialogue.step(dt, sim)
+		var hold_radio := view != null and float(view.title_card) > 0.0
+		dialogue.step(dt, sim, hold_radio)
 	sim.step(dt)
 	_update_loops()
 	if qa.has("run"):

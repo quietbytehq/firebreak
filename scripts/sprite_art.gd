@@ -121,6 +121,39 @@ static func draw_rising(ci: CanvasItem, name: String, pos: Vector2, k: float, fa
 	ci.draw_texture_rect_region(t, Rect2(-m[2], -cut, m[0], cut), Rect2(0, 0, m[0], cut), mod)
 	ci.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
+## Stage 1 baked outlines are sized for the near band, so they shrink below a
+## pixel at mid and far. A short screen-space ring keeps a ~2px white edge at
+## those bands, matching the on-screen width of Dune Sea and Coral Coast
+## (whose larger masters already hold that width). Near figures stay baked-only.
+const OUTLINE_MIN_WHITE := 2.2
+const OUTLINE_MIN_DARK := 1.1
+
+static func outline_boost(e: Dictionary) -> bool:
+	if str(e.get("band", "")) == "near":
+		return false
+	# Only River Village skins. Prefixed dune/coral/coast art already reads.
+	if str(e.get("skin", "")) != "":
+		return false
+	return str(e.type) in ["rifleman", "paratrooper", "mg"]
+
+static func _outline_ring(ci: CanvasItem, name: String, pos: Vector2, k: float, facing: float, col: Color, frac: float, radius: float) -> void:
+	for i in 16:
+		var off := Vector2.from_angle(TAU * float(i) / 16.0) * radius
+		if frac < 1.0:
+			draw_rising(ci, name, pos + off, k, facing, col, frac)
+		else:
+			draw(ci, name, pos + off, k, facing, col)
+
+static func draw_sticker(ci: CanvasItem, name: String, pos: Vector2, k: float, facing: float, mod: Color, frac: float = 1.0, boost: bool = false) -> void:
+	if boost and mod.a > 0.0:
+		var a := mod.a
+		_outline_ring(ci, name, pos, k, facing, Color(1.0, 1.0, 1.0, a), frac, OUTLINE_MIN_WHITE + OUTLINE_MIN_DARK)
+		_outline_ring(ci, name, pos, k, facing, Color(0.07, 0.05, 0.04, a), frac, OUTLINE_MIN_DARK)
+	if frac < 1.0:
+		draw_rising(ci, name, pos, k, facing, mod, frac)
+	else:
+		draw(ci, name, pos, k, facing, mod)
+
 ## Splash ring at the waterline. `pos` is the water surface under the figure.
 static func ripple(ci: CanvasItem, pos: Vector2, scale: float, alpha: float, t: float, id: int) -> void:
 	var pulse := 0.5 + 0.5 * sin(t * 4.2 + float(id))
@@ -267,16 +300,17 @@ static func soldier(ci: CanvasItem, e: Dictionary, pos: Vector2, t: float) -> vo
 		return
 	var k := _soldier_k(e, kneel)
 	var f := front_flip(e)
+	var boost := outline_boost(e)
 	if is_wading(e):
 		var wet: float = float(e.get("submerge", 0.48))
 		ripple(ci, pos, k, e.alpha, t, int(e.get("id", 0)))
-		draw_rising(ci, frame, pos, k, f, mod, 1.0 - wet)
+		draw_sticker(ci, frame, pos, k, f, mod, 1.0 - wet, boost)
 	else:
 		shadow(ci, pos, 60.0 * k, e.alpha * float(e.rise))
 		if e.state in ["rise", "duck"] or e.rise < 1.0:
-			draw_rising(ci, frame, pos, k, f, mod, e.rise)
+			draw_sticker(ci, frame, pos, k, f, mod, e.rise, boost)
 		else:
-			draw(ci, frame, pos, k, f, mod)
+			draw_sticker(ci, frame, pos, k, f, mod, 1.0, boost)
 	var at := muzzle_point(e, pos)
 	if e.muzzle > 0.0:
 		front_flash(ci, at, 34.0 * float(e.scale) + 6.0, e.alpha, e.id)
@@ -314,7 +348,7 @@ static func mg_nest(ci: CanvasItem, e: Dictionary, pos: Vector2, t: float) -> vo
 		var fade: float = clampf(e.timer / 0.6, 0.0, 1.0)
 		mod = Color(0.45, 0.4, 0.38, fade)
 	var firing: bool = e.state == "burst" and e.muzzle > 0.0
-	draw(ci, "mg_front_flash" if firing else "mg_front", pos, k, front_flip(e), mod)
+	draw_sticker(ci, "mg_front_flash" if firing else "mg_front", pos, k, front_flip(e), mod, 1.0, outline_boost(e))
 	var at := muzzle_point(e, pos)
 	if firing:
 		front_flash(ci, at, 46.0 * float(e.scale) + 8.0, e.alpha, e.id)

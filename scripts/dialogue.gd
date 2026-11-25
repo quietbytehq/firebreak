@@ -5,8 +5,9 @@ extends RefCounted
 const PATH := "res://data/dialogue.json"
 const LINE_LIFE := 3.4
 const CHATTER_EVERY := 22.0
-## Radio plate sits under the top HUD and well above the y=280 banners.
-const PLATE := Rect2(36, 118, 700, 86)
+## Radio plate sits under the top HUD, left of the stage title, and above the y=280 banners.
+## Width stays left of the longest title ("River Village" at 86px + outline).
+const PLATE := Rect2(36, 118, 620, 88)
 
 var data: Dictionary = {}
 var current: Dictionary = {}
@@ -125,8 +126,12 @@ func offer_airstrike_empty() -> void:
 	if t != "":
 		push_line("Rayan", t, "hint")
 
-func step(dt: float, sim) -> void:
+func step(dt: float, sim, hold_display: bool = false) -> void:
 	if sim == null or sim.state != "playing" or sim.paused:
+		return
+	# Hold the current line (and the chatter clock) while the stage title
+	# card is up, so the plate never shares the screen with the name.
+	if hold_display:
 		return
 	if not current.is_empty():
 		current.life = float(current.life) - dt

@@ -29,10 +29,18 @@ game's public releases.
   a shadow marker. The player can shoot those grenades in the air. A landed
   grenade hurts only the player, never civilians. Both follow the water and
   land rules and face the player.
-- Stage 1 (River Village) enemy sticker outlines were already in the master
-  art; Coral Coast riflemen and the pier gunner now get the same 1px dark +
-  2px white outline, and a leftover magenta matte was cleaned off the pier
-  gunner. In-game screenshots confirm Stage 1 still shows the white edge.
+- Stage 1 (River Village) mid and far riflemen, and the MG nest, now keep a
+  visible ~2px white sticker outline at every depth band. The baked edge was
+  sized for the near band, so it shrank below a pixel farther out. Mid and far
+  River Village figures get a screen-space ring to match the on-screen width
+  already seen on Dune Sea and Coral Coast. Near figures stay baked-only.
+- The radio plate no longer covers the stage title. The opening line waits
+  until the title card has faded, and the plate is narrower so it stays left
+  of the longest name ("River Village"). A test asserts the two rects do not
+  overlap, and callouts are pushed off the plate.
+- Far Coral Coast riflemen on the opening bay now wade waist-deep. The left
+  far "land" span had run out over open water, so figures near the horizon
+  stood on the sea. That span is gone; only the harbour far shore stays dry.
 
 ## 0.5.0 — 24 November 2026
 

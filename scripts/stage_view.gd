@@ -6,6 +6,8 @@ extends Node2D
 
 const Art := preload("res://scripts/art.gd")
 const SpriteArt := preload("res://scripts/sprite_art.gd")
+const Dialogue := preload("res://scripts/dialogue.gd")
+const UiStyle := preload("res://scripts/ui_style.gd")
 const LightShader := preload("res://shaders/entity_light.gdshader")
 const HeatShader := preload("res://shaders/heat_shimmer.gdshader")
 const LAYERS := ["far", "mid", "sky", "near", "pickups"]
@@ -41,6 +43,12 @@ static func clamp_callout(text: String, pos: Vector2, size: int, font: Font = nu
 	if above_bottom > y_min:
 		y_max = minf(y_max, above_bottom)
 	var y := clampf(pos.y, y_min, maxf(y_min, y_max))
+	# Keep the text off the radio plate (left, under the HUD).
+	var plate := Dialogue.PLATE
+	var cr := Rect2(x - half, y - ascent - CALLOUT_OUTLINE, w + 2.0 * CALLOUT_OUTLINE, ascent + descent + 2.0 * CALLOUT_OUTLINE)
+	if cr.intersects(plate):
+		y = plate.end.y + CALLOUT_MARGIN + ascent + CALLOUT_OUTLINE
+		y = clampf(y, y_min, maxf(y_min, y_max))
 	return Vector2(x, y)
 
 
@@ -382,6 +390,32 @@ func _emit_flight_smoke(delta: float) -> void:
 			for i in n:
 				_add({"p": p + Vector2(randf_range(-5, 5), randf_range(-5, 5)), "v": Vector2(randf_range(-16, 16), randf_range(-24, 8)), "life": randf_range(0.35, 0.65), "max": 0.65, "size": randf_range(8, 16), "col": Color(0.48, 0.46, 0.42, 0.26), "grow": 28.0, "drag": 1.6, "grav": -16.0})
 
+## Bounding box of the centred stage name and subtitle, including outlines.
+## Used to keep the radio plate and tests from sitting on the letters.
+static func title_card_rect(name: String, subtitle: String, font: Font = null) -> Rect2:
+	if name == "":
+		return Rect2()
+	if font == null:
+		font = UiStyle.font("bold")
+	if font == null:
+		return Rect2()
+	const NS := 86
+	const SS := 32
+	const NO := 12
+	const SO := 8
+	var nw: float = font.get_string_size(name, HORIZONTAL_ALIGNMENT_LEFT, -1, NS).x
+	var left := 960.0 - nw * 0.5 - NO
+	var right := 960.0 + nw * 0.5 + NO
+	var top := 200.0 - font.get_ascent(NS) - NO
+	var bottom := 200.0 + font.get_descent(NS) + NO
+	if subtitle != "":
+		var sw: float = font.get_string_size(subtitle, HORIZONTAL_ALIGNMENT_LEFT, -1, SS).x
+		left = minf(left, 960.0 - sw * 0.5 - SO)
+		right = maxf(right, 960.0 + sw * 0.5 + SO)
+		top = minf(top, 268.0 - font.get_ascent(SS) - SO)
+		bottom = maxf(bottom, 268.0 + font.get_descent(SS) + SO)
+	return Rect2(left, top, right - left, bottom - top)
+
 func _draw_title_card(ci: Node2D, font: Font) -> void:
 	if title_card <= 0.0 or sim == null:
 		return
@@ -602,8 +636,11 @@ func _draw_enemy_nades(ci: Node2D) -> void:
 func _draw_radio(ci: Node2D, font: Font) -> void:
 	if dialogue == null or dialogue.text() == "":
 		return
-	# Stay under the top HUD and well clear of the y=280 banners.
-	var plate := Rect2(36, 118, 720, 88)
+	# The title card has the screen first; the line waits until it fades.
+	if title_card > 0.0:
+		return
+	# Stay under the top HUD, left of the title, and above the y=280 banners.
+	var plate := Dialogue.PLATE
 	ci.draw_rect(plate, Color(0.06, 0.05, 0.04, 0.72))
 	ci.draw_rect(plate.grow(-1.0), Color(1.0, 0.78, 0.42, 0.45), false, 1.5)
 	var a := clampf(float(dialogue.current.get("life", 1.0)) / 0.4, 0.0, 1.0)
