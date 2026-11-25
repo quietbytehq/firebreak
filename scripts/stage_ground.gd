@@ -179,7 +179,7 @@ static func has_water(stage: Dictionary) -> bool:
 	return not water_spans(stage).is_empty() or not _points(water_section(stage)).is_empty()
 
 ## Boats, vehicles, pickups and pier crews are never "wading" infantry.
-const DRY_TYPES := ["speedboat", "gunboat", "heli", "food", "powerup", "truck", "technical", "convoy", "jeep", "camel", "pier_gunner"]
+const DRY_TYPES := ["speedboat", "gunboat", "heli", "food", "powerup", "truck", "technical", "convoy", "jeep", "camel", "pier_gunner", "grenadier"]
 
 static func in_water(stage: Dictionary, band: String, x: float, type: String = "") -> bool:
 	if type in DRY_TYPES:

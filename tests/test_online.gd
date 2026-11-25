@@ -108,5 +108,20 @@ func run() -> void:
 	main.queue_free()
 	await process_frame
 
+	# GLOBAL SCORES: default-browser command, snap uses xdg-open for the portal.
+	var cmd := Online.open_command()
+	check(cmd.size() >= 2 and str(cmd[1]).begins_with("https://") and str(cmd[1]).contains(Online.SITE), "site URL is https to the public board")
+	var had_snap := OS.has_environment("SNAP")
+	var old_snap := OS.get_environment("SNAP") if had_snap else ""
+	OS.set_environment("SNAP", "/snap/firebreak-game/current")
+	var snap_cmd := Online.open_command()
+	check(snap_cmd[0] == "xdg-open", "inside a snap the link uses xdg-open so the desktop portal opens the default browser")
+	if had_snap:
+		OS.set_environment("SNAP", old_snap)
+	else:
+		OS.unset_environment("SNAP")
+	var host_cmd := Online.open_command()
+	check(host_cmd[0] == "shell_open", "outside a snap the link uses OS.shell_open")
+
 	print("Online and campaign scores: ", checks, " checks, ", failures, " failures")
 	quit(0 if failures == 0 else 1)

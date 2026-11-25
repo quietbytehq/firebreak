@@ -79,6 +79,8 @@ func run() -> void:
 		await frames(1)
 		check(main.sim.slot == n[1], "key %s selects slot %d" % [OS.get_keycode_string(n[0]), n[1] + 1])
 	check(main.hud.ammo_text(0).ends_with("∞") and main.hud.ammo_text(2).begins_with("×"), "bar shows pistol unlimited and special count")
+	check(Hud.airstrike_hit(Hud.airstrike_rect().get_center()), "air-strike panel is clickable")
+	check(Hud.blocks_fire(Hud.airstrike_rect().get_center()), "a click on the air-strike panel does not fire the gun")
 	main.queue_free()
 	await frames(2)
 	print("HUD click: ", checks, " checks, ", failures, " failures")

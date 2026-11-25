@@ -1,0 +1,65 @@
+{
+  "rayan": {
+    "stage_start": {
+      "1": "Village is hot. Watch the river line.",
+      "2": "Noon glare. Keep your eyes on the dunes.",
+      "3": "Bay's crowded. Boats, pier, and the town."
+    },
+    "low_health": [
+      "I'm hit — still in this.",
+      "Blood's up. Don't let them close.",
+      "Still standing. Finish it."
+    ],
+    "civilian_hit": [
+      "Watch your fire! They're locals.",
+      "Civilians in the mix — check your shots.",
+      "Hold it. Not them."
+    ],
+    "boss_appears": {
+      "3": "Gunboat in the harbour. Take it down."
+    },
+    "boss_down": {
+      "3": "She's going under. Bay is ours."
+    },
+    "low_ammo": [
+      "Running dry. Find a drop.",
+      "Mag's light. Make it count.",
+      "Almost out. Reload or grab ammo."
+    ],
+    "airstrike_ready": "Air strike ready — press E or middle-click.",
+    "airstrike_empty": "No air strikes left.",
+    "airstrike_called": "Air strike inbound!"
+  },
+  "radio": {
+    "1": [
+      "Command: River village is live. Spare the civilians.",
+      "Command: Movement on the far bank.",
+      "Command: Keep the lane clean. We're with you."
+    ],
+    "2": [
+      "Command: Dune stretch is wide open. Watch the heat haze.",
+      "Command: Convoy may cut the road. Stay sharp.",
+      "Command: Locals on the sand. Do not fire on them."
+    ],
+    "3": [
+      "Command: Coral Coast is a crossfire. Boats and the pier.",
+      "Command: Town's still occupied. Watch the boardwalk.",
+      "Command: Gunboat's the prize. Don't rush the harbour dry."
+    ]
+  },
+  "story": {
+    "1": [
+      {"t": 18, "text": "Command: Clear the village and push inland."},
+      {"t": 95, "text": "Rayan: They're falling back. Keep the pressure."}
+    ],
+    "2": [
+      {"t": 22, "text": "Command: Noon sun, long shots. Don't get pinned."},
+      {"t": 100, "text": "Rayan: Desert's thinning out. Almost through."}
+    ],
+    "3": [
+      {"t": 16, "text": "Command: Sweep the beach, then the town."},
+      {"t": 70, "text": "Rayan: Pier's a nest. I'll pick them off."},
+      {"t": 138, "text": "Command: Harbour's ahead. That's the gunboat."}
+    ]
+  }
+}

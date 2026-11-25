@@ -3,6 +3,37 @@
 All notable changes to Firebreak are listed here. Version numbers follow the
 game's public releases.
 
+## 0.5.1 — 25 November 2026
+
+- The GLOBAL SCORES link on the title screen opens the public board
+  (https://firebreak.quietbytehq.uk) in the default browser, using
+  `OS.shell_open` on the host and `xdg-open` from PATH inside the snap so the
+  desktop portal can open it. The snap lists the `desktop` and `desktop-legacy`
+  plugs as well as the gnome extension's auto-connected ones.
+- Air strike is fixed. Pressing E or middle-click had no effect when leftover
+  GUI focus (the name-entry LineEdit after Start) swallowed the key, because
+  the action was only handled in `_unhandled_input`. The action is now also
+  polled in `_process`, focus is released when a stage starts, and the AIR
+  STRIKE HUD panel is clickable. A short on-screen hint appears the first time
+  a strike is ready; the radio says so if none are left. `tools/README-player.md`
+  has a short how-to. One charge is still issued each stage; bindings were
+  already correct.
+- More on-screen dialogue on all stages, text only (no new voice, no ElevenLabs):
+  radio chatter, Rayan lines on stage start, low health, a civilian hit, the
+  gunboat appearing and going down, and low ammo, plus a few short story beats.
+  One line at a time, on a radio plate under the top HUD (y=118), never on the
+  y=280 banners, never blocking play.
+- Coral Coast has two new enemy types, with sticker-outlined art in the same
+  lineup style: a machete rusher who wades out of the shallows and charges,
+  dealing melee damage if not shot; and a pier grenadier who lobs grenades with
+  a shadow marker. The player can shoot those grenades in the air. A landed
+  grenade hurts only the player, never civilians. Both follow the water and
+  land rules and face the player.
+- Stage 1 (River Village) enemy sticker outlines were already in the master
+  art; Coral Coast riflemen and the pier gunner now get the same 1px dark +
+  2px white outline, and a leftover magenta matte was cleaned off the pier
+  gunner. In-game screenshots confirm Stage 1 still shows the white edge.
+
 ## 0.5.0 — 24 November 2026
 
 - Stage 3, Coral Coast, is playable. A Caribbean bay at golden hour: an open

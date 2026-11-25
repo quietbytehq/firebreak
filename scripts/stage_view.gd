@@ -45,6 +45,7 @@ static func clamp_callout(text: String, pos: Vector2, size: int, font: Font = nu
 
 
 var sim
+var dialogue
 var bg: Texture2D
 var bg_sprite: Sprite2D
 var dust_fade := 0.0
@@ -158,7 +159,7 @@ func _on_event(name: String, d: Dictionary) -> void:
 			var e: Dictionary = d.entity
 			if e.type in ["food", "powerup"]:
 				sparkle(d.pos, Color(0.6, 1, 0.5) if e.type == "food" else Color(1, 0.85, 0.3))
-			elif e.type in ["mg", "truck", "heli", "technical", "convoy", "sniper", "jeep", "speedboat", "pier_gunner", "gunboat"] and not d.get("gunner", false):
+			elif e.type in ["mg", "truck", "heli", "technical", "convoy", "sniper", "jeep", "speedboat", "pier_gunner", "gunboat", "rusher", "grenadier"] and not d.get("gunner", false):
 				sparks(d.pos, 6)
 			else:
 				dust(d.pos, 4, Color(0.5, 0.45, 0.35))
@@ -208,6 +209,11 @@ func _on_event(name: String, d: Dictionary) -> void:
 				var t0 := 0.5 + i * 0.05
 				bombs.append({"x0": x1 - 520.0, "y0": 150.0 + (i % 2) * 90.0, "x1": x1, "y1": randf_range(640.0, 960.0), "t0": t0, "t1": sim.AIRSTRIKE_IMPACT})
 			banner("AIR STRIKE INBOUND!", Vector2(960, 420), Color(1, 0.85, 0.3), 56, 1.6)
+		"enemy_grenade_land":
+			explosion(d.pos, 90.0, false)
+			shake = maxf(shake, 10.0)
+		"nade_shot":
+			sparkle(d.pos, Color(1.0, 0.85, 0.35))
 		"airstrike_impact":
 			screen_flash = 1.0
 			shake = maxf(shake, 34.0)
@@ -236,6 +242,10 @@ func _on_kill(d: Dictionary) -> void:
 		banner("BOAT DOWN", pos + Vector2(0, -90), Color(1.0, 0.75, 0.3), 46, 1.5)
 	elif e.type == "pier_gunner":
 		banner("PIER SILENCED", pos + Vector2(0, -90), Color(1.0, 0.82, 0.35), 46, 1.5)
+	elif e.type == "rusher":
+		banner("RUSHER DOWN", pos + Vector2(0, -90), Color(1.0, 0.82, 0.35), 40, 1.3)
+	elif e.type == "grenadier":
+		banner("GRENADIER DOWN", pos + Vector2(0, -90), Color(1.0, 0.82, 0.35), 40, 1.3)
 	elif e.type == "gunboat":
 		banner("GUNBOAT DOWN!", pos + Vector2(0, -90), Color(1.0, 0.7, 0.3), 52, 1.8)
 		shake = maxf(shake, 16.0)
@@ -438,6 +448,8 @@ func _draw_layer(ci: Node2D, layer: String) -> void:
 			"speedboat": SpriteArt.speedboat(ci, e, pos, t)
 			"gunboat": SpriteArt.gunboat(ci, e, pos, t)
 			"pier_gunner": SpriteArt.pier_gunner(ci, e, pos, t)
+			"rusher": SpriteArt.rusher(ci, e, pos, t)
+			"grenadier": SpriteArt.grenadier(ci, e, pos, t)
 			"truck":
 				Art.tint = Color(1, 1, 1); Art.haze = 0.0
 				Art.begin(ci, pos, e.scale, e.facing, 0.0, e.flash, e.alpha)
@@ -447,6 +459,7 @@ func _draw_layer(ci: Node2D, layer: String) -> void:
 func _draw_fx() -> void:
 	if sim == null: return
 	var ci := fx_node
+	_draw_enemy_nades(ci)
 	var dust := 0.0
 	if sim.has_method("dust_amount"):
 		dust = float(sim.dust_amount())
@@ -522,6 +535,7 @@ func _draw_fx() -> void:
 		ci.draw_string_outline(font, at - Vector2(w * 0.5, 0), q.text, HORIZONTAL_ALIGNMENT_LEFT, -1, sz, 8, Color(0, 0, 0, 0.8 * a))
 		ci.draw_string(font, at - Vector2(w * 0.5, 0), q.text, HORIZONTAL_ALIGNMENT_LEFT, -1, sz, Color(q.col, a))
 	_draw_title_card(ci, font)
+	_draw_radio(ci, font)
 	if screen_flash > 0.0:
 		ci.draw_rect(Rect2(-80, -80, 2080, 1240), Color(1, 0.85, 0.6, 0.45 * screen_flash))
 
@@ -573,3 +587,29 @@ func _draw_incoming(ci: Node2D, _near_only: bool = false) -> void:
 		elif side > 0.35:
 			ci.draw_polygon(PackedVector2Array([Vector2(1920, 260), Vector2(1850, 300), Vector2(1850, 1080), Vector2(1920, 1080)]), PackedColorArray([col, clear, clear, col]))
 		ci.draw_polygon(PackedVector2Array([Vector2(cx - 420, 1080), Vector2(cx - 300, 1010), Vector2(cx + 300, 1010), Vector2(cx + 420, 1080)]), PackedColorArray([col, clear, clear, col]))
+
+func _draw_enemy_nades(ci: Node2D) -> void:
+	if not sim.has_method("nade_screen_pos"):
+		return
+	for g in sim.enemy_nades:
+		if str(g.get("state", "")) != "fly":
+			continue
+		var pos: Vector2 = sim.nade_screen_pos(g)
+		var dest: Vector2 = g.to_screen
+		var u := clampf(float(g.t) / maxf(0.05, float(g.dur)), 0.0, 1.0)
+		SpriteArt.enemy_grenade(ci, pos, dest, u, 1.0)
+
+func _draw_radio(ci: Node2D, font: Font) -> void:
+	if dialogue == null or dialogue.text() == "":
+		return
+	# Stay under the top HUD and well clear of the y=280 banners.
+	var plate := Rect2(36, 118, 720, 88)
+	ci.draw_rect(plate, Color(0.06, 0.05, 0.04, 0.72))
+	ci.draw_rect(plate.grow(-1.0), Color(1.0, 0.78, 0.42, 0.45), false, 1.5)
+	var a := clampf(float(dialogue.current.get("life", 1.0)) / 0.4, 0.0, 1.0)
+	var sp: String = dialogue.speaker()
+	var body: String = dialogue.text()
+	ci.draw_string_outline(font, plate.position + Vector2(16, 30), sp, HORIZONTAL_ALIGNMENT_LEFT, -1, 22, 5, Color(0, 0, 0, 0.8 * a))
+	ci.draw_string(font, plate.position + Vector2(16, 30), sp, HORIZONTAL_ALIGNMENT_LEFT, -1, 22, Color(1.0, 0.82, 0.45, a))
+	ci.draw_string_outline(font, plate.position + Vector2(16, 62), body, HORIZONTAL_ALIGNMENT_LEFT, plate.size.x - 28, 24, 5, Color(0, 0, 0, 0.8 * a))
+	ci.draw_string(font, plate.position + Vector2(16, 62), body, HORIZONTAL_ALIGNMENT_LEFT, plate.size.x - 28, 24, Color(1, 0.93, 0.82, a))

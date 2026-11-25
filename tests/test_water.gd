@@ -62,6 +62,9 @@ func _wading_on_coral() -> void:
 	check(box.end.y <= e.y + 2.0, "the wading hitbox does not include legs under the water")
 	check(box.position.y < e.y, "the dry torso stays above the waterline")
 	check(SpriteArt.is_wading(e), "art treats the rifleman as wading")
+	var rush: Dictionary = sim.spawn("rusher", "mid", {"world_x": p.x, "world_y": p.y})
+	check(not rush.is_empty() and bool(rush.get("wading", false)), "a mid-bay rusher is marked wading")
+	check(float(rush.get("submerge", 0.0)) >= 0.4, "the rusher is waist-deep")
 	# A planted land spawn on the mid beach stays dry.
 	sim.camera_x = 0.0
 	var land: Dictionary = sim.spawn("rifleman", "mid", {"world_x": 400.0})
@@ -78,6 +81,11 @@ func _boats_stay_dry() -> void:
 	check(not gun.is_empty() and not bool(gun.get("wading", false)), "the gunboat is not a wading figure")
 	var pier: Dictionary = sim.spawn("pier_gunner", "mid", {"world_x": 2280.0, "world_y": 800.0, "scale": 0.5})
 	check(not pier.is_empty() and not bool(pier.get("wading", false)), "a pier gunner stays on the planks")
+	var gre: Dictionary = sim.spawn("grenadier", "mid", {"world_x": 1700.0, "world_y": 710.0, "scale": 0.5})
+	check(not gre.is_empty() and not bool(gre.get("wading", false)), "a pier grenadier stays on the planks")
+	check(str(gre.get("path", "")) == "pier" or gre.get("planted", false), "the grenadier is on the pier path")
+	var goff := Ground.feet_off(sim.stage, gre)
+	check(goff >= 0.0 and goff <= Ground.feet_slack(gre) + 2.0, "grenadier feet sit on the pier (%.2f)" % goff)
 
 func _river_and_dune_audit() -> void:
 	# Anyone placed in the known water gaps must wade, not stand on the surface.

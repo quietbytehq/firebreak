@@ -397,7 +397,7 @@
         0.85,
         1.45
       ],
-      "max_alive": 10,
+      "max_alive": 8,
       "bands": {
         "far": 0.32,
         "mid": 0.48,
@@ -450,6 +450,33 @@
         "cash_small": 0.18,
         "ammo": 0.12
       }
+    },
+    {
+      "type": "rusher",
+      "from": 8.0,
+      "until": 165.0,
+      "every": [
+        7.0,
+        12.0
+      ],
+      "max_alive": 2,
+      "bands": {
+        "mid": 0.7,
+        "near": 0.3
+      }
+    },
+    {
+      "type": "grenadier",
+      "from": 20.0,
+      "until": 155.0,
+      "every": [
+        16.0,
+        24.0
+      ],
+      "max_alive": 1,
+      "bands": {
+        "mid": 1.0
+      }
     }
   ],
   "waves": [
@@ -466,6 +493,13 @@
       "band": "mid",
       "count": 3,
       "interval": 0.6
+    },
+    {
+      "t": 10.0,
+      "type": "rusher",
+      "band": "mid",
+      "count": 2,
+      "interval": 0.7
     },
     {
       "t": 12.0,
@@ -485,6 +519,14 @@
       "kind": "mango"
     },
     {
+      "t": 24.0,
+      "type": "grenadier",
+      "band": "mid",
+      "world_x": 1700,
+      "world_y": 710,
+      "scale": 0.5
+    },
+    {
       "t": 28.0,
       "type": "rifleman",
       "band": "mid",
@@ -496,6 +538,13 @@
       "type": "rifleman",
       "band": "far",
       "count": 3,
+      "interval": 0.65
+    },
+    {
+      "t": 42.0,
+      "type": "rusher",
+      "band": "mid",
+      "count": 2,
       "interval": 0.65
     },
     {
@@ -524,6 +573,14 @@
       "kind": "coconut"
     },
     {
+      "t": 74.0,
+      "type": "grenadier",
+      "band": "mid",
+      "world_x": 2100,
+      "world_y": 775,
+      "scale": 0.48
+    },
+    {
       "t": 78.0,
       "type": "rifleman",
       "band": "mid",
@@ -536,6 +593,13 @@
       "band": "near",
       "count": 2,
       "interval": 0.7
+    },
+    {
+      "t": 92.0,
+      "type": "rusher",
+      "band": "near",
+      "count": 2,
+      "interval": 0.6
     },
     {
       "t": 96.0,
@@ -556,6 +620,14 @@
       "band": "mid",
       "count": 3,
       "interval": 0.5
+    },
+    {
+      "t": 112.0,
+      "type": "grenadier",
+      "band": "mid",
+      "world_x": 1520,
+      "world_y": 680,
+      "scale": 0.46
     },
     {
       "t": 118.0,
@@ -593,6 +665,13 @@
       "band": "mid",
       "count": 3,
       "interval": 0.45
+    },
+    {
+      "t": 150.0,
+      "type": "rusher",
+      "band": "mid",
+      "count": 2,
+      "interval": 0.5
     },
     {
       "t": 155.0,

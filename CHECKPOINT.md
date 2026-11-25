@@ -1,3 +1,19 @@
+# CHECKPOINT — Firebreak 0.5.1
+
+Updated: 2026-11-25 (PKT, UTC+5)
+
+## v0.5.1 — global scores, air strike, dialogue, Coral Coast rusher and grenadier
+- Version is 0.5.1. The published tag `v0.5.0` (commit `1df0ffc`, tag object `62edcf0`) must not be moved; it is already on origin and on snap `latest/edge` as revision 4. This round is a new local annotated tag `v0.5.1` only. Do not move `v0.3.7`, `v0.4.0`, `v0.4.1` or `v0.5.0`. Do not push until the owner asks.
+- GLOBAL SCORES uses `Online.open_site()`: `xdg-open` inside a snap (desktop portal), otherwise `OS.shell_open`. Snapcraft lists `desktop` and `desktop-legacy` plugs. The dev build was checked on the laptop; the installed snap was not refreshed (no sudo). What could not be verified is noted in the handoff.
+- Air strike root cause: leftover GUI focus after the name prompt ate E / middle-click in `_unhandled_input`. Bindings and the 1-per-stage charge were already correct. Fix: poll the action in `_process`, `gui_release_focus()` on stage start and name confirm, clickable HUD panel, first-time hint, empty-charge line, README how-to, and a test that calls the strike and checks it hits enemies (and that E still works with a focused LineEdit).
+- Text-only dialogue on all stages (radio, Rayan event lines, short story beats). No new voice, no ElevenLabs. Radio plate at y=118, never on the y=280 banners, never blocks play.
+- New Coral Coast enemies: machete rusher (wades, charges, melee if not shot) and pier grenadier (lobs shootable grenades with a shadow marker). Water / pier / facing tests cover both. White sticker outlines baked on Coral riflemen, the pier gunner (magenta cleaned), and the new art. Stage 1 masters already had the outline; confirmed in a gameplay shot.
+- Tests: 30 suites, 1,961 checks, 0 failures (`./tools/test.sh`). New suites `tests/test_airstrike.gd` (16) and `tests/test_dialogue.gd` (9). Headless `tools/smoke_v050b.gd`: SMOKE OK, quota 128, continue retry leaves 2 diamonds, gunboat cleared with reason `boss` (camera 1920, gun_y 791, HP 33).
+- Shots: `/workspace/firebreak_shots/v050d/` — `stage1_outlines`, `airstrike`, `dialogue`, `rusher`, `grenadier` (PNG + JPG + `_preview.jpg`). Captured on the laptop at 1797×1011 (the window could not be forced to 1920×1080; nvidia-drm did not attach, Intel Mesa). Visual check: Stage 1 riflemen and the MG nest show a clear white sticker outline; the air strike shows jets, ground blasts and “AIR STRIKE INBOUND!”; the radio plate at y=118 shows a Rayan line under the top HUD and clear of the y=280 banners; Coral Coast has a waist-deep machete rusher in the shallows and a grenadier on the pier planks.
+- GLOBAL SCORES: `Online.open_command` is tested (xdg-open when SNAP is set, `OS.shell_open` otherwise). The installed snap is still 0.5.0 rev 4 on `latest/edge` (stable is 0.4.0 rev 3). `desktop` and `desktop-legacy` are already connected. This session could not enter `snap run --shell` (snap-confine capabilities). The 0.5.1 snap was not installed (no sudo), so the new SNAP `xdg-open` path was not live-clicked in the installed snap.
+- Replaced files: `_to_delete/replaced_v050d/`. Local annotated tag `v0.5.1` only. Do not push until the owner asks.
+
+---
 # CHECKPOINT — Firebreak 0.5.0
 
 Updated: 2026-11-25 (PKT, UTC+5)

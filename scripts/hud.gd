@@ -41,6 +41,18 @@ static func slot_at(pos: Vector2) -> int:
 		if slot_rect(i).has_point(pos): return i
 	return -1
 
+const AIRSTRIKE_RECT := Rect2(1618, 940, 286, 122)
+
+static func airstrike_rect() -> Rect2:
+	return AIRSTRIKE_RECT
+
+static func airstrike_hit(pos: Vector2) -> bool:
+	return AIRSTRIKE_RECT.has_point(pos)
+
+## True when a click should not fire or throw (weapon bar or air-strike panel).
+static func blocks_fire(pos: Vector2) -> bool:
+	return slot_at(pos) >= 0 or airstrike_hit(pos)
+
 static func icon_for(id: String) -> Texture2D:
 	var path := ICON_DIR + id + ".png"
 	return load(path) if ResourceLoader.exists(path) else null

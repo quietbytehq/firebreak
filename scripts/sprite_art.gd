@@ -32,7 +32,7 @@ const VILLAGER_NATIVE_KIND := {
 static func villager_native(e: Dictionary) -> float:
 	return float(VILLAGER_NATIVE_KIND.get(str(e.get("kind", "farmer")), VILLAGER_NATIVE))
 ## Hitbox height each reference frame is scaled to (matches StageSim.SIZES).
-const TARGET_H := {"rifleman": 360.0, "kneel": 250.0, "villager": 340.0, "mg": 240.0, "paratrooper": 350.0, "sniper": 240.0, "camel": 360.0, "pier_gunner": 250.0}
+const TARGET_H := {"rifleman": 360.0, "kneel": 250.0, "villager": 340.0, "mg": 240.0, "paratrooper": 350.0, "sniper": 240.0, "camel": 360.0, "pier_gunner": 250.0, "rusher": 360.0, "grenadier": 250.0}
 ## On-screen height of the whole descending paratrooper (canopy to boots) at scale 1.
 const PARA_TOTAL_H := 712.0
 ## Every frame an enemy uses while aiming or firing: all face the player.
@@ -42,7 +42,8 @@ const FRONT_FRAMES := ["rifleman_front_aim", "rifleman_front_fire", "rifleman_tq
 	"dune_rifleman_front_aim", "dune_rifleman_front_fire", "dune_rifleman_tq_aim", "dune_rifleman_tq_fire",
 	"dune_rifleman_kneel_front", "dune_rifleman_kneel_front_flash", "dune_sniper", "dune_sniper_flash",
 	"coral_rifleman_front_aim", "coral_rifleman_front_fire", "coral_rifleman_tq_aim", "coral_rifleman_tq_fire",
-	"coral_rifleman_kneel_front", "coral_rifleman_kneel_front_flash", "coast_pier_gunner"]
+	"coral_rifleman_kneel_front", "coral_rifleman_kneel_front_flash", "coast_pier_gunner",
+	"coast_rusher_charge", "coast_grenadier_aim", "coast_grenadier_throw"]
 const PICKUP_ITEM := {
 	"rice": "food_rice", "fruit": "food_crate", "canteen": "food_canteen", "ration": "food_medkit",
 	"dates": "food_dates", "bread": "food_bread", "waterskin": "food_waterskin",
@@ -227,6 +228,12 @@ static func muzzle_point(e: Dictionary, pos: Vector2) -> Vector2:
 		"pier_gunner":
 			var kp: float = scale_for(e, "coast_pier_gunner", TARGET_H.pier_gunner) if tex("coast_pier_gunner") != null else float(e.scale)
 			return pos + Vector2(40.0 * kp * front_flip(e), -150.0 * kp)
+		"rusher":
+			var kr: float = scale_for(e, "coast_rusher_charge", TARGET_H.rusher) if tex("coast_rusher_charge") != null else float(e.scale)
+			return pos + Vector2(48.0 * kr * front_flip(e), -220.0 * kr)
+		"grenadier":
+			var kg: float = scale_for(e, "coast_grenadier_aim", TARGET_H.grenadier) if tex("coast_grenadier_aim") != null else float(e.scale)
+			return pos + Vector2(36.0 * kg * front_flip(e), -160.0 * kg)
 		"heli":
 			var kh: float = e.scale
 			return pos + Vector2(MUZZLE.heli.x * kh * e.facing, MUZZLE.heli.y * kh)
@@ -470,3 +477,52 @@ static func pier_gunner(ci: CanvasItem, e: Dictionary, pos: Vector2, t: float) -
 	draw(ci, frame, pos, k, front_flip(e), flash_mod(e))
 	if e.state == "aim" and e.timer < 0.8:
 		warn_ring(ci, muzzle_point(e, pos), clampf(1.0 - e.timer / 0.8, 0.0, 1.0), t, k)
+
+static func rusher(ci: CanvasItem, e: Dictionary, pos: Vector2, t: float) -> void:
+	var frame := "coast_rusher_charge"
+	if e.state == "dying" and tex("coast_rusher_hit") != null:
+		frame = "coast_rusher_hit"
+	if tex(frame) == null:
+		soldier(ci, e, pos, t)
+		return
+	var k := scale_for(e, frame, TARGET_H.rusher)
+	var feet := pos
+	var frac := 1.0
+	if is_wading(e):
+		frac = 1.0 - float(e.get("submerge", 0.48))
+		ripple(ci, pos, k, e.alpha, t, int(e.get("id", 0)))
+	else:
+		shadow(ci, pos, 110.0 * k, 0.28 * e.alpha)
+	if frac < 1.0:
+		draw_rising(ci, frame, feet, k, front_flip(e), flash_mod(e), frac)
+	else:
+		draw(ci, frame, feet, k, front_flip(e), flash_mod(e))
+
+static func grenadier(ci: CanvasItem, e: Dictionary, pos: Vector2, t: float) -> void:
+	var frame := "coast_grenadier_aim"
+	if e.state == "recover" and e.muzzle > 0.0 and tex("coast_grenadier_throw") != null:
+		frame = "coast_grenadier_throw"
+	elif e.state == "recover" and tex("coast_grenadier_throw") != null and e.timer > 1.1:
+		frame = "coast_grenadier_throw"
+	if tex(frame) == null:
+		pier_gunner(ci, e, pos, t)
+		return
+	var k := scale_for(e, frame, TARGET_H.grenadier)
+	shadow(ci, pos, 120.0 * k, 0.28 * e.alpha)
+	draw(ci, frame, pos, k, front_flip(e), flash_mod(e))
+	if e.state == "aim" and e.timer < 0.8:
+		warn_ring(ci, muzzle_point(e, pos), clampf(1.0 - e.timer / 0.8, 0.0, 1.0), t, k)
+
+static func enemy_grenade(ci: CanvasItem, pos: Vector2, shadow_at: Vector2, u: float, alpha: float = 1.0) -> void:
+	# Shadow marker at the landing point, sprite in the air.
+	var pulse := 0.65 + 0.35 * sin(u * PI * 6.0)
+	ci.draw_set_transform(shadow_at, 0.0, Vector2(1.0, 0.42))
+	ci.draw_circle(Vector2.ZERO, 22.0 + 6.0 * pulse, Color(0.05, 0.04, 0.03, 0.5 * alpha * pulse))
+	ci.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+	ci.draw_arc(shadow_at, 18.0 + 8.0 * pulse, 0.0, TAU, 24, Color(1.0, 0.2, 0.1, 0.7 * alpha), 2.5)
+	var g := tex("coast_grenade")
+	if g != null:
+		var k := 42.0 / maxf(1.0, fig_h("coast_grenade"))
+		draw(ci, "coast_grenade", pos, k, 1.0, Color(1, 1, 1, alpha), u * 6.0)
+	else:
+		ci.draw_circle(pos, 10.0, Color(0.35, 0.42, 0.22, alpha))

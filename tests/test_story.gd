@@ -86,7 +86,7 @@ func run() -> void:
 	check(main.title_screen.GLOBAL_URL == "https://firebreak.quietbytehq.uk", "global scores URL is the public board")
 	check(main.title_screen.global_hit(Vector2(1650, 980)) and not main.title_screen.global_hit(Vector2(200, 200)), "GLOBAL SCORES has a click target")
 	var src := FileAccess.get_file_as_string("res://scripts/main.gd")
-	check(src.contains("func open_global_scores") and src.contains("OS.shell_open(\"https://firebreak.quietbytehq.uk\")"), "GLOBAL SCORES opens the site in the system browser")
+	check(src.contains("func open_global_scores") and src.contains("Online.open_site()"), "GLOBAL SCORES opens the site in the system browser")
 	check(not src.contains("_button(box, \"Story\""), "the title has no separate Story button")
 	Scores.add_score("TESTER", 12500, 1)
 	main.title_screen.refresh_scores()

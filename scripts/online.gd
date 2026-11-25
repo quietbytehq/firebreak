@@ -6,10 +6,26 @@ extends RefCounted
 ## is just dropped.
 
 const SITE := "firebreak.quietbytehq.uk"
+const SITE_URL := "https://firebreak.quietbytehq.uk"
 const URL := "https://firebreak.quietbytehq.uk/api/submit"
 const MODE := "campaign"
 const MIN_SCORE := 2000
 const MAX_STAGES := 12
+
+## Opens the public board in the default browser. Inside a snap, call
+## xdg-open from PATH so the desktop portal is used, not a host binary.
+static func open_command(url: String = SITE_URL) -> PackedStringArray:
+	if OS.has_environment("SNAP") and OS.get_environment("SNAP") != "":
+		return PackedStringArray(["xdg-open", url])
+	return PackedStringArray(["shell_open", url])
+
+static func open_site(url: String = SITE_URL) -> void:
+	var cmd := open_command(url)
+	if cmd.size() >= 2 and cmd[0] == "xdg-open":
+		var pid := OS.create_process("xdg-open", PackedStringArray([url]))
+		if pid >= 0:
+			return
+	OS.shell_open(url)
 
 static func body_json(player: String, score: int, stages: int, version: String = "") -> String:
 	if version == "":

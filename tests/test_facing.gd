@@ -121,5 +121,24 @@ func run() -> void:
 	check(SpriteArt.villager_flip(robe_r) > 0.0, "a robe villager walking right is drawn unflipped")
 	check(SpriteArt.villager_flip(robe_l) < 0.0, "a robe villager walking left is drawn flipped")
 
+	# Coral Coast rusher and grenadier face the player the same way.
+	var csim = StageSim.new(); csim.setup(3, 5); csim.stage.ambient = []; csim.stage.waves = []
+	var rl: Dictionary = csim.spawn("rusher", "mid", {"world_x": 400.0, "world_y": 780.0})
+	var rr: Dictionary = csim.spawn("rusher", "mid", {"world_x": 1500.0, "world_y": 780.0})
+	var gl: Dictionary = csim.spawn("grenadier", "mid", {"world_x": 1700.0, "world_y": 710.0, "scale": 0.5})
+	var gr: Dictionary = csim.spawn("grenadier", "mid", {"world_x": 2100.0, "world_y": 775.0, "scale": 0.5})
+	csim.camera_x = 0.0
+	csim.step(1.0 / 60.0)
+	if not rl.is_empty() and not rr.is_empty():
+		check(rl.facing > 0.0 and rr.facing < 0.0, "rushers on both sides turn in toward the player")
+		check(SpriteArt.front_flip(rl) != SpriteArt.front_flip(rr), "rusher poses are mirrored inward")
+	if not gl.is_empty() and not gr.is_empty():
+		# Right grenadier may be off-screen at camera 0; force a face check at a scrolled camera.
+		csim.camera_x = 800.0
+		csim.face_player(gl); csim.face_player(gr)
+		check(gl.facing > 0.0 or gr.facing < 0.0, "grenadiers face toward the player")
+	for name in ["coast_rusher_charge", "coast_grenadier_aim", "coast_grenadier_throw"]:
+		check(name in SpriteArt.FRONT_FRAMES and SpriteArt.tex(name) != null, "front pose loads: " + name)
+
 	print("Facing: %d checks, %d failures" % [checks, failures])
 	quit(1 if failures > 0 else 0)

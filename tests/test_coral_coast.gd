@@ -34,7 +34,7 @@ func run() -> void:
 		types[str(w.type)] = true
 		if str(w.type) == "heli": has_heli = true
 	check(not has_heli, "Coral Coast has no helicopter")
-	for typ in ["rifleman", "speedboat", "jeep", "pier_gunner", "gunboat", "food", "villager"]:
+	for typ in ["rifleman", "speedboat", "jeep", "pier_gunner", "gunboat", "food", "villager", "rusher", "grenadier"]:
 		var in_waves := types.has(typ)
 		var in_amb := false
 		for r in s.ambient:
@@ -79,6 +79,58 @@ func run() -> void:
 	check(str(civ.kind).begins_with("town_"), "civilian uses a town kind")
 	var food: Dictionary = sim.spawn("food", "sky", {"kind": "mango"})
 	check(not food.is_empty() and food.kind == "mango", "mango pickup spawns")
+
+	var rush: Dictionary = sim.spawn("rusher", "mid")
+	check(not rush.is_empty(), "machete rusher spawns")
+	check(rush.max_hp == 2.0, "rusher HP is 2")
+	check(int(StageSim.BASE_SCORE.rusher) % 10 == 0, "rusher score is a multiple of 10")
+	check("rusher" in StageSim.WADING_TYPES, "rushers may wade")
+	check("rusher" in StageSim.FACING_TYPES, "rushers face the player")
+	check(FileAccess.file_exists("res://assets/sprites/units/coast_rusher_charge.png"), "rusher charge art ships")
+	check(FileAccess.file_exists("res://assets/sprites/units/coast_rusher_hit.png"), "rusher hit art ships")
+
+	var gre: Dictionary = sim.spawn("grenadier", "mid", {"world_x": 1700.0, "world_y": 710.0, "scale": 0.5})
+	check(not gre.is_empty(), "pier grenadier spawns")
+	check(gre.max_hp == 2.0, "grenadier HP is 2")
+	check(gre.get("planted", false) or str(gre.get("path", "")) == "pier", "grenadier is planted on the pier")
+	check("grenadier" in Ground.DRY_TYPES, "grenadiers stay dry on the planks")
+	check("grenadier" in StageSim.FACING_TYPES, "grenadiers face the player")
+	check(FileAccess.file_exists("res://assets/sprites/units/coast_grenadier_aim.png"), "grenadier aim art ships")
+	check(FileAccess.file_exists("res://assets/sprites/units/coast_grenadier_throw.png"), "grenadier throw art ships")
+	check(FileAccess.file_exists("res://assets/sprites/units/coast_grenade.png"), "enemy grenade art ships")
+	# Lob a grenade and shoot it down.
+	sim.enemy_nades.clear()
+	sim._throw_enemy_nade(gre)
+	check(sim.enemy_nades.size() == 1, "grenadier lobs a grenade")
+	var g0: Dictionary = sim.enemy_nades[0]
+	var midpos: Vector2 = sim.nade_screen_pos(g0)
+	var hp0 := sim.health
+	check(sim.shoot_point(midpos), "the player can shoot the grenade in the air")
+	check(str(g0.get("state", "")) == "shot", "the grenade is shot down")
+	sim._update_enemy_nades(0.05)
+	check(sim.health == hp0, "a shot-down grenade does not damage the player")
+	# A landed grenade hurts the player, not a civilian.
+	sim._throw_enemy_nade(gre)
+	var landed: Dictionary = sim.enemy_nades[0]
+	landed.t = landed.dur
+	var civ2: Dictionary = sim.spawn("villager", "mid")
+	sim._update_enemy_nades(0.05)
+	check(sim.health < hp0, "a landed grenade damages the player")
+	check(civ2.is_empty() or civ2.state != "dying", "a landed grenade does not harm civilians")
+	# Rusher melee if allowed to close.
+	var melee_hits := []
+	sim.event.connect(func(n, _d): if n == "rusher_melee": melee_hits.append(1))
+	var r2: Dictionary = sim.spawn("rusher", "near", {"world_x": 960.0, "world_y": 900.0})
+	if not r2.is_empty():
+		r2.band = "near"
+		r2.target_x = r2.x
+		r2.target_y = r2.y
+		r2.age = 4.0
+		for i in 90:
+			if r2.get("melee", false):
+				break
+			sim.step(0.05)
+		check(r2.get("melee", false) or melee_hits.size() > 0, "a close rusher lands a melee hit if not shot")
 
 	# Quota and time must not clear the stage before the gunboat is down.
 	sim.kills = sim.quota

@@ -11,6 +11,7 @@ const InputSetup := preload("res://scripts/input_setup.gd")
 const Scores := preload("res://scripts/scores.gd")
 const AudioBank := preload("res://scripts/audio.gd")
 const SpriteArt := preload("res://scripts/sprite_art.gd")
+const Dialogue := preload("res://scripts/dialogue.gd")
 const TitleScreen := preload("res://scripts/title_screen.gd")
 const ResultPortrait := preload("res://scripts/result_portrait.gd")
 const ScreenFx := preload("res://shaders/screen_fx.gdshader")
@@ -35,6 +36,7 @@ var store_sel := "viper_9"
 var store_note := ""
 var store_back := "title"
 var sim
+var dialogue
 var view: Node2D
 var hud: Node2D
 var fp: Node2D         # first-person weapon view (under the HUD layer)
@@ -193,6 +195,14 @@ func start_stage(number: int) -> void:
 	hud.continues = run_continues; hud.continues_max = RUN_CONTINUES
 	title_bg.visible = false
 	_clear_menu()
+	if get_viewport():
+		get_viewport().gui_release_focus()
+	if dialogue == null:
+		dialogue = Dialogue.new()
+		dialogue.load_data()
+	dialogue.reset(number)
+	view.dialogue = dialogue
+	_maybe_airstrike_hint()
 	mode = "playing"; end_delay = 0.0; fire_grace = 0.25; bar_press = false
 	crosshair = Vector2(960, 540); last_mouse = get_viewport().get_mouse_position()
 	Input.mouse_mode = Input.MOUSE_MODE_HIDDEN
@@ -241,6 +251,8 @@ static func depth_db(scale: float) -> float:
 
 func _on_sim_event(name: String, d: Dictionary) -> void:
 	fp.on_event(name, d)
+	if dialogue:
+		dialogue.on_event(name, d, sim)
 	match name:
 		"shot":
 			var w := Weapons.get_weapon(str(d.get("weapon", "")))
@@ -447,8 +459,12 @@ func _process(delta: float) -> void:
 	fp.crosshair = crosshair
 	if bar_press and not Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT) and not Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT):
 		bar_press = false
-	if Input.is_action_pressed("fire") and fire_grace <= 0.0 and not bar_press and not qa.has("run") and Hud.slot_at(crosshair) < 0:
+	if Input.is_action_pressed("fire") and fire_grace <= 0.0 and not bar_press and not qa.has("run") and not Hud.blocks_fire(crosshair):
 		sim.fire(crosshair)
+	if not qa.has("run") and Input.is_action_just_pressed("airstrike"):
+		try_airstrike()
+	if dialogue:
+		dialogue.step(dt, sim)
 	sim.step(dt)
 	_update_loops()
 	if qa.has("run"):
@@ -468,6 +484,10 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	# Clicks on the weapon bar select that slot and never fire or throw.
 	if mode == "playing" and event is InputEventMouseButton and event.pressed and event.button_index in [MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT, MOUSE_BUTTON_MIDDLE]:
+		if Hud.airstrike_hit(event.position):
+			bar_press = true
+			try_airstrike()
+			get_viewport().set_input_as_handled(); return
 		var hit := Hud.slot_at(event.position)
 		if hit >= 0:
 			bar_press = true
@@ -510,7 +530,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		elif event.is_action_pressed("grenade"):
 			sim.throw_grenade(crosshair)
 		elif event.is_action_pressed("airstrike"):
-			sim.call_airstrike()
+			try_airstrike()
 		elif event.is_action_pressed("weapon_1"): sim.select_slot(0)
 		elif event.is_action_pressed("weapon_2"): sim.select_slot(1)
 		elif event.is_action_pressed("weapon_3"): sim.select_slot(2)
@@ -670,6 +690,8 @@ func confirm_player_name(text: String = "") -> void:
 	var kind := name_prompt_kind
 	name_prompt_kind = ""
 	player_name_edit = null
+	if get_viewport():
+		get_viewport().gui_release_focus()
 	if mode != "player_name":
 		if title_screen:
 			title_screen.refresh_scores()
@@ -797,9 +819,28 @@ func _play_title_call() -> void:
 	# Line is about five seconds; duck slightly under the announcer, then ease back.
 	audio.duck_music(-7.0, 3.8)
 
+func try_airstrike() -> void:
+	if mode != "playing" or sim == null:
+		return
+	if sim.call_airstrike():
+		return
+	if sim.airstrikes <= 0 and dialogue:
+		dialogue.offer_airstrike_empty()
+
+func _maybe_airstrike_hint() -> void:
+	if sim == null or sim.airstrikes <= 0:
+		return
+	if bool(settings.get("airstrike_hint_seen", false)):
+		return
+	if qa.is_empty():
+		settings.airstrike_hint_seen = true
+		Scores.save_settings(settings)
+	if dialogue:
+		dialogue.offer_airstrike_hint()
+
 func open_global_scores() -> void:
 	# Opens the public board in the system browser. Never fetch the host from here.
-	OS.shell_open("https://firebreak.quietbytehq.uk")
+	Online.open_site()
 
 func open_title_menu() -> void:
 	title_menu_open = true

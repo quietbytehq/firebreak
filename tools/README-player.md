@@ -1,4 +1,4 @@
-# Firebreak 0.5.0 (Linux)
+# Firebreak 0.5.1 (Linux)
 
 An Operation Wolf-style gallery shooter by QuietByte. Stages 1 to 3: River Village, Dune Sea and Coral Coast.
 
@@ -11,6 +11,15 @@ calls the air strike, Esc pauses, F11 toggles fullscreen. Arrow keys / WASD and 
 stick also move the crosshair (pad A fire, X reload, LB / Y next / previous weapon, B or LT
 special, RB air strike, Start pause).
 All controls can be remapped from the Controls screen.
+
+Air strike: you start each stage with one. Press E, middle-click, or click the AIR STRIKE
+panel at the bottom-right of the HUD. Jets cross the screen and bombs destroy every enemy
+in view, never civilians. The first time a strike is ready, a short on-screen hint appears.
+If none are left, the radio says so. Extra strikes can be bought in the Store.
+
+Global scores: on the title screen, click GLOBAL SCORES to open the public board in your
+default web browser.
+
 
 Shoot soldiers, never villagers. Shoot falling food to heal and falling supplies for ammo,
 grenades, weapon upgrades and cash. Kills earn cash; hitting a villager costs cash. Spend it in

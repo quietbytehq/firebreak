@@ -10,15 +10,16 @@ const Weapons := preload("res://scripts/weapons.gd")
 const Ground := preload("res://scripts/stage_ground.gd")
 const VIEW_W := 1920.0
 const VIEW_H := 1080.0
-const ENEMY_TYPES := ["rifleman", "mg", "paratrooper", "truck", "heli", "camel", "technical", "sniper", "convoy", "speedboat", "jeep", "pier_gunner", "gunboat"]
+const ENEMY_TYPES := ["rifleman", "mg", "paratrooper", "truck", "heli", "camel", "technical", "sniper", "convoy", "speedboat", "jeep", "pier_gunner", "gunboat", "rusher", "grenadier"]
 const SIZES := {
 	"rifleman": Vector2(130, 360), "paratrooper": Vector2(130, 350), "mg": Vector2(200, 240),
 	"villager": Vector2(120, 340), "truck": Vector2(560, 300), "food": Vector2(96, 96), "powerup": Vector2(110, 110),
 	"heli": Vector2(650, 256), "camel": Vector2(420, 360), "technical": Vector2(620, 280), "sniper": Vector2(280, 240), "convoy": Vector2(640, 300),
 	"speedboat": Vector2(360, 140), "jeep": Vector2(420, 200), "pier_gunner": Vector2(150, 250), "gunboat": Vector2(620, 280),
+	"rusher": Vector2(130, 360), "grenadier": Vector2(150, 250),
 }
-const BASE_HP := {"rifleman": 1.0, "paratrooper": 1.0, "mg": 3.0, "truck": 14.0, "heli": 16.0, "villager": 1.0, "food": 1.0, "powerup": 1.0, "camel": 1.0, "technical": 11.0, "sniper": 2.0, "convoy": 17.0, "speedboat": 8.0, "jeep": 11.0, "pier_gunner": 3.0, "gunboat": 30.0}
-const BASE_SCORE := {"rifleman": 100, "paratrooper": 200, "mg": 400, "truck": 1500, "heli": 2500, "food": 50, "powerup": 50, "camel": 200, "technical": 1800, "sniper": 500, "convoy": 2000, "speedboat": 800, "jeep": 1800, "pier_gunner": 400, "gunboat": 2500}
+const BASE_HP := {"rifleman": 1.0, "paratrooper": 1.0, "mg": 3.0, "truck": 14.0, "heli": 16.0, "villager": 1.0, "food": 1.0, "powerup": 1.0, "camel": 1.0, "technical": 11.0, "sniper": 2.0, "convoy": 17.0, "speedboat": 8.0, "jeep": 11.0, "pier_gunner": 3.0, "gunboat": 30.0, "rusher": 2.0, "grenadier": 2.0}
+const BASE_SCORE := {"rifleman": 100, "paratrooper": 200, "mg": 400, "truck": 1500, "heli": 2500, "food": 50, "powerup": 50, "camel": 200, "technical": 1800, "sniper": 500, "convoy": 2000, "speedboat": 800, "jeep": 1800, "pier_gunner": 400, "gunboat": 2500, "rusher": 200, "grenadier": 300}
 const GUNNER_SCORE := 300
 const GUNNER_HP := 2.0
 const HELI_SCALE := 0.75
@@ -32,7 +33,7 @@ const VILLAGER_PENALTY_SCORE := 500
 ## Bonus added on a killing headshot (already a multiple of 10, and applied
 ## after the band multiplier so the total score stays a multiple of 10).
 const HEADSHOT_BONUS := 50
-const HEADSHOT_TYPES := ["rifleman", "paratrooper", "mg", "camel", "sniper", "pier_gunner"]
+const HEADSHOT_TYPES := ["rifleman", "paratrooper", "mg", "camel", "sniper", "pier_gunner", "rusher", "grenadier"]
 ## RAPID power-up multiplies the carried weapon's fire rate.
 const RAPID_MULT := 1.6
 const SWITCH_TIME := 0.18   # seconds after a weapon swap before it can fire
@@ -52,7 +53,7 @@ const HUD_BAND_TOP := 940.0
 ## Killing this many civilians fails the stage on every map.
 const CIVILIAN_LIMIT := 3
 ## Infantry that can stand waist-deep in water (boats stay on their paths).
-const WADING_TYPES := ["rifleman", "paratrooper"]
+const WADING_TYPES := ["rifleman", "paratrooper", "rusher"]
 const WADING_SUBMERGE := 0.48
 ## Fraction of the view width where the harbour gunboat holds.
 const GUNBOAT_HOLD := 0.82
@@ -74,6 +75,7 @@ var wave_index := 0
 var pending: Array = []
 var ambient_next: Array = []
 var grenades_in_flight: Array = []
+var enemy_nades: Array = []
 
 var state := "playing"   # playing | cleared | failed
 var end_reason := ""
@@ -144,7 +146,7 @@ func setup(number: int = 1, seed: int = 1, data: Dictionary = {}, profile: Dicti
 	fx_rng.seed = seed * 7919 + 13
 	duration = minf(float(stage.get("duration", 180.0)), 180.0)
 	quota = maxi(1, int(round(float(stage.get("enemy_quota", 55)) * float(diff.get("quota", 1.0)))))
-	time = 0.0; camera_x = 0.0; entities.clear(); pending.clear(); grenades_in_flight.clear()
+	time = 0.0; camera_x = 0.0; entities.clear(); pending.clear(); grenades_in_flight.clear(); enemy_nades.clear()
 	next_id = 1; wave_index = 0; state = "playing"; end_reason = ""; paused = false
 	arena_done = false; arena_sink = 0.0
 	score = 0; clear_bonus = 0; health = max_health
@@ -507,6 +509,12 @@ func spawn(type: String, band: String = "mid", opts: Dictionary = {}) -> Diction
 			"pier_gunner":
 				e.state = "aim"; e.timer = 2.0 * float(diff.telegraph) + 0.6
 				e.pose = "kneel"
+			"rusher":
+				e.state = "charge"; e.rise = 1.0; e.timer = 0.15
+				e.melee = false
+			"grenadier":
+				e.state = "aim"; e.timer = 1.4 * float(diff.telegraph) + 0.5
+				e.pose = "kneel"
 			"gunboat":
 				e.state = "hold"; e.vx = 0.0; e.facing = -1.0
 				e.gunner_alive = true; e.gunner_hp = GUNNER_HP; e.burst = 0.0; e.tick = 0.0
@@ -515,6 +523,8 @@ func spawn(type: String, band: String = "mid", opts: Dictionary = {}) -> Diction
 				e.burst2 = 0.0; e.tick2 = 0.0
 				e.aim2 = 1.6 * float(diff.get("telegraph", 1.0))
 		_place_on_path(e)
+		if type == "grenadier":
+			_place_on_pier(e)
 		if type == "gunboat":
 			var hold := camera_x + VIEW_W * GUNBOAT_HOLD
 			var path_name := str(e.get("path", "water"))
@@ -600,6 +610,26 @@ func _place_on_path(e: Dictionary) -> void:
 	elif e.type in ["technical", "jeep"]:
 		e.target_x = b.x - 40.0
 
+func _place_on_pier(e: Dictionary) -> void:
+	var b := Ground.road_bounds(stage, "pier")
+	if b.x < 0.0:
+		return
+	e.path = "pier"
+	if not e.get("planted", false) or float(e.get("x", -1.0)) < 0.0:
+		var lo := maxf(b.x + 20.0, camera_x + 80.0)
+		var hi := minf(b.y - 20.0, camera_x + VIEW_W - 80.0)
+		if hi <= lo:
+			lo = b.x + 20.0
+			hi = b.y - 20.0
+		e.x = rng.randf_range(lo, hi) if hi > lo else clampf(camera_x + VIEW_W * 0.55, b.x, b.y)
+	else:
+		e.x = clampf(float(e.x), b.x, b.y)
+	e.y = Ground.road_y(stage, "pier", e.x)
+	e.ground_y = e.y
+	e.planted = true
+	e.wading = false
+	e.submerge = 0.0
+
 func _follow_path(e: Dictionary, dt: float) -> void:
 	e.x += e.vx * dt
 	var name := str(e.get("path", ""))
@@ -642,7 +672,7 @@ func _spawn_from_wave(w: Dictionary) -> void:
 	for k in ["world_x", "world_y", "scale", "kind", "frac", "from", "hp"]:
 		if w.has(k): opts[k] = w[k]
 	var typ := str(w.type)
-	var caps := {"camel": 2, "technical": 1, "sniper": 2, "speedboat": 2, "jeep": 1, "pier_gunner": 2, "gunboat": 1}
+	var caps := {"camel": 2, "technical": 1, "sniper": 2, "speedboat": 2, "jeep": 1, "pier_gunner": 2, "gunboat": 1, "rusher": 3, "grenadier": 2}
 	if caps.has(typ) and count_alive(typ) >= int(caps[typ]):
 		return
 	spawn(typ, str(w.get("band", "mid")), opts)
@@ -723,6 +753,7 @@ func step(dt: float) -> void:
 	for e in entities.duplicate():
 		_update_entity(e, dt)
 	_update_grenades(dt)
+	_update_enemy_nades(dt)
 	_update_strike(dt)
 	if arena_sink > 0.0:
 		arena_sink = maxf(0.0, arena_sink - dt)
@@ -785,9 +816,116 @@ func _update_entity(e: Dictionary, dt: float) -> void:
 		"jeep": _update_jeep(e, dt)
 		"speedboat": _update_speedboat(e, dt)
 		"pier_gunner": _update_sniper(e, dt)
+		"rusher": _update_rusher(e, dt)
+		"grenadier": _update_grenadier(e, dt)
 		"gunboat": _update_gunboat(e, dt)
 		"villager": _update_villager(e, dt)
 		"food", "powerup": _update_pickup(e, dt)
+
+func _update_rusher(e: Dictionary, dt: float) -> void:
+	e.rise = 1.0
+	if e.get("melee", false):
+		return
+	if not e.has("target_x"):
+		var land := pick_point("near", 80.0)
+		if land.x < 0.0:
+			land = pick_point("mid", 80.0)
+		if land.x < 0.0:
+			land = Vector2(camera_x + VIEW_W * 0.5, HUD_BAND_TOP - 80.0)
+		e.target_x = land.x
+		e.target_y = land.y
+	var tx := float(e.target_x)
+	var ty := float(e.target_y)
+	var speed := 190.0 * float(e.scale)
+	var dx := tx - float(e.x)
+	var step := speed * dt
+	if absf(dx) > 4.0:
+		e.x += clampf(dx, -step, step)
+	_apply_wading(e)
+	if not e.get("wading", false):
+		var gy := Ground.ground_y(stage, str(e.band), e.x)
+		if gy > 0.0:
+			# Move down toward the near band if the ground allows it.
+			var want := minf(ty, HUD_BAND_TOP - 70.0)
+			if gy > e.y and gy <= want + 40.0:
+				e.y = minf(gy, e.y + step * 0.85)
+			else:
+				e.y = gy
+			e.ground_y = e.y
+			if e.y >= 820.0:
+				e.band = "near"
+				e.scale = band_scale("near")
+	e.charge_t = float(e.get("charge_t", 0.0)) + dt
+	var close := absf(float(e.x) - (camera_x + VIEW_W * 0.5)) < 400.0
+	var on_screen: bool = (e.x + e.size.x * e.scale * 0.5 > camera_x - 40.0) and (e.x - e.size.x * e.scale * 0.5 < camera_x + VIEW_W + 40.0)
+	if (e.y >= HUD_BAND_TOP - 110.0) or (str(e.band) == "near" and e.y >= 820.0 and close) or (e.get("wading", false) and close and e.age > 3.6) or (on_screen and float(e.charge_t) >= 2.2):
+		e.melee = true
+		damage_player(14.0, e)
+		event.emit("rusher_melee", {"entity": e, "pos": Vector2(e.x - camera_x, e.y - 80.0)})
+		e.state = "dying"
+		e.timer = 0.45
+		e.fall_rot = 0.0
+
+func _update_grenadier(e: Dictionary, dt: float) -> void:
+	if e.get("path", "") == "pier":
+		var ry := Ground.road_y(stage, "pier", e.x)
+		if ry > 0.0:
+			e.y = ry
+			e.ground_y = ry
+	e.timer -= dt
+	match e.state:
+		"aim":
+			if e.timer <= 0.0:
+				_throw_enemy_nade(e)
+				e.state = "recover"
+				e.timer = 1.7 + rng.randf_range(0.0, 0.5)
+		"recover":
+			if e.timer <= 0.0:
+				e.state = "aim"
+				e.timer = _aim_time(e) * 1.15 + 0.4
+
+func _throw_enemy_nade(e: Dictionary) -> void:
+	var dest := fire_target(e, true)
+	var hand := Vector2(e.x, e.y - e.size.y * e.scale * 0.62)
+	enemy_nades.append({
+		"from": hand, "to_screen": dest, "t": 0.0, "dur": 1.15,
+		"hp": 1, "state": "fly", "arc": 200.0,
+	})
+	e.muzzle = 0.22
+	event.emit("enemy_grenade", {"entity": e, "to": dest, "from": Vector2(hand.x - camera_x, hand.y)})
+
+func nade_screen_pos(g: Dictionary) -> Vector2:
+	var u := clampf(float(g.t) / maxf(0.05, float(g.dur)), 0.0, 1.0)
+	var from_s := Vector2(float(g.from.x) - camera_x, float(g.from.y))
+	var to_s: Vector2 = g.to_screen
+	var p := from_s.lerp(to_s, u)
+	p.y -= sin(u * PI) * float(g.get("arc", 200.0))
+	return p
+
+func nade_at(screen_pos: Vector2) -> Dictionary:
+	for g in enemy_nades:
+		if str(g.get("state", "")) != "fly":
+			continue
+		if nade_screen_pos(g).distance_to(screen_pos) <= 32.0:
+			return g
+	return {}
+
+func _shoot_down_nade(g: Dictionary) -> void:
+	g.state = "shot"
+	g.t = float(g.dur)
+	event.emit("nade_shot", {"pos": nade_screen_pos(g)})
+
+func _update_enemy_nades(dt: float) -> void:
+	for g in enemy_nades.duplicate():
+		if str(g.get("state", "")) != "fly":
+			enemy_nades.erase(g)
+			continue
+		g.t = float(g.t) + dt
+		if float(g.t) >= float(g.dur):
+			var dest: Vector2 = g.to_screen
+			damage_player(16.0, g)
+			event.emit("enemy_grenade_land", {"pos": dest})
+			enemy_nades.erase(g)
 
 func _aim_time(e: Dictionary) -> float:
 	return float(AIM_TIME.get(e.band, 1.3)) * float(diff.get("telegraph", 1.0)) / float(diff.get("fire_rate", 1.0)) * rng.randf_range(0.85, 1.2)
@@ -1076,7 +1214,7 @@ func _enemy_fire(e: Dictionary, chance_mult: float, damage_override: float = -1.
 ## Inside the dead zone near the centre the front pose already points straight
 ## at the camera, so the last facing is kept (no flicker while the camera scrolls).
 const FACE_DEADZONE := 80.0
-const FACING_TYPES := ["rifleman", "paratrooper", "mg", "sniper", "pier_gunner"]
+const FACING_TYPES := ["rifleman", "paratrooper", "mg", "sniper", "pier_gunner", "rusher", "grenadier"]
 
 func face_player(e: Dictionary) -> void:
 	if not (e.type in FACING_TYPES) or e.state == "dying": return
@@ -1138,7 +1276,7 @@ func hitbox(e: Dictionary) -> Rect2:
 	match e.type:
 		"food", "powerup":
 			return Rect2(e.x - w * 0.5, e.y - h * 0.5, w, h)
-		"mg", "sniper", "pier_gunner":
+		"mg", "sniper", "pier_gunner", "grenadier":
 			return Rect2(e.x - w * 0.4, e.y - h, w * 0.8, h * 0.62)
 		"truck", "technical", "convoy", "jeep", "speedboat", "gunboat":
 			return Rect2(e.x - w * 0.5, e.y - h, w, h * 0.92)
@@ -1217,6 +1355,10 @@ func spread_offset(w: Dictionary) -> Vector2:
 ## Applies one bullet at a screen point. A piercing round (marksman rifle)
 ## passes through up to `pierce` targets, nearest first. Returns true on a hit.
 func shoot_point(screen_pos: Vector2, pierce: int = 1) -> bool:
+	var nade := nade_at(screen_pos)
+	if not nade.is_empty():
+		_shoot_down_nade(nade)
+		return true
 	var e := entity_at(screen_pos)
 	if e.is_empty():
 		event.emit("miss", {"pos": screen_pos})
