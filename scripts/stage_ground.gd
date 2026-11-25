@@ -193,3 +193,20 @@ static func in_water(stage: Dictionary, band: String, x: float, type: String = "
 ## True when a civilian may stand or walk here: on land, never in water.
 static func on_land(stage: Dictionary, band: String, x: float) -> bool:
 	return on_ground(stage, band, x) and not in_water(stage, band, x, "villager")
+
+## True when a ground figure at (band, x) has water under its feet, or
+## immediately behind them (a near parapet with only sea behind, for
+## example). Boat crews and other DRY_TYPES always return false.
+##
+## A farther water body does not count by itself: Dune Sea's oasis sits
+## behind a near sand bank, so near figures there stay dry. A per-band
+## water map (water.bands.near / mid) is the shore for that band.
+static func water_under_or_behind(stage: Dictionary, band: String, x: float, type: String = "") -> bool:
+	if type in DRY_TYPES:
+		return false
+	if in_water(stage, band, x, type):
+		return true
+	var local := _spans(water_band_section(stage, band))
+	if local.is_empty():
+		return false
+	return in_spans(local, x) and water_y(stage, x, band) > 0.0

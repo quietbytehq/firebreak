@@ -27,6 +27,8 @@ func run() -> void:
 	_wading_on_coral()
 	_boats_stay_dry()
 	_river_and_dune_audit()
+	_no_dry_feet_on_water()
+	_harbour_near_wades()
 	print("Water: ", checks, " checks, ", failures, " failures")
 	quit(0 if failures == 0 else 1)
 
@@ -86,3 +88,76 @@ func _river_and_dune_audit() -> void:
 	var dune = fresh(2)
 	var d: Dictionary = dune.spawn("rifleman", "mid", {"world_x": 1860.0, "world_y": 770.0})
 	check(not d.is_empty() and bool(d.get("wading", false)), "a Dune Sea rifleman in the oasis gap wades")
+
+func _no_dry_feet_on_water() -> void:
+	# No near or mid figure may have water under or directly behind its feet
+	# unless it is wading or a boat / pier crew (DRY_TYPES).
+	for n in [1, 2, 3]:
+		var sim = fresh(n)
+		var dry_on_water := 0
+		var sampled := 0
+		var waders := 0
+		for band in ["near", "mid"]:
+			var x := 20.0
+			while x <= 3820.0:
+				var place := Ground.on_ground(sim.stage, band, x) or Ground.in_water(sim.stage, band, x, "rifleman") or Ground.water_under_or_behind(sim.stage, band, x, "rifleman")
+				if place:
+					var e: Dictionary = sim.spawn("rifleman", band, {"world_x": x})
+					if e.is_empty():
+						x += 40.0
+						continue
+					sampled += 1
+					var wet := Ground.water_under_or_behind(sim.stage, band, float(e.x), "rifleman")
+					if wet and not bool(e.get("wading", false)):
+						dry_on_water += 1
+					if bool(e.get("wading", false)):
+						waders += 1
+						if float(e.get("submerge", 0.0)) < 0.4:
+							dry_on_water += 1
+					sim.entities.erase(e)
+				x += 40.0
+		check(sampled > 0, "stage %d has near/mid placement samples" % n)
+		check(dry_on_water == 0, "stage %d: no near/mid rifleman has water under or behind its feet unless wading (%d)" % [n, dry_on_water])
+		if n == 3:
+			check(waders > 0, "Coral Coast has at least one wading sample on the audit grid")
+	# A Dune Sea near figure on the sand bank in front of the oasis stays dry.
+	var dune = fresh(2)
+	var bank: Dictionary = dune.spawn("rifleman", "near", {"world_x": 1860.0})
+	check(not bank.is_empty() and not bool(bank.get("wading", false)), "Dune Sea near infantry stay dry on the oasis sand bank")
+	check(not Ground.water_under_or_behind(dune.stage, "near", 1860.0, "rifleman"), "the oasis is not 'directly behind' the near sand bank")
+
+func _harbour_near_wades() -> void:
+	# The harbour parapet has only sea behind it. Near figures there must
+	# wade at the near shore waterline, not stand on the sandbag lip.
+	var sim = fresh(3)
+	sim.camera_x = 1920.0
+	for x in [2000.0, 2400.0, 2800.0, 3200.0, 3600.0]:
+		check(Ground.water_under_or_behind(sim.stage, "near", x, "rifleman"), "Coral harbour x=%.0f has water under or behind a near figure" % x)
+		check(not Ground.on_ground(sim.stage, "near", x), "Coral harbour x=%.0f is not a dry near parapet" % x)
+		var e: Dictionary = sim.spawn("rifleman", "near", {"world_x": x})
+		check(not e.is_empty() and bool(e.get("wading", false)), "a near rifleman at harbour x=%.0f wades" % x)
+		if e.is_empty():
+			continue
+		check(float(e.get("submerge", 0.0)) >= 0.4, "harbour near wader at x=%.0f is waist-deep" % x)
+		var wy := Ground.water_y(sim.stage, x, "near")
+		check(absf(e.y - wy) <= 8.0, "harbour near wader at x=%.0f contacts the near shore waterline (y=%.1f, water=%.1f)" % [x, e.y, wy])
+		check(e.y >= 790.0, "harbour near wader stays at the parapet shore, not mid-bay depth (y=%.1f)" % e.y)
+		sim.entities.erase(e)
+	# The open beach in front of the mid bay stays dry near land.
+	sim.camera_x = 0.0
+	var beach: Dictionary = sim.spawn("rifleman", "near", {"world_x": 400.0})
+	check(not beach.is_empty() and not bool(beach.get("wading", false)), "a near rifleman on the Coral beach stays dry")
+	check(Ground.on_ground(sim.stage, "near", 400.0), "the Coral beach is near land")
+	# Combat picks in the harbour must not plant a dry near figure on the bags.
+	sim.camera_x = 1920.0
+	var dry_picks := 0
+	for i in 16:
+		var p: Vector2 = sim.pick_combat_point("near", 140.0, float(i) / 15.0)
+		if p.x < 0.0:
+			continue
+		if Ground.water_under_or_behind(sim.stage, "near", p.x, "rifleman") == false and not Ground.on_ground(sim.stage, "near", p.x):
+			dry_picks += 1
+		elif Ground.water_under_or_behind(sim.stage, "near", p.x, "rifleman") == false and p.x >= 1890.0:
+			dry_picks += 1
+	check(dry_picks == 0, "harbour combat picks do not choose a dry near site on the wet parapet (%d)" % dry_picks)
+

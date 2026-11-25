@@ -2,6 +2,19 @@
 
 Updated: 2026-11-25 (PKT, UTC+5)
 
+## v0.5.0c — near parapet water and continue-banner overlap
+- Near-band figures may only stand on the parapet where land or sand is directly behind them. On Coral Coast the near land map ends at the sandy beach (x=1888); from x=1890 the harbour parapet is a near water body with a shore waterline just behind the bags. A near rifleman there wades waist-deep at that line, with a ripple, instead of standing on the sandbag lip with only sea behind the feet. Mid harbour water now runs continuously from the mid bay to the east open sea.
+- `Ground.water_under_or_behind` is the shared test: water under the feet, or a per-band shore map at that x. A farther water body alone does not count (Dune Sea near figures stay dry on the sand bank in front of the oasis).
+- The result screen calls `view.clear_announcements()`, which drops the stage title card and callout banners, so "TOO MANY CIVILIANS" cannot overlap the result title.
+- Tests: 28 suites, 1,893 checks, 0 failures (`./tools/test.sh`). New asserts in `tests/test_water.gd`: no near or mid rifleman has water under or behind its feet unless it is wading, plus an explicit Coral harbour audit (near waders contact the shore waterline at y>=790, not mid-bay depth). `tests/test_continues.gd` checks that the result screen has cleared the title and civilian banners. Headless `tools/smoke_v050b.gd`: 3-civilian fail, continue (2 diamonds left), then the gunboat cleared with reason `boss` (camera 1920, gun_y 791, HP 33, quota 128).
+- Shots: `/workspace/firebreak_shots/v050c/` — `boss`, `wading`, `continue`, `civilians_beach`, `civilian_warning` (PNG + JPG + `_preview.jpg`). Captured on the laptop at 1797×1011 (the window could not be forced to 1920×1080; nvidia-drm did not attach, Intel Mesa). Median frame time was 60 fps on beach, wading and boss. The boss capture reported `boss_removed_dry_on_water=0` and 3 harbour near waders. Visual check: near harbour figures are waist-deep at the shore with a ripple, not standing on the sandbag lip with only sea behind their feet; the continue screen no longer has “TOO MANY CIVILIANS” or the stage title over “MISSION FAILED”.
+- Replaced files: `_to_delete/replaced_v050c/`. The unpublished local tag `v0.5.0` was deleted and recreated on this commit. Do not move `v0.3.7`, `v0.4.0` or `v0.4.1`. Do not push until the owner asks.
+
+---
+# CHECKPOINT — Firebreak 0.5.0
+
+Updated: 2026-11-25 (PKT, UTC+5)
+
 ## v0.5.0 fix round — water, civilians, continues, harder Coral Coast
 - Version stays 0.5.0. The unpublished local tag `v0.5.0` was deleted and recreated on this commit. Do not move `v0.3.7` (`5a1922b`), `v0.4.0` (`5b4b534`) or `v0.4.1` (`4659341`).
 - Water: infantry in a stage water body stand waist-deep (sprite clipped at the waterline, ripple, shooting-from-water pose). Boat crews stay in their boats; pier gunners stay on the planks. Coral Coast mid-bay riflemen can spawn in the water (`water_combat`). River Village and Dune Sea only wade if a figure is actually placed in those gaps.

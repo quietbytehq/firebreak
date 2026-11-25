@@ -945,6 +945,8 @@ func _finalize_failed_run() -> void:
 
 func show_result() -> void:
 	mode = "result"; hud.visible = false; qa_phase_t = 0.0
+	if view:
+		view.clear_announcements()
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	var cleared: bool = sim.state == "cleared"
 	var offer: bool = can_use_continue()

@@ -28,6 +28,17 @@ func run() -> void:
 	_fail_civilians(main.sim)
 	check(main.sim.state == "failed" and main.sim.end_reason == "civilians", "3 civilian kills fail the stage")
 	check(main.can_use_continue(), "a continue is offered after the first fail")
+	main.view.banner("TOO MANY CIVILIANS", Vector2(960, 280), Color(1, 0.28, 0.22), 64, 2.2)
+	main.view.title_card = main.view.title_card_max
+	main.show_result()
+	await frames(2)
+	check(main.view.title_card <= 0.0, "the result screen clears the stage title card")
+	var leftover := 0
+	for q in main.view.popups:
+		var txt := str(q.get("text", ""))
+		if "CIVILIAN" in txt or "TOO MANY" in txt:
+			leftover += 1
+	check(leftover == 0, "the result screen clears civilian banners so they cannot overlap the title")
 	var kept: int = main.run_score
 	check(main.use_continue(), "Continue spends a diamond and restarts the stage")
 	await frames(8)

@@ -21,14 +21,19 @@ game's public releases.
   and there are more civilians in the crossfire.
 - Anyone standing in the water is waist-deep: the sprite is clipped at the
   waterline with a ripple, and they shoot from there. Boat crews stay in their
-  boats. River Village and Dune Sea are audited the same way.
+  boats. River Village and Dune Sea are audited the same way. On Coral Coast,
+  near figures may only stand on the parapet where sand is directly behind
+  them; over the harbour they wade at the shore waterline instead of standing
+  on the sandbag lip with open sea behind their feet.
 - Civilians walk only on land, always facing the way they are going. Killing
   3 civilians fails the stage on every map, with an on-screen "CIVILIAN DOWN"
   warning after the first and second. The result screen names the reason.
 - Each run has 3 continue diamonds on the HUD. Failing a stage (by dying or by
   the civilian rule) offers Continue, which spends one diamond and restarts
   that stage. With none left it is game over, and the run high score is saved
-  as it stands. There is no store or real-money tie-in.
+  as it stands. There is no store or real-money tie-in. The result screen
+  clears the stage title and "TOO MANY CIVILIANS" banners so they cannot
+  overlap the result title.
 - Stage music is "Caribbean Steel Drums 2" by Tozan (CC0). Bay ambience and
   vehicle loops are also CC0; credits are in NOTICE. No ElevenLabs audio.
 - The 0.4.1 name-at-start and automatic high-score save still apply, including a

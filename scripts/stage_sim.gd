@@ -449,9 +449,17 @@ func spawn(type: String, band: String = "mid", opts: Dictionary = {}) -> Diction
 				return {}
 		e.planted = opts.has("world_y") and float(opts.get("world_y", -1.0)) > 0.0
 		if not e.planted:
-			var gy := Ground.ground_y(stage, band, p.x)
-			if gy > 0.0:
-				p.y = gy
+			# ground_y interpolates the polyline even past a band's land
+			# spans, which used to plant harbour infantry on the sandbag
+			# lip with only sea behind them. Prefer the waterline when wet.
+			if Ground.water_under_or_behind(stage, band, p.x, type):
+				var wy := Ground.water_y(stage, p.x, band)
+				if wy > 0.0:
+					p.y = wy
+			else:
+				var gy := Ground.ground_y(stage, band, p.x)
+				if gy > 0.0:
+					p.y = gy
 		e.x = p.x; e.ground_y = p.y; e.y = p.y
 		e.facing = -1.0 if e.x > camera_x + VIEW_W * 0.5 else 1.0
 		match type:
@@ -1474,7 +1482,7 @@ func _apply_wading(e: Dictionary) -> void:
 	if e.state in ["descend", "crash"]:
 		e.wading = false
 		return
-	var wet := Ground.in_water(stage, str(e.get("band", "mid")), float(e.x), str(e.type))
+	var wet := Ground.water_under_or_behind(stage, str(e.get("band", "mid")), float(e.x), str(e.type))
 	e.wading = wet
 	if not wet:
 		e.submerge = 0.0

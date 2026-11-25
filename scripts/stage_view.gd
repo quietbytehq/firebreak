@@ -143,6 +143,11 @@ func muzzle_origin() -> Vector2:
 func banner(text: String, pos: Vector2, col: Color, size: int = 48, life: float = 1.5) -> void:
 	popups.append({"pos": pos, "text": text, "life": life, "max": life, "col": col, "size": size, "pop": 1.0})
 
+## Drop stage-name and callout text so they cannot sit on the result screen.
+func clear_announcements() -> void:
+	popups.clear()
+	title_card = 0.0
+
 func _on_event(name: String, d: Dictionary) -> void:
 	match name:
 		"shot":
